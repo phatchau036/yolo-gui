@@ -33,6 +33,12 @@
 - Cài `ultralytics 8.4.48` vào Python global đang chạy server.
 - Restart server, `GET /api/health` báo `ultralytics_installed=true`.
 - `GET /api/system` thấy Torch `2.5.1+cu121`, CUDA available và GPU `NVIDIA GeForce RTX 3050 Laptop GPU` 4GB.
+- Thêm GUI dependency notice:
+  - `GET /api/dependencies/ultralytics`
+  - `POST /api/dependencies/ultralytics/install`
+  - `GET /api/dependencies/ultralytics/logs`
+  - Nút `Cài Ultralytics` và log cài đặt ngay trong giao diện.
+  - Train button chặn train nếu Ultralytics thiếu hoặc đang cài.
 - Chạy Playwright QA desktop/mobile:
   - Sửa xung đột class `panel-block` với Bulma.
   - Sửa mobile horizontal overflow.
@@ -51,6 +57,7 @@
 - Thêm biểu đồ metric từ `results.csv`.
 - Thêm auth/local password nếu app mở ra LAN.
 - Thêm test tự động cho API và JS form mapping.
+- Thêm test mô phỏng môi trường thiếu Ultralytics để kiểm tra UI cài dependency.
 
 ## Rủi ro hiện tại
 

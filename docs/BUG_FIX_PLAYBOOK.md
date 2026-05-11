@@ -23,10 +23,20 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 ## UI mở nhưng không train được
 
 1. Kiểm tra `GET /api/health`.
-2. Kiểm tra `data.yaml` bằng nút `Kiểm tra`.
-3. Start job lại.
-4. Đọc `logs/train_jobs/<job_id>.log`.
-5. Đọc `runs/gui_jobs/<job_id>/train_config.json` để xem tham số thực tế đã gửi.
+2. Kiểm tra card môi trường trên GUI. Nếu thiếu Ultralytics, bấm `Cài Ultralytics`.
+3. Nếu cài Ultralytics lỗi, đọc `logs/dependency_installs/ultralytics-install.log`.
+4. Kiểm tra `data.yaml` bằng nút `Kiểm tra`.
+5. Start job lại.
+6. Đọc `logs/train_jobs/<job_id>.log`.
+7. Đọc `runs/gui_jobs/<job_id>/train_config.json` để xem tham số thực tế đã gửi.
+
+## Nút Cài Ultralytics không chạy
+
+1. Gọi `GET /api/dependencies/ultralytics` để xem trạng thái backend.
+2. Gọi `POST /api/dependencies/ultralytics/install` để xác nhận API còn hoạt động.
+3. Đọc `logs/dependency_installs/ultralytics-install.log`.
+4. Kiểm tra Python server đang dùng trong field `python` của API status.
+5. Nếu pip bị lỗi network hoặc quyền ghi, hiển thị nguyên lỗi đó trên GUI, không rút gọn.
 
 ## Stop job không dừng
 

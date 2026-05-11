@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import FRONTEND_DIR, PROJECT_ROOT, ensure_runtime_dirs
+from .dependency_manager import DependencyManager
 from .schemas import DatasetInspectRequest, PathListRequest, StopJobRequest, TrainRequest
 from .training_manager import TrainingManager
 
@@ -19,6 +20,7 @@ ensure_runtime_dirs()
 
 app = FastAPI(title="YOLO GUI", version="0.1.0")
 manager = TrainingManager()
+dependency_manager = DependencyManager()
 
 if FRONTEND_DIR.exists():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR)), name="assets")
@@ -61,7 +63,7 @@ def health() -> dict[str, Any]:
     return {
         "ok": True,
         "project_root": str(PROJECT_ROOT),
-        "ultralytics_installed": importlib.util.find_spec("ultralytics") is not None,
+        "ultralytics_installed": dependency_manager.is_ultralytics_installed(),
         "torch_installed": importlib.util.find_spec("torch") is not None,
     }
 
@@ -95,6 +97,25 @@ def system_info() -> dict[str, Any]:
 @app.get("/api/models")
 def models() -> dict[str, Any]:
     return {"models": MODEL_PRESETS}
+
+
+@app.get("/api/dependencies/ultralytics")
+def ultralytics_dependency_status() -> dict[str, Any]:
+    return dependency_manager.ultralytics_status()
+
+
+@app.post("/api/dependencies/ultralytics/install")
+def install_ultralytics_dependency() -> dict[str, Any]:
+    return dependency_manager.start_ultralytics_install()
+
+
+@app.get("/api/dependencies/ultralytics/logs")
+def ultralytics_dependency_logs(tail: int = 12000) -> dict[str, Any]:
+    return {
+        "package": "ultralytics",
+        "log": dependency_manager.read_ultralytics_log(tail=tail),
+        "status": dependency_manager.ultralytics_status(),
+    }
 
 
 @app.post("/api/paths/list")
@@ -166,6 +187,11 @@ def inspect_dataset(request: DatasetInspectRequest) -> dict[str, Any]:
 
 @app.post("/api/train/start")
 def start_train(request: TrainRequest) -> dict[str, Any]:
+    if not dependency_manager.is_ultralytics_installed():
+        raise HTTPException(
+            status_code=409,
+            detail="Ultralytics chưa được cài. Hãy bấm Cài Ultralytics trên GUI trước khi train.",
+        )
     if not request.model.strip():
         raise HTTPException(status_code=400, detail="Model is required")
     if not request.data.strip():

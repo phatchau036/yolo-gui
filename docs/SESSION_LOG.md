@@ -15,6 +15,10 @@
 - Cài `ultralytics 8.4.48` vào Python global đang chạy server.
 - Restart server, `GET /api/health` báo `ultralytics_installed=true`.
 - `GET /api/system` báo CUDA available, Torch `2.5.1+cu121`, GPU `NVIDIA GeForce RTX 3050 Laptop GPU` 4GB.
+- Theo yêu cầu mới, thêm luồng cài Ultralytics ngay trên GUI:
+  - Backend `DependencyManager` chạy pip install và ghi `logs/dependency_installs/ultralytics-install.log`.
+  - Frontend có card trạng thái môi trường, nút `Cài Ultralytics`, nút kiểm tra lại và vùng log.
+  - `Bắt đầu train` tự kiểm tra dependency, nếu thiếu thì cuộn tới card cài đặt thay vì để runner fail.
 - Playwright QA:
   - Desktop layout pass sau khi đổi custom class từ `panel-block` sang `work-panel`.
   - Mobile không còn horizontal overflow sau khi thêm `min-width:0` và width constraints.

@@ -1,6 +1,7 @@
 const state = {
   selectedJobId: null,
   logTimer: null,
+  dependencyTimer: null,
 };
 
 const numberFields = new Set([
@@ -107,6 +108,96 @@ async function loadSystem() {
   ].join("\n");
 }
 
+async function loadDependencyStatus() {
+  const payload = await api("/api/dependencies/ultralytics");
+  renderDependencyStatus(payload);
+  if (payload.install.status === "running") {
+    startDependencyPolling();
+    await loadDependencyLog();
+  } else {
+    stopDependencyPolling();
+  }
+  return payload;
+}
+
+function renderDependencyStatus(payload) {
+  const card = qs("#dependencyNotice");
+  const badge = qs("#dependencyBadge");
+  const title = qs("#dependencyTitle");
+  const detail = qs("#dependencyDetail");
+  const installButton = qs("#installUltralyticsButton");
+  const logOutput = qs("#dependencyLogOutput");
+
+  card.classList.remove("is-ready", "is-running", "has-log");
+  installButton.disabled = false;
+
+  if (payload.install.status === "running") {
+    card.classList.add("is-running", "has-log");
+    badge.className = "status-pill status-running";
+    badge.textContent = "Đang cài";
+    title.textContent = "Đang cài Ultralytics";
+    detail.textContent = `Python: ${payload.python}`;
+    installButton.disabled = true;
+    installButton.querySelector("span:last-child").textContent = "Đang cài...";
+    return;
+  }
+
+  if (payload.installed) {
+    card.classList.add("is-ready");
+    badge.className = "status-pill status-completed";
+    badge.textContent = "Sẵn sàng";
+    title.textContent = "Ultralytics đã sẵn sàng";
+    detail.textContent = `Version: ${payload.version || "unknown"} · Python: ${payload.python}`;
+    installButton.querySelector("span:last-child").textContent = "Cài lại";
+    if (payload.install.status === "failed") {
+      card.classList.add("has-log");
+    }
+    return;
+  }
+
+  badge.className = "status-pill status-failed";
+  badge.textContent = "Thiếu";
+  title.textContent = "Thiếu Ultralytics để train YOLO";
+  detail.textContent = "Bấm Cài Ultralytics để app tự cài qua Python đang chạy server, không cần mở CLI.";
+  installButton.querySelector("span:last-child").textContent = "Cài Ultralytics";
+  if (payload.install.status === "failed") {
+    card.classList.add("has-log");
+  }
+}
+
+async function installUltralytics() {
+  const payload = await api("/api/dependencies/ultralytics/install", { method: "POST" });
+  renderDependencyStatus(payload);
+  showToast("Đã bắt đầu cài Ultralytics trong GUI");
+  startDependencyPolling();
+}
+
+async function loadDependencyLog() {
+  const payload = await api("/api/dependencies/ultralytics/logs?tail=12000");
+  qs("#dependencyLogOutput").textContent = payload.log || "Chưa có log cài đặt.";
+  if (payload.log) {
+    qs("#dependencyNotice").classList.add("has-log");
+  }
+}
+
+function startDependencyPolling() {
+  if (state.dependencyTimer) {
+    return;
+  }
+  state.dependencyTimer = window.setInterval(() => {
+    loadDependencyStatus().catch(() => {});
+    loadDependencyLog().catch(() => {});
+  }, 2500);
+}
+
+function stopDependencyPolling() {
+  if (!state.dependencyTimer) {
+    return;
+  }
+  window.clearInterval(state.dependencyTimer);
+  state.dependencyTimer = null;
+}
+
 async function browsePath(path) {
   const payload = await api("/api/paths/list", {
     method: "POST",
@@ -196,6 +287,16 @@ function collectForm() {
 }
 
 async function startTrain() {
+  const dependency = await loadDependencyStatus();
+  if (!dependency.installed) {
+    qs("#dependencyNotice").scrollIntoView({ behavior: "smooth", block: "center" });
+    showToast("Cần cài Ultralytics trên GUI trước khi train.");
+    return;
+  }
+  if (dependency.install.status === "running") {
+    showToast("Ultralytics đang được cài. Đợi cài xong rồi train.");
+    return;
+  }
   const payload = collectForm();
   const response = await api("/api/train/start", {
     method: "POST",
@@ -297,12 +398,19 @@ function bindEvents() {
   qs("#stopJobButton").addEventListener("click", () => {
     stopSelectedJob().catch((error) => showToast(error.message));
   });
+  qs("#installUltralyticsButton").addEventListener("click", () => {
+    installUltralytics().catch((error) => showToast(error.message));
+  });
+  qs("#refreshDependencyButton").addEventListener("click", () => {
+    loadDependencyStatus().catch((error) => showToast(error.message));
+    loadDependencyLog().catch(() => {});
+  });
 }
 
 async function boot() {
   setIconRefresh();
   bindEvents();
-  await Promise.all([loadModels(), loadSystem(), loadJobs()]);
+  await Promise.all([loadModels(), loadSystem(), loadDependencyStatus(), loadJobs()]);
   browsePath("").catch(() => {});
 }
 

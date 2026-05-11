@@ -52,6 +52,27 @@
           </div>
         </header>
 
+        <section id="dependencyNotice" class="dependency-card" aria-live="polite">
+          <div class="dependency-copy">
+            <span id="dependencyBadge" class="status-pill status-starting">Đang kiểm tra</span>
+            <div>
+              <h3 id="dependencyTitle">Kiểm tra môi trường train</h3>
+              <p id="dependencyDetail">App đang kiểm tra Ultralytics và Python đang chạy server.</p>
+            </div>
+          </div>
+          <div class="dependency-actions">
+            <button id="installUltralyticsButton" class="button is-warning" type="button">
+              <span class="icon"><i data-lucide="download"></i></span>
+              <span>Cài Ultralytics</span>
+            </button>
+            <button id="refreshDependencyButton" class="button is-light" type="button">
+              <span class="icon"><i data-lucide="refresh-cw"></i></span>
+              <span>Kiểm tra lại</span>
+            </button>
+          </div>
+          <pre id="dependencyLogOutput" class="dependency-log">Chưa có log cài đặt.</pre>
+        </section>
+
         <form id="trainForm" class="train-grid">
           <section id="section-dataset" class="work-panel wide">
             <div class="panel-heading-row">
