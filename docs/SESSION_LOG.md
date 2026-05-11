@@ -74,3 +74,14 @@
 - API smoke trên `127.0.0.1:8766` đã pass cho dataset inspect/audit, tạo YAML, VOC convert, metrics, system report và export job lỗi có chủ ý với full traceback.
 - Browser QA desktop/mobile đã pass: console sạch và không có horizontal overflow.
 - Chưa chạy train/val/predict/export thật với dataset/model hợp lệ vì chưa có dataset/model thật được user chọn.
+
+## 2026-05-12 - polish giao diện
+
+- Nhận feedback giao diện còn xấu.
+- Giữ nguyên backend, chỉ polish frontend:
+  - Thêm quick workflow cards phía trên để chuyển nhanh Train/Predict/Export/Dataset.
+  - Đồng bộ active state giữa sidebar và quick cards.
+  - Thu gọn path browser vào `details` để dashboard chính đỡ nặng.
+  - Làm lại visual system trong `styles.css`: nền, sidebar, card, spacing, focus state, button, form density, status cards.
+  - Mobile sidebar chuyển sang thanh nav ngang, quick workflow cũng cuộn ngang để không chiếm quá nhiều chiều cao.
+- Verify lại trên browser ở `127.0.0.1:8766`: desktop/mobile không horizontal overflow, quick card chuyển tab đúng, console sạch.

@@ -60,6 +60,11 @@
   - Không có console warning/error.
   - Không có horizontal overflow ở desktop và mobile.
   - Tab Dataset chuyển đúng trạng thái.
+- Polish UI dashboard:
+  - Thêm quick workflow cards cho Train/Predict/Export/Dataset.
+  - Thu gọn path browser vào `details` để màn hình chính đỡ rối.
+  - Làm lại spacing, màu, shadow, focus state, button và form density.
+  - Mobile nav và quick workflow dùng thanh cuộn ngang để giảm chiều cao.
 
 ## Cần làm tiếp
 

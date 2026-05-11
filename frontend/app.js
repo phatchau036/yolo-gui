@@ -111,6 +111,7 @@ function setIconRefresh() {
 
 function setActiveSection(section) {
   qsa(".nav-item").forEach((button) => button.classList.toggle("is-active", button.dataset.section === section));
+  qsa(".quick-card").forEach((button) => button.classList.toggle("is-active", button.dataset.section === section));
   qsa(".page-section").forEach((panel) => panel.classList.toggle("is-active", panel.id === `section-${section}`));
   qs("#sectionTitle").textContent = sectionTitles[section] || "YOLO GUI";
   if (section === "jobs") {
@@ -568,7 +569,7 @@ async function createReport() {
 }
 
 function bindEvents() {
-  qsa(".nav-item").forEach((button) => {
+  qsa(".nav-item, .quick-card").forEach((button) => {
     button.addEventListener("click", () => setActiveSection(button.dataset.section));
   });
   qsa("[data-start-workflow]").forEach((button) => {

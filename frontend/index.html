@@ -54,6 +54,25 @@
           </div>
         </header>
 
+        <section class="quick-switch" aria-label="Chọn workflow nhanh">
+          <button class="quick-card is-active" data-section="train" type="button">
+            <i data-lucide="dumbbell"></i>
+            <span><strong>Train</strong><small>Huấn luyện model</small></span>
+          </button>
+          <button class="quick-card" data-section="predict" type="button">
+            <i data-lucide="scan-search"></i>
+            <span><strong>Predict</strong><small>Ảnh, video, camera</small></span>
+          </button>
+          <button class="quick-card" data-section="export" type="button">
+            <i data-lucide="package-open"></i>
+            <span><strong>Export</strong><small>ONNX, TensorRT</small></span>
+          </button>
+          <button class="quick-card" data-section="dataset" type="button">
+            <i data-lucide="folder-check"></i>
+            <span><strong>Dataset</strong><small>Audit, convert, metrics</small></span>
+          </button>
+        </section>
+
         <section id="dependencyNotice" class="dependency-card" aria-live="polite">
           <div class="dependency-copy">
             <span id="dependencyBadge" class="status-pill status-starting">Đang kiểm tra</span>
@@ -84,12 +103,15 @@
           <pre id="dependencyLogOutput" class="dependency-log">Chưa có log cài đặt.</pre>
         </section>
 
-        <section class="path-tool work-panel">
-          <div class="panel-heading-row">
-            <div>
-              <p class="eyebrow">Local path</p>
-              <h3>Duyệt file và thư mục</h3>
-            </div>
+        <details class="path-tool work-panel">
+          <summary class="path-summary">
+            <span>
+              <span class="eyebrow">Local path</span>
+              <strong>Duyệt file và thư mục</strong>
+            </span>
+            <i data-lucide="chevron-down"></i>
+          </summary>
+          <div class="panel-heading-row path-heading-row">
             <div class="path-target-wrap">
               <label class="label is-small" for="pathTarget">Gán vào</label>
               <div class="select is-small">
@@ -131,7 +153,7 @@
             </div>
             <div id="pathBrowser" class="path-browser" aria-live="polite"></div>
           </div>
-        </section>
+        </details>
 
         <section id="section-train" class="page-section is-active">
           <form id="trainForm" class="work-panel">
