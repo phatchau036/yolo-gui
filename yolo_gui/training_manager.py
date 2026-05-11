@@ -12,11 +12,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .config import DEFAULT_OUTPUT_DIR, JOB_ROOT, LOG_DIR, PROJECT_ROOT, ensure_runtime_dirs
-from .schemas import TrainRequest
+from .config import DEFAULT_OUTPUT_DIR, DEFAULT_PREDICT_DIR, DEFAULT_VAL_DIR, JOB_ROOT, LOG_DIR, PROJECT_ROOT, ensure_runtime_dirs
 
 
-RUNNER_MODULE = "yolo_gui.train_runner"
+RUNNER_MODULE = "yolo_gui.workflow_runner"
+JOB_DEFAULT_NAMES = {
+    "train": "gui-train",
+    "val": "gui-val",
+    "predict": "gui-predict",
+}
+JOB_DEFAULT_PROJECTS = {
+    "train": DEFAULT_OUTPUT_DIR,
+    "val": DEFAULT_VAL_DIR,
+    "predict": DEFAULT_PREDICT_DIR,
+}
 
 
 def utc_now() -> str:
@@ -32,6 +41,7 @@ def model_to_dict(model: Any) -> dict[str, Any]:
 @dataclass
 class TrainingJob:
     id: str
+    job_type: str
     status: str
     created_at: str
     config_path: Path
@@ -48,6 +58,7 @@ class TrainingJob:
     def public_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
+            "job_type": self.job_type,
             "status": self.status,
             "created_at": self.created_at,
             "started_at": self.started_at,
@@ -67,30 +78,35 @@ class TrainingManager:
         self._jobs: dict[str, TrainingJob] = {}
         self._lock = threading.Lock()
 
-    def list_jobs(self) -> list[dict[str, Any]]:
+    def list_jobs(self, job_type: str | None = None) -> list[dict[str, Any]]:
         with self._lock:
-            return [job.public_dict() for job in sorted(self._jobs.values(), key=lambda item: item.created_at, reverse=True)]
+            jobs = self._jobs.values()
+            if job_type:
+                jobs = [job for job in jobs if job.job_type == job_type]
+            return [job.public_dict() for job in sorted(jobs, key=lambda item: item.created_at, reverse=True)]
 
     def get_job(self, job_id: str) -> TrainingJob | None:
         with self._lock:
             return self._jobs.get(job_id)
 
-    def start_job(self, request: TrainRequest) -> TrainingJob:
+    def start_job(self, request: Any, job_type: str = "train") -> TrainingJob:
         ensure_runtime_dirs()
-        cfg = self._build_config(request)
-        job_id = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8]
+        cfg = self._build_config(request, job_type=job_type)
+        job_id = time.strftime("%Y%m%d-%H%M%S") + f"-{job_type}-" + uuid.uuid4().hex[:8]
         job_dir = JOB_ROOT / job_id
         job_dir.mkdir(parents=True, exist_ok=True)
-        config_path = job_dir / "train_config.json"
+        config_path = job_dir / f"{job_type}_config.json"
         log_path = LOG_DIR / f"{job_id}.log"
 
         cfg["job_id"] = job_id
+        cfg["job_type"] = job_type
         cfg["job_dir"] = str(job_dir)
         config_path.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
 
         command = [sys.executable, "-m", RUNNER_MODULE, "--config", str(config_path)]
         job = TrainingJob(
             id=job_id,
+            job_type=job_type,
             status="starting",
             created_at=utc_now(),
             config_path=config_path,
@@ -133,14 +149,14 @@ class TrainingManager:
             return text[-tail:]
         return text
 
-    def _build_config(self, request: TrainRequest) -> dict[str, Any]:
+    def _build_config(self, request: Any, job_type: str) -> dict[str, Any]:
         raw = model_to_dict(request)
         extra = raw.pop("extra_args", {}) or {}
 
-        if not raw.get("project"):
-            raw["project"] = str(DEFAULT_OUTPUT_DIR)
-        if not raw.get("name"):
-            raw["name"] = "gui-train"
+        if job_type in JOB_DEFAULT_PROJECTS and not raw.get("project"):
+            raw["project"] = str(JOB_DEFAULT_PROJECTS[job_type])
+        if job_type in JOB_DEFAULT_NAMES and not raw.get("name"):
+            raw["name"] = JOB_DEFAULT_NAMES[job_type]
 
         raw.update(extra)
         return {key: value for key, value in raw.items() if value not in (None, "")}
@@ -154,7 +170,7 @@ class TrainingManager:
             job.started_at = utc_now()
 
         with job.log_path.open("a", encoding="utf-8", errors="replace") as log:
-            log.write(f"[{utc_now()}] Starting YOLO train job {job.id}\n")
+            log.write(f"[{utc_now()}] Starting YOLO {job.job_type} job {job.id}\n")
             log.write("Command: " + " ".join(job.command) + "\n\n")
             log.flush()
 

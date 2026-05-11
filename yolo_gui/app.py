@@ -4,20 +4,34 @@ import os
 from pathlib import Path
 from typing import Any
 
-import yaml
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import FRONTEND_DIR, PROJECT_ROOT, ensure_runtime_dirs
+from .dataset_tools import audit_dataset as audit_dataset_file
+from .dataset_tools import calculate_yolo_metrics, convert_voc_to_yolo, create_dataset_yaml, inspect_dataset as inspect_dataset_file
 from .dependency_manager import DependencyManager
-from .schemas import DatasetInspectRequest, PathListRequest, StopJobRequest, TrainRequest
+from .schemas import (
+    DatasetAuditRequest,
+    DatasetInspectRequest,
+    DatasetYamlCreateRequest,
+    ExportRequest,
+    MetricsRequest,
+    PathListRequest,
+    PredictRequest,
+    StopJobRequest,
+    TrainRequest,
+    ValidateRequest,
+    VocConvertRequest,
+)
+from .system_report import create_system_report
 from .training_manager import TrainingManager
 
 
 ensure_runtime_dirs()
 
-app = FastAPI(title="YOLO GUI", version="0.1.0")
+app = FastAPI(title="YOLO GUI", version="0.2.0")
 manager = TrainingManager()
 dependency_manager = DependencyManager()
 
@@ -93,9 +107,27 @@ def system_info() -> dict[str, Any]:
     return info
 
 
+@app.post("/api/system/report")
+def system_report() -> dict[str, Any]:
+    return create_system_report(dependency_manager.environment_status())
+
+
 @app.get("/api/models")
 def models() -> dict[str, Any]:
     return {"models": MODEL_PRESETS}
+
+
+def ensure_yolo_runtime() -> None:
+    if not dependency_manager.is_ultralytics_installed():
+        raise HTTPException(
+            status_code=409,
+            detail="Ultralytics chưa được cài. Hãy bấm Cài Ultralytics trên GUI trước khi chạy YOLO.",
+        )
+    if not dependency_manager.is_torch_installed():
+        raise HTTPException(
+            status_code=409,
+            detail="PyTorch chưa được cài. Hãy bấm Cài PyTorch CUDA hoặc Cài PyTorch CPU trên GUI trước khi chạy YOLO.",
+        )
 
 
 @app.get("/api/dependencies/status")
@@ -183,74 +215,143 @@ def list_path(request: PathListRequest) -> dict[str, Any]:
 
 @app.post("/api/datasets/inspect")
 def inspect_dataset(request: DatasetInspectRequest) -> dict[str, Any]:
-    path = Path(request.path).expanduser()
-    if not path.exists():
-        raise HTTPException(status_code=404, detail=f"Dataset YAML does not exist: {path}")
-    if path.is_dir():
-        path = path / "data.yaml"
-    if path.suffix.lower() not in {".yaml", ".yml"}:
-        raise HTTPException(status_code=400, detail="Dataset path must be a YAML file")
-
     try:
-        payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        return inspect_dataset_file(request.path)
     except Exception as exc:  # noqa: BLE001 - return readable YAML parse error to UI.
-        raise HTTPException(status_code=400, detail=f"Cannot parse dataset YAML: {exc}") from exc
+        raise HTTPException(status_code=400, detail=f"Cannot inspect dataset YAML: {exc}") from exc
 
-    names = payload.get("names", [])
-    if isinstance(names, dict):
-        class_count = len(names)
-    elif isinstance(names, list):
-        class_count = len(names)
-    else:
-        class_count = 0
 
-    return {
-        "path": str(path),
-        "root": payload.get("path"),
-        "train": payload.get("train"),
-        "val": payload.get("val"),
-        "test": payload.get("test"),
-        "class_count": class_count,
-        "names": names,
-        "raw": payload,
-    }
+@app.post("/api/datasets/audit")
+def audit_dataset(request: DatasetAuditRequest) -> dict[str, Any]:
+    try:
+        return audit_dataset_file(request.path, max_examples=request.max_examples)
+    except Exception as exc:  # noqa: BLE001 - show exact audit failure in GUI.
+        raise HTTPException(status_code=400, detail=f"Cannot audit dataset: {exc}") from exc
+
+
+@app.post("/api/datasets/create-yaml")
+def create_yaml(request: DatasetYamlCreateRequest) -> dict[str, Any]:
+    try:
+        return create_dataset_yaml(request)
+    except Exception as exc:  # noqa: BLE001 - show exact file creation failure in GUI.
+        raise HTTPException(status_code=400, detail=f"Cannot create dataset YAML: {exc}") from exc
+
+
+@app.post("/api/datasets/voc-to-yolo")
+def voc_to_yolo(request: VocConvertRequest) -> dict[str, Any]:
+    try:
+        return convert_voc_to_yolo(
+            annotations_dir=request.annotations_dir,
+            output_dir=request.output_dir,
+            classes=request.classes,
+            overwrite=request.overwrite,
+        )
+    except Exception as exc:  # noqa: BLE001 - show exact conversion failure in GUI.
+        raise HTTPException(status_code=400, detail=f"Cannot convert VOC XML: {exc}") from exc
+
+
+@app.post("/api/datasets/metrics")
+def dataset_metrics(request: MetricsRequest) -> dict[str, Any]:
+    try:
+        return calculate_yolo_metrics(
+            prediction_dir=request.prediction_dir,
+            ground_truth_dir=request.ground_truth_dir,
+            iou_threshold=request.iou_threshold,
+            class_count=request.class_count,
+        )
+    except Exception as exc:  # noqa: BLE001 - show exact metrics failure in GUI.
+        raise HTTPException(status_code=400, detail=f"Cannot calculate metrics: {exc}") from exc
 
 
 @app.post("/api/train/start")
 def start_train(request: TrainRequest) -> dict[str, Any]:
-    if not dependency_manager.is_ultralytics_installed():
-        raise HTTPException(
-            status_code=409,
-            detail="Ultralytics chưa được cài. Hãy bấm Cài Ultralytics trên GUI trước khi train.",
-        )
-    if not dependency_manager.is_torch_installed():
-        raise HTTPException(
-            status_code=409,
-            detail="PyTorch chưa được cài. Hãy bấm Cài PyTorch CUDA hoặc Cài PyTorch CPU trên GUI trước khi train.",
-        )
+    ensure_yolo_runtime()
     if not request.model.strip():
         raise HTTPException(status_code=400, detail="Model is required")
     if not request.data.strip():
         raise HTTPException(status_code=400, detail="Dataset data.yaml is required")
-    job = manager.start_job(request)
+    job = manager.start_job(request, job_type="train")
     return {"job": job.public_dict()}
 
 
-@app.get("/api/train/jobs")
-def list_jobs() -> dict[str, Any]:
-    return {"jobs": manager.list_jobs()}
+@app.post("/api/val/start")
+def start_val(request: ValidateRequest) -> dict[str, Any]:
+    ensure_yolo_runtime()
+    if not request.model.strip():
+        raise HTTPException(status_code=400, detail="Model is required")
+    if not request.data.strip():
+        raise HTTPException(status_code=400, detail="Dataset data.yaml is required")
+    job = manager.start_job(request, job_type="val")
+    return {"job": job.public_dict()}
 
 
-@app.get("/api/train/jobs/{job_id}")
-def get_job(job_id: str) -> dict[str, Any]:
+@app.post("/api/predict/start")
+def start_predict(request: PredictRequest) -> dict[str, Any]:
+    ensure_yolo_runtime()
+    if not request.model.strip():
+        raise HTTPException(status_code=400, detail="Model is required")
+    if not request.source.strip():
+        raise HTTPException(status_code=400, detail="Source path/camera/url is required")
+    job = manager.start_job(request, job_type="predict")
+    return {"job": job.public_dict()}
+
+
+@app.post("/api/export/start")
+def start_export(request: ExportRequest) -> dict[str, Any]:
+    ensure_yolo_runtime()
+    if not request.model.strip():
+        raise HTTPException(status_code=400, detail="Model is required")
+    job = manager.start_job(request, job_type="export")
+    return {"job": job.public_dict()}
+
+
+@app.get("/api/jobs")
+def list_all_jobs(job_type: str | None = None) -> dict[str, Any]:
+    return {"jobs": manager.list_jobs(job_type=job_type)}
+
+
+@app.get("/api/jobs/{job_id}")
+def get_any_job(job_id: str) -> dict[str, Any]:
     job = manager.get_job(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
     return {"job": job.public_dict()}
 
 
+@app.get("/api/jobs/{job_id}/logs")
+def get_any_logs(job_id: str, tail: int = 12000) -> dict[str, Any]:
+    log = manager.read_log(job_id, tail=tail)
+    if log is None:
+        raise HTTPException(status_code=404, detail="Log not found")
+    return {"job_id": job_id, "log": log}
+
+
+@app.post("/api/jobs/{job_id}/stop")
+def stop_any_job(job_id: str, request: StopJobRequest) -> dict[str, Any]:
+    job = manager.stop_job(job_id, force=request.force)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"job": job.public_dict()}
+
+
+@app.get("/api/train/jobs")
+def list_jobs() -> dict[str, Any]:
+    return {"jobs": manager.list_jobs(job_type="train")}
+
+
+@app.get("/api/train/jobs/{job_id}")
+def get_job(job_id: str) -> dict[str, Any]:
+    job = manager.get_job(job_id)
+    if job is None or job.job_type != "train":
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"job": job.public_dict()}
+
+
 @app.get("/api/train/jobs/{job_id}/logs")
 def get_logs(job_id: str, tail: int = 12000) -> dict[str, Any]:
+    job = manager.get_job(job_id)
+    if job is None or job.job_type != "train":
+        raise HTTPException(status_code=404, detail="Job not found")
     log = manager.read_log(job_id, tail=tail)
     if log is None:
         raise HTTPException(status_code=404, detail="Log not found")
@@ -259,7 +360,8 @@ def get_logs(job_id: str, tail: int = 12000) -> dict[str, Any]:
 
 @app.post("/api/train/jobs/{job_id}/stop")
 def stop_train(job_id: str, request: StopJobRequest) -> dict[str, Any]:
-    job = manager.stop_job(job_id, force=request.force)
-    if job is None:
+    job = manager.get_job(job_id)
+    if job is None or job.job_type != "train":
         raise HTTPException(status_code=404, detail="Job not found")
-    return {"job": job.public_dict()}
+    stopped = manager.stop_job(job_id, force=request.force)
+    return {"job": stopped.public_dict() if stopped else None}

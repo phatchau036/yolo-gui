@@ -8,6 +8,7 @@ __pycache__/
 logs/
 runs/
 server.log
+server-*.log
 datasets/
 weights/
 

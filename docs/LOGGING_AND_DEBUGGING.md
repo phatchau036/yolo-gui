@@ -2,30 +2,37 @@
 
 ## Log nằm ở đâu
 
-- Job log: `logs/train_jobs/<job_id>.log`
+- Workflow job log: `logs/workflow_jobs/<job_id>.log`
 - Dependency install logs:
   - `logs/dependency_installs/ultralytics-install.log`
   - `logs/dependency_installs/torch-cuda-install.log`
   - `logs/dependency_installs/torch-cpu-install.log`
-- Job config: `runs/gui_jobs/<job_id>/train_config.json`
-- Output train mặc định: `runs/train/<name>/`
+- System report:
+  - `logs/system_reports/system-report-*.md`
+  - `logs/system_reports/system-report-*.json`
+- Job config: `runs/gui_jobs/<job_id>/<job_type>_config.json`
+- Output mặc định:
+  - Train: `runs/train/<name>/`
+  - Validate: `runs/val/<name>/`
+  - Predict: `runs/predict/<name>/`
+  - Export: cạnh file model hoặc theo behavior của Ultralytics format tương ứng.
 
 Khi debug một job, đọc theo thứ tự:
 
-1. `runs/gui_jobs/<job_id>/train_config.json`
-2. `logs/train_jobs/<job_id>.log`
-3. Output trong `runs/train/` hoặc thư mục `project` người dùng chọn.
+1. `runs/gui_jobs/<job_id>/<job_type>_config.json`
+2. `logs/workflow_jobs/<job_id>.log`
+3. Output trong `runs/train`, `runs/val`, `runs/predict` hoặc nơi Ultralytics báo trong log.
 
 ## Log cần chứa gì
 
 Mỗi job phải có:
 
 - Job id.
+- Job type.
 - Lệnh runner.
 - Phiên bản Ultralytics nếu import được.
 - Model path.
-- Data path.
-- Training arguments.
+- Arguments thực tế.
 - Full traceback nếu lỗi.
 - Return code khi kết thúc.
 
@@ -35,28 +42,32 @@ Mỗi job phải có:
 Invoke-RestMethod http://127.0.0.1:8765/api/health
 Invoke-RestMethod http://127.0.0.1:8765/api/system
 Invoke-RestMethod http://127.0.0.1:8765/api/dependencies/status
-Invoke-RestMethod http://127.0.0.1:8765/api/dependencies/torch
-Invoke-RestMethod http://127.0.0.1:8765/api/dependencies/ultralytics
 Invoke-RestMethod http://127.0.0.1:8765/api/models
-Invoke-RestMethod http://127.0.0.1:8765/api/train/jobs
+Invoke-RestMethod http://127.0.0.1:8765/api/jobs
+```
+
+Dataset/report:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8765/api/system/report -Method Post
+Invoke-RestMethod http://127.0.0.1:8765/api/datasets/audit -Method Post -ContentType 'application/json' -Body '{"path":"C:\\datasets\\project\\data.yaml"}'
 ```
 
 ## Lỗi thường thấy
 
-- `ultralytics_installed=false`: chưa cài dependency hoặc đang dùng sai venv.
-- `Cài Ultralytics` fail trên GUI: mở `logs/dependency_installs/ultralytics-install.log`.
-- `torch_installed=false`: chưa cài PyTorch.
-- `PyTorch installed nhưng CUDA unavailable`: bấm `Cài PyTorch CUDA`, sau đó kiểm tra driver bằng card NVIDIA/CUDA.
+- `Ultralytics chưa được cài`: bấm `Cài Ultralytics` trên GUI.
+- `PyTorch chưa được cài`: bấm `Cài PyTorch CUDA` hoặc `Cài PyTorch CPU`.
+- `PyTorch installed nhưng CUDA unavailable`: bấm `Cài PyTorch CUDA`, sau đó kiểm tra driver NVIDIA.
 - `nvidia-smi not found`: máy không có NVIDIA driver trong PATH hoặc chưa cài driver GPU.
-- `CUDA unavailable`: Torch không thấy GPU, sai bản CUDA hoặc driver.
-- `Dataset YAML does not exist`: đường dẫn data.yaml sai.
-- `Cannot parse dataset YAML`: YAML sai format hoặc encoding.
+- `Dataset YAML does not exist`: đường dẫn `data.yaml` sai.
+- `Cannot inspect/audit dataset`: YAML sai format, path split sai hoặc app không có quyền đọc folder.
 - Runner exit code `1`: mở job log để xem traceback đầy đủ.
+- Export TensorRT fail: thường do thiếu CUDA/TensorRT hoặc format không hợp với máy hiện tại; xem log workflow.
 
 ## Nguyên tắc debug
 
-- Không đoán lỗi train từ UI. Luôn mở log job.
+- Không đoán lỗi từ popup. Luôn mở log job.
 - Không bắt người dùng tự mở CLI để cài Ultralytics/PyTorch; dùng nút cài trong GUI và đọc log dependency nếu lỗi.
 - Nếu lỗi chỉ hiện popup ngắn, bổ sung log chi tiết trước.
-- Nếu sửa backend train, chạy `python -m compileall -q yolo_gui`.
-- Nếu sửa UI, mở lại browser và kiểm tra desktop/mobile.
+- Nếu sửa backend workflow, chạy `python -m compileall -q yolo_gui`.
+- Nếu sửa UI, chạy `node --check frontend/app.js` và kiểm tra desktop/mobile bằng browser.

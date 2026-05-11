@@ -14,6 +14,34 @@ class DatasetInspectRequest(BaseModel):
     path: str
 
 
+class DatasetAuditRequest(BaseModel):
+    path: str
+    max_examples: int = Field(default=40, ge=1, le=500)
+
+
+class DatasetYamlCreateRequest(BaseModel):
+    output_path: str
+    root: str
+    train: str = "images/train"
+    val: str = "images/val"
+    test: str | None = None
+    names: list[str] = Field(default_factory=list)
+
+
+class VocConvertRequest(BaseModel):
+    annotations_dir: str
+    output_dir: str
+    classes: list[str] = Field(default_factory=list)
+    overwrite: bool = True
+
+
+class MetricsRequest(BaseModel):
+    prediction_dir: str
+    ground_truth_dir: str
+    iou_threshold: float = Field(default=0.5, ge=0, le=1)
+    class_count: int | None = Field(default=None, ge=1)
+
+
 class TrainRequest(BaseModel):
     model: str = Field(default="yolo26n.pt")
     data: str
@@ -92,6 +120,91 @@ class TrainRequest(BaseModel):
     auto_augment: str = "randaugment"
     erasing: float = 0.4
 
+    extra_args: dict[str, Any] = Field(default_factory=dict)
+
+
+class ValidateRequest(BaseModel):
+    model: str
+    data: str
+    task: Literal["detect", "segment", "classify", "pose", "obb"] = "detect"
+    split: Literal["val", "test", "train"] = "val"
+    imgsz: int = Field(default=640, ge=32)
+    batch: int | float = 16
+    conf: float | None = Field(default=None, ge=0, le=1)
+    iou: float = Field(default=0.7, ge=0, le=1)
+    device: str | int | list[int] | None = None
+    workers: int = Field(default=8, ge=0)
+    project: str | None = None
+    name: str | None = None
+    exist_ok: bool = False
+    save_json: bool = False
+    save_hybrid: bool = False
+    plots: bool = True
+    verbose: bool = True
+    max_det: int = Field(default=300, ge=1)
+    half: bool = False
+    dnn: bool = False
+    extra_args: dict[str, Any] = Field(default_factory=dict)
+
+
+class PredictRequest(BaseModel):
+    model: str
+    source: str
+    task: Literal["detect", "segment", "classify", "pose", "obb"] = "detect"
+    imgsz: int = Field(default=640, ge=32)
+    conf: float = Field(default=0.25, ge=0, le=1)
+    iou: float = Field(default=0.7, ge=0, le=1)
+    device: str | int | list[int] | None = None
+    project: str | None = None
+    name: str | None = None
+    exist_ok: bool = False
+    save: bool = True
+    save_txt: bool = False
+    save_conf: bool = False
+    save_crop: bool = False
+    show_labels: bool = True
+    show_conf: bool = True
+    show_boxes: bool = True
+    line_width: int | None = Field(default=None, ge=1)
+    max_det: int = Field(default=300, ge=1)
+    vid_stride: int = Field(default=1, ge=1)
+    stream_buffer: bool = False
+    half: bool = False
+    agnostic_nms: bool = False
+    retina_masks: bool = False
+    extra_args: dict[str, Any] = Field(default_factory=dict)
+
+
+class ExportRequest(BaseModel):
+    model: str
+    format: Literal[
+        "torchscript",
+        "onnx",
+        "openvino",
+        "engine",
+        "coreml",
+        "saved_model",
+        "pb",
+        "tflite",
+        "edgetpu",
+        "tfjs",
+        "paddle",
+        "mnn",
+        "ncnn",
+        "imx",
+        "rknn",
+    ] = "onnx"
+    imgsz: int = Field(default=640, ge=32)
+    batch: int = Field(default=1, ge=1)
+    device: str | int | list[int] | None = None
+    half: bool = False
+    int8: bool = False
+    dynamic: bool = False
+    simplify: bool = True
+    opset: int | None = Field(default=None, ge=7)
+    workspace: float | None = Field(default=None, ge=0)
+    nms: bool = False
+    data: str | None = None
     extra_args: dict[str, Any] = Field(default_factory=dict)
 
 

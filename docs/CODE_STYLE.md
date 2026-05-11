@@ -3,7 +3,7 @@
 ## Ngôn ngữ và style chung
 
 - Backend dùng Python 3.11+.
-- Frontend hiện là HTML/CSS/JS static để chạy nhanh, không cần build.
+- Frontend là HTML/CSS/JS static để chạy nhanh, không cần build.
 - Ưu tiên code rõ ràng, ít abstraction khi chưa có nhu cầu thật.
 - Tên biến dùng tiếng Anh trong code, UI/docs dùng tiếng Việt có dấu.
 
@@ -16,23 +16,25 @@
   - Constant path/config: `UPPER_SNAKE_CASE`.
 - JavaScript:
   - State/function/variable: `camelCase`.
-  - DOM id: mô tả rõ ý nghĩa, ví dụ `startTrainButton`, `datasetPreview`.
+  - DOM id: mô tả rõ nghĩa, ví dụ `trainDataPath`, `predictSourcePath`, `createReportButton`.
 - Job/runtime:
-  - Job id: `YYYYMMDD-HHMMSS-xxxxxxxx`.
-  - Log file: `logs/train_jobs/<job_id>.log`.
-  - Config file: `runs/gui_jobs/<job_id>/train_config.json`.
+  - Job id: `YYYYMMDD-HHMMSS-<job_type>-xxxxxxxx`.
+  - Log file: `logs/workflow_jobs/<job_id>.log`.
+  - Config file: `runs/gui_jobs/<job_id>/<job_type>_config.json`.
 
 ## Phong cách xử lý logic
 
-- Validate sớm ở API nếu thiếu `model` hoặc `data`.
-- Không import `ultralytics` ở server startup; chỉ import trong `train_runner.py` để UI vẫn mở được dù máy chưa cài đủ dependency GPU.
+- Validate sớm ở API nếu thiếu `model`, `data` hoặc `source`.
+- Không import `ultralytics` ở server startup; chỉ import trong runner để UI vẫn mở được dù máy chưa cài đủ dependency GPU.
+- Workflow dài chạy trong subprocess, không chạy trực tiếp trong request thread.
 - Lỗi runtime phải đi vào log đầy đủ, không rút gọn còn một dòng.
 - UI phải có trạng thái rõ: chưa kiểm tra, running, completed, failed, stopped.
 - Setting mới nên đi theo thứ tự:
-  1. Thêm field vào `TrainRequest`.
+  1. Thêm field vào schema tương ứng trong `schemas.py`.
   2. Thêm input có `name` trùng field vào frontend.
   3. Nếu là số, thêm key vào `numberFields` trong `frontend/app.js`.
-  4. Cập nhật docs nếu đổi hành vi.
+  4. Nếu là workflow mới, thêm mapping trong `workflowForms`.
+  5. Cập nhật docs nếu đổi hành vi.
 
 ## Comment
 

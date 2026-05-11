@@ -1,17 +1,19 @@
 # YOLO GUI
 
-Web GUI local để train Ultralytics YOLO mà không cần nhớ CLI. Dự án này hướng tới người dùng muốn chọn model, dataset, thư mục output, setting train và theo dõi log ngay trong trình duyệt.
+Web GUI local để chạy Ultralytics YOLO mà không cần nhớ CLI. Dự án hướng tới một màn hình thao tác đầy đủ cho train, validate, predict, export, kiểm tra dataset, tạo report môi trường và cài dependency trực tiếp trong trình duyệt.
 
 ## Mục tiêu
 
 - Chọn nhanh model YOLO26, YOLO11, YOLOv8 hoặc model `.pt/.yaml` tùy chỉnh.
-- Chọn dataset bằng đường dẫn tới `data.yaml`.
-- Cấu hình các tham số train phổ biến: epochs, image size, batch, device, optimizer, learning rate, augmentation, resume, cache, AMP, validation, plots.
-- Gửi thêm mọi tham số Ultralytics chưa có nút riêng qua ô JSON nâng cao.
+- Train model với dataset `data.yaml`, setting chính, hyperparameter, augmentation và `extra_args` JSON.
+- Validate model theo split `val/test/train`, lưu JSON, plots và log.
+- Predict ảnh, folder, video, camera hoặc source URL, có tùy chọn save media/txt/conf/crop.
+- Export model sang ONNX, TensorRT, OpenVINO, TorchScript, CoreML, TFLite, NCNN và các format Ultralytics hỗ trợ.
+- Kiểm tra dataset sâu hơn: đếm ảnh/label, thiếu label, label rỗng, dòng label sai, class id ngoài danh sách.
+- Tạo `data.yaml`, convert VOC XML sang YOLO txt, tính precision/recall/F1 từ thư mục label prediction và ground truth.
 - Tự kiểm tra Python, pip, NVIDIA/CUDA, PyTorch và Ultralytics ngay trên GUI.
-- Có nút cài Ultralytics, PyTorch CUDA và PyTorch CPU ngay trên GUI nếu môi trường chưa có, không bắt người dùng mở CLI.
-- Chạy job train trong tiến trình riêng để có log rõ ràng và có thể stop job.
-- Lưu log, config và kết quả theo từng job để debug/handoff dễ.
+- Có nút cài Ultralytics, PyTorch CUDA và PyTorch CPU ngay trên GUI, kèm log cài đặt.
+- Lưu config, log và kết quả theo từng job để debug/handoff dễ hơn.
 
 ## Chạy nhanh trên Windows
 
@@ -39,14 +41,18 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8765
 ## Cấu trúc chính
 
 - `yolo_gui/app.py`: FastAPI app, API cho frontend, static UI.
-- `yolo_gui/training_manager.py`: quản lý job train, subprocess, log, stop job.
-- `yolo_gui/dependency_manager.py`: kiểm tra/cài Ultralytics, PyTorch CUDA/CPU qua GUI và ghi log cài đặt.
-- `yolo_gui/train_runner.py`: tiến trình con import `ultralytics` và gọi `YOLO(...).train(...)`.
+- `yolo_gui/training_manager.py`: quản lý job chung cho `train`, `val`, `predict`, `export`.
+- `yolo_gui/workflow_runner.py`: tiến trình con gọi Ultralytics Python API theo từng workflow.
+- `yolo_gui/dataset_tools.py`: inspect/audit dataset, tạo YAML, VOC XML -> YOLO txt, metrics label.
+- `yolo_gui/system_report.py`: tạo report môi trường `.md` và `.json`.
+- `yolo_gui/dependency_manager.py`: kiểm tra/cài Ultralytics, PyTorch CUDA/CPU qua GUI.
 - `yolo_gui/schemas.py`: request/response schema.
 - `frontend/`: giao diện web static.
-- `logs/train_jobs/`: log stdout/stderr theo job.
-- `logs/dependency_installs/`: log cài Ultralytics, PyTorch CUDA/CPU từ GUI.
-- `runs/gui_jobs/`: config job và output train mặc định.
+- `logs/workflow_jobs/`: log stdout/stderr theo job.
+- `logs/dependency_installs/`: log cài Ultralytics, PyTorch CUDA/CPU.
+- `logs/system_reports/`: report môi trường.
+- `runs/gui_jobs/`: config JSON theo job.
+- `runs/train`, `runs/val`, `runs/predict`: output mặc định.
 - `docs/`: tài liệu handoff cho dev tiếp theo.
 
 ## Dataset kỳ vọng
