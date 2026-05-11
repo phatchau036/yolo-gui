@@ -12,7 +12,7 @@
 
 - `app.py`: FastAPI app, serve frontend, API health/system/models/path/dataset/train.
 - `schemas.py`: Pydantic schema cho request. Khi thêm setting YOLO mới thì thêm ở đây trước.
-- `dependency_manager.py`: kiểm tra `ultralytics`, chạy `python -m pip install ultralytics>=8.3.0` từ GUI, ghi log cài đặt.
+- `dependency_manager.py`: kiểm tra Python/pip/NVIDIA/CUDA/Torch/Ultralytics, chạy cài dependency từ GUI, ghi log cài đặt.
 - `training_manager.py`: tạo job id, ghi config, spawn subprocess, capture log, stop job.
 - `train_runner.py`: tiến trình con import `ultralytics`, gọi `YOLO(model).train(**args)`, in traceback đầy đủ khi lỗi.
 - `config.py`: đường dẫn chuẩn cho frontend, log, job, output.
@@ -27,7 +27,10 @@
 ## Runtime folders
 
 - `logs/train_jobs/`: log từng job, ví dụ `20260512-...log`.
-- `logs/dependency_installs/`: log cài dependency từ GUI, hiện có `ultralytics-install.log`.
+- `logs/dependency_installs/`: log cài dependency từ GUI:
+  - `ultralytics-install.log`
+  - `torch-cuda-install.log`
+  - `torch-cpu-install.log`
 - `runs/gui_jobs/`: config JSON theo job.
 - `runs/train/`: output train mặc định khi người dùng không chọn project.
 

@@ -33,12 +33,19 @@
 - Cài `ultralytics 8.4.48` vào Python global đang chạy server.
 - Restart server, `GET /api/health` báo `ultralytics_installed=true`.
 - `GET /api/system` thấy Torch `2.5.1+cu121`, CUDA available và GPU `NVIDIA GeForce RTX 3050 Laptop GPU` 4GB.
+- `GET /api/dependencies/status` thấy pip, NVIDIA driver `528.92`, `nvidia-smi` CUDA `12.0`, PyTorch CUDA `12.1`, GPU RTX 3050 4GB.
 - Thêm GUI dependency notice:
+  - `GET /api/dependencies/status`
+  - `GET /api/dependencies/torch`
   - `GET /api/dependencies/ultralytics`
   - `POST /api/dependencies/ultralytics/install`
+  - `POST /api/dependencies/torch/install-cuda`
+  - `POST /api/dependencies/torch/install-cpu`
   - `GET /api/dependencies/ultralytics/logs`
-  - Nút `Cài Ultralytics` và log cài đặt ngay trong giao diện.
-  - Train button chặn train nếu Ultralytics thiếu hoặc đang cài.
+  - `GET /api/dependencies/torch/logs`
+  - Card kiểm tra Python/pip, NVIDIA/CUDA, PyTorch, Ultralytics.
+  - Nút `Cài Ultralytics`, `Cài PyTorch CUDA`, `Cài PyTorch CPU` và log cài đặt ngay trong giao diện.
+  - Train button chặn train nếu PyTorch/Ultralytics thiếu hoặc dependency đang cài.
 - Chạy Playwright QA desktop/mobile:
   - Sửa xung đột class `panel-block` với Bulma.
   - Sửa mobile horizontal overflow.

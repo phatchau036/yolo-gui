@@ -97,21 +97,24 @@ async function loadModels() {
 }
 
 async function loadSystem() {
-  const [health, system] = await Promise.all([api("/api/health"), api("/api/system")]);
-  const devices = system.devices.length
-    ? system.devices.map((device) => `GPU ${device.id}: ${device.name} (${device.memory_gb}GB)`).join("\n")
-    : "Không thấy CUDA GPU";
+  const payload = await api("/api/dependencies/status");
+  const devices = payload.torch.devices.length
+    ? payload.torch.devices.map((device) => `GPU ${device.id}: ${device.name} (${device.memory_gb}GB)`).join("\n")
+    : payload.nvidia.gpus.length
+      ? payload.nvidia.gpus.map((device) => `NVIDIA: ${device.name} (${device.memory_mb}MB)`).join("\n")
+      : "Không thấy NVIDIA/CUDA GPU";
   qs("#systemStatus").textContent = [
-    `Ultralytics: ${health.ultralytics_installed ? "đã cài" : "chưa cài"}`,
-    `Torch: ${health.torch_installed ? system.torch || "đã cài" : "chưa cài"}`,
+    `Ultralytics: ${payload.ultralytics.installed ? payload.ultralytics.version || "đã cài" : "chưa cài"}`,
+    `Torch: ${payload.torch.installed ? payload.torch.version || "đã cài" : "chưa cài"}`,
+    `CUDA: ${payload.torch.cuda_available ? payload.torch.cuda_version || "available" : "chưa sẵn sàng"}`,
     devices,
   ].join("\n");
 }
 
 async function loadDependencyStatus() {
-  const payload = await api("/api/dependencies/ultralytics");
+  const payload = await api("/api/dependencies/status");
   renderDependencyStatus(payload);
-  if (payload.install.status === "running") {
+  if (payload.installing) {
     startDependencyPolling();
     await loadDependencyLog();
   } else {
@@ -125,57 +128,147 @@ function renderDependencyStatus(payload) {
   const badge = qs("#dependencyBadge");
   const title = qs("#dependencyTitle");
   const detail = qs("#dependencyDetail");
-  const installButton = qs("#installUltralyticsButton");
-  const logOutput = qs("#dependencyLogOutput");
+  const buttons = [
+    qs("#installUltralyticsButton"),
+    qs("#installTorchCudaButton"),
+    qs("#installTorchCpuButton"),
+  ];
 
   card.classList.remove("is-ready", "is-running", "has-log");
-  installButton.disabled = false;
+  buttons.forEach((button) => {
+    button.disabled = false;
+  });
+  qs("#installUltralyticsButton").querySelector("span:last-child").textContent =
+    payload.ultralytics.installed ? "Cài lại Ultralytics" : "Cài Ultralytics";
+  qs("#installTorchCudaButton").querySelector("span:last-child").textContent =
+    payload.torch.installed && payload.torch.cuda_available ? "Cài lại PyTorch CUDA" : "Cài PyTorch CUDA";
+  qs("#installTorchCpuButton").querySelector("span:last-child").textContent =
+    payload.torch.installed ? "Cài PyTorch CPU" : "Cài PyTorch CPU";
+  renderDependencyChecklist(payload);
 
-  if (payload.install.status === "running") {
+  if (payload.installing) {
     card.classList.add("is-running", "has-log");
     badge.className = "status-pill status-running";
     badge.textContent = "Đang cài";
-    title.textContent = "Đang cài Ultralytics";
+    title.textContent = "Đang cài môi trường YOLO";
     detail.textContent = `Python: ${payload.python}`;
-    installButton.disabled = true;
-    installButton.querySelector("span:last-child").textContent = "Đang cài...";
+    buttons.forEach((button) => {
+      button.disabled = true;
+    });
     return;
   }
 
-  if (payload.installed) {
+  if (payload.ultralytics.installed && payload.torch.installed && payload.torch.cuda_available) {
     card.classList.add("is-ready");
     badge.className = "status-pill status-completed";
-    badge.textContent = "Sẵn sàng";
-    title.textContent = "Ultralytics đã sẵn sàng";
-    detail.textContent = `Version: ${payload.version || "unknown"} · Python: ${payload.python}`;
-    installButton.querySelector("span:last-child").textContent = "Cài lại";
-    if (payload.install.status === "failed") {
-      card.classList.add("has-log");
-    }
+    badge.textContent = "GPU ready";
+    title.textContent = "Môi trường train GPU đã sẵn sàng";
+    detail.textContent = `Torch ${payload.torch.version || "unknown"} · CUDA ${payload.torch.cuda_version || "available"} · Ultralytics ${payload.ultralytics.version || "unknown"}`;
+    return;
+  }
+
+  if (payload.ultralytics.installed && payload.torch.installed) {
+    card.classList.add("is-ready");
+    badge.className = "status-pill status-completed";
+    badge.textContent = "CPU ready";
+    title.textContent = "Có thể train CPU, CUDA chưa sẵn sàng";
+    detail.textContent = payload.nvidia.available
+      ? "Máy có NVIDIA GPU nhưng PyTorch chưa thấy CUDA. Bấm Cài PyTorch CUDA để sửa môi trường GPU."
+      : "Không thấy NVIDIA GPU qua nvidia-smi. Vẫn có thể train CPU hoặc cài driver/GPU sau.";
     return;
   }
 
   badge.className = "status-pill status-failed";
   badge.textContent = "Thiếu";
-  title.textContent = "Thiếu Ultralytics để train YOLO";
-  detail.textContent = "Bấm Cài Ultralytics để app tự cài qua Python đang chạy server, không cần mở CLI.";
-  installButton.querySelector("span:last-child").textContent = "Cài Ultralytics";
-  if (payload.install.status === "failed") {
+  title.textContent = "Thiếu dependency để train YOLO";
+  detail.textContent = "Bấm các nút cài ngay trên GUI. App sẽ chạy pip bằng đúng Python đang chạy server.";
+  if (
+    payload.ultralytics.install.status === "failed" ||
+    payload.torch.cuda_install.status === "failed" ||
+    payload.torch.cpu_install.status === "failed"
+  ) {
     card.classList.add("has-log");
   }
 }
 
+function renderDependencyChecklist(payload) {
+  const nvidiaText = payload.nvidia.available
+    ? `${payload.nvidia.gpus.map((gpu) => gpu.name).join(", ")} · Driver ${payload.nvidia.driver_version || "unknown"}`
+    : payload.nvidia.error || "Không thấy nvidia-smi";
+  const torchText = payload.torch.installed
+    ? `${payload.torch.version || "unknown"}${payload.torch.cuda_available ? ` · CUDA ${payload.torch.cuda_version || "available"}` : " · CPU only"}`
+    : "Chưa cài";
+  const tiles = [
+    {
+      label: "Python/pip",
+      ok: payload.pip.available,
+      warn: false,
+      text: payload.pip.available ? payload.pip.version : payload.pip.error || "pip lỗi",
+    },
+    {
+      label: "NVIDIA/CUDA",
+      ok: payload.nvidia.available,
+      warn: !payload.nvidia.available,
+      text: nvidiaText,
+    },
+    {
+      label: "PyTorch",
+      ok: payload.torch.installed && payload.torch.cuda_available,
+      warn: payload.torch.installed && !payload.torch.cuda_available,
+      text: torchText,
+    },
+    {
+      label: "Ultralytics",
+      ok: payload.ultralytics.installed,
+      warn: false,
+      text: payload.ultralytics.installed ? payload.ultralytics.version || "đã cài" : "Chưa cài",
+    },
+  ];
+
+  qs("#dependencyChecklist").innerHTML = tiles
+    .map((tile) => {
+      const className = tile.ok ? "is-ok" : tile.warn ? "is-warn" : "is-bad";
+      return `<div class="check-tile ${className}"><strong>${tile.label}</strong><span>${tile.text}</span></div>`;
+    })
+    .join("");
+}
+
 async function installUltralytics() {
   const payload = await api("/api/dependencies/ultralytics/install", { method: "POST" });
-  renderDependencyStatus(payload);
+  await loadDependencyStatus();
   showToast("Đã bắt đầu cài Ultralytics trong GUI");
   startDependencyPolling();
 }
 
+async function installTorchCuda() {
+  await api("/api/dependencies/torch/install-cuda", { method: "POST" });
+  await loadDependencyStatus();
+  showToast("Đã bắt đầu cài PyTorch CUDA trong GUI");
+  startDependencyPolling();
+}
+
+async function installTorchCpu() {
+  await api("/api/dependencies/torch/install-cpu", { method: "POST" });
+  await loadDependencyStatus();
+  showToast("Đã bắt đầu cài PyTorch CPU trong GUI");
+  startDependencyPolling();
+}
+
 async function loadDependencyLog() {
-  const payload = await api("/api/dependencies/ultralytics/logs?tail=12000");
-  qs("#dependencyLogOutput").textContent = payload.log || "Chưa có log cài đặt.";
-  if (payload.log) {
+  const [ultralytics, torchCuda, torchCpu] = await Promise.all([
+    api("/api/dependencies/ultralytics/logs?tail=5000"),
+    api("/api/dependencies/torch/logs?kind=cuda&tail=5000"),
+    api("/api/dependencies/torch/logs?kind=cpu&tail=5000"),
+  ]);
+  const sections = [
+    ["Ultralytics", ultralytics.log],
+    ["PyTorch CUDA", torchCuda.log],
+    ["PyTorch CPU", torchCpu.log],
+  ].filter(([, log]) => log);
+  qs("#dependencyLogOutput").textContent = sections.length
+    ? sections.map(([name, log]) => `===== ${name} =====\n${log}`).join("\n\n")
+    : "Chưa có log cài đặt.";
+  if (sections.length) {
     qs("#dependencyNotice").classList.add("has-log");
   }
 }
@@ -288,13 +381,13 @@ function collectForm() {
 
 async function startTrain() {
   const dependency = await loadDependencyStatus();
-  if (!dependency.installed) {
+  if (!dependency.ultralytics.installed || !dependency.torch.installed) {
     qs("#dependencyNotice").scrollIntoView({ behavior: "smooth", block: "center" });
-    showToast("Cần cài Ultralytics trên GUI trước khi train.");
+    showToast("Cần cài PyTorch và Ultralytics trên GUI trước khi train.");
     return;
   }
-  if (dependency.install.status === "running") {
-    showToast("Ultralytics đang được cài. Đợi cài xong rồi train.");
+  if (dependency.installing) {
+    showToast("Môi trường đang được cài. Đợi cài xong rồi train.");
     return;
   }
   const payload = collectForm();
@@ -400,6 +493,12 @@ function bindEvents() {
   });
   qs("#installUltralyticsButton").addEventListener("click", () => {
     installUltralytics().catch((error) => showToast(error.message));
+  });
+  qs("#installTorchCudaButton").addEventListener("click", () => {
+    installTorchCuda().catch((error) => showToast(error.message));
+  });
+  qs("#installTorchCpuButton").addEventListener("click", () => {
+    installTorchCpu().catch((error) => showToast(error.message));
   });
   qs("#refreshDependencyButton").addEventListener("click", () => {
     loadDependencyStatus().catch((error) => showToast(error.message));

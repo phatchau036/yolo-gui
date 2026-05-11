@@ -8,7 +8,8 @@ Web GUI local để train Ultralytics YOLO mà không cần nhớ CLI. Dự án 
 - Chọn dataset bằng đường dẫn tới `data.yaml`.
 - Cấu hình các tham số train phổ biến: epochs, image size, batch, device, optimizer, learning rate, augmentation, resume, cache, AMP, validation, plots.
 - Gửi thêm mọi tham số Ultralytics chưa có nút riêng qua ô JSON nâng cao.
-- Tự kiểm tra và cài Ultralytics ngay trên GUI nếu môi trường chưa có, không bắt người dùng mở CLI.
+- Tự kiểm tra Python, pip, NVIDIA/CUDA, PyTorch và Ultralytics ngay trên GUI.
+- Có nút cài Ultralytics, PyTorch CUDA và PyTorch CPU ngay trên GUI nếu môi trường chưa có, không bắt người dùng mở CLI.
 - Chạy job train trong tiến trình riêng để có log rõ ràng và có thể stop job.
 - Lưu log, config và kết quả theo từng job để debug/handoff dễ.
 
@@ -39,12 +40,12 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8765
 
 - `yolo_gui/app.py`: FastAPI app, API cho frontend, static UI.
 - `yolo_gui/training_manager.py`: quản lý job train, subprocess, log, stop job.
-- `yolo_gui/dependency_manager.py`: kiểm tra/cài Ultralytics qua GUI và ghi log cài đặt.
+- `yolo_gui/dependency_manager.py`: kiểm tra/cài Ultralytics, PyTorch CUDA/CPU qua GUI và ghi log cài đặt.
 - `yolo_gui/train_runner.py`: tiến trình con import `ultralytics` và gọi `YOLO(...).train(...)`.
 - `yolo_gui/schemas.py`: request/response schema.
 - `frontend/`: giao diện web static.
 - `logs/train_jobs/`: log stdout/stderr theo job.
-- `logs/dependency_installs/`: log cài Ultralytics từ GUI.
+- `logs/dependency_installs/`: log cài Ultralytics, PyTorch CUDA/CPU từ GUI.
 - `runs/gui_jobs/`: config job và output train mặc định.
 - `docs/`: tài liệu handoff cho dev tiếp theo.
 

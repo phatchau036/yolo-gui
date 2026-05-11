@@ -11,6 +11,7 @@
   - Form cho setting phổ biến.
   - `extra_args` JSON cho toàn bộ tham số còn lại.
 - Log phải đầy đủ, đặc biệt traceback từ runner.
+- Người dùng không phải tự mở CLI để cài dependency. GUI phải kiểm tra và cài được PyTorch CUDA/CPU và Ultralytics, đồng thời hiển thị log cài đặt ngay trong app.
 
 ## Quy tắc duy trì docs
 

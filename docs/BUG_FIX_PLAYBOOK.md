@@ -23,20 +23,31 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 ## UI mở nhưng không train được
 
 1. Kiểm tra `GET /api/health`.
-2. Kiểm tra card môi trường trên GUI. Nếu thiếu Ultralytics, bấm `Cài Ultralytics`.
-3. Nếu cài Ultralytics lỗi, đọc `logs/dependency_installs/ultralytics-install.log`.
+2. Kiểm tra card môi trường trên GUI. Nếu thiếu PyTorch/Ultralytics, bấm nút cài tương ứng.
+3. Nếu cài dependency lỗi, đọc log trong `logs/dependency_installs/`.
 4. Kiểm tra `data.yaml` bằng nút `Kiểm tra`.
 5. Start job lại.
 6. Đọc `logs/train_jobs/<job_id>.log`.
 7. Đọc `runs/gui_jobs/<job_id>/train_config.json` để xem tham số thực tế đã gửi.
 
-## Nút Cài Ultralytics không chạy
+## Nút cài dependency không chạy
 
-1. Gọi `GET /api/dependencies/ultralytics` để xem trạng thái backend.
-2. Gọi `POST /api/dependencies/ultralytics/install` để xác nhận API còn hoạt động.
-3. Đọc `logs/dependency_installs/ultralytics-install.log`.
+1. Gọi `GET /api/dependencies/status` để xem trạng thái backend.
+2. Gọi API install tương ứng để xác nhận API còn hoạt động:
+   - `POST /api/dependencies/ultralytics/install`
+   - `POST /api/dependencies/torch/install-cuda`
+   - `POST /api/dependencies/torch/install-cpu`
+3. Đọc log tương ứng trong `logs/dependency_installs/`.
 4. Kiểm tra Python server đang dùng trong field `python` của API status.
 5. Nếu pip bị lỗi network hoặc quyền ghi, hiển thị nguyên lỗi đó trên GUI, không rút gọn.
+
+## CUDA không sẵn sàng
+
+1. Kiểm tra card `NVIDIA/CUDA` trong GUI.
+2. Nếu `nvidia-smi not found`, cài hoặc sửa NVIDIA driver trước.
+3. Nếu có NVIDIA GPU nhưng PyTorch báo CPU only, bấm `Cài PyTorch CUDA`.
+4. Sau khi cài xong, restart server nếu Python vẫn giữ module cũ.
+5. Kiểm tra lại `GET /api/dependencies/status`.
 
 ## Stop job không dừng
 

@@ -57,10 +57,18 @@
             <span id="dependencyBadge" class="status-pill status-starting">Đang kiểm tra</span>
             <div>
               <h3 id="dependencyTitle">Kiểm tra môi trường train</h3>
-              <p id="dependencyDetail">App đang kiểm tra Ultralytics và Python đang chạy server.</p>
+              <p id="dependencyDetail">App đang kiểm tra Python, pip, PyTorch, CUDA, GPU và Ultralytics.</p>
             </div>
           </div>
           <div class="dependency-actions">
+            <button id="installTorchCudaButton" class="button is-link" type="button">
+              <span class="icon"><i data-lucide="cpu"></i></span>
+              <span>Cài PyTorch CUDA</span>
+            </button>
+            <button id="installTorchCpuButton" class="button is-light" type="button">
+              <span class="icon"><i data-lucide="cpu"></i></span>
+              <span>Cài PyTorch CPU</span>
+            </button>
             <button id="installUltralyticsButton" class="button is-warning" type="button">
               <span class="icon"><i data-lucide="download"></i></span>
               <span>Cài Ultralytics</span>
@@ -70,6 +78,7 @@
               <span>Kiểm tra lại</span>
             </button>
           </div>
+          <div id="dependencyChecklist" class="dependency-checklist"></div>
           <pre id="dependencyLogOutput" class="dependency-log">Chưa có log cài đặt.</pre>
         </section>
 

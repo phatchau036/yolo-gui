@@ -19,6 +19,12 @@
   - Backend `DependencyManager` chạy pip install và ghi `logs/dependency_installs/ultralytics-install.log`.
   - Frontend có card trạng thái môi trường, nút `Cài Ultralytics`, nút kiểm tra lại và vùng log.
   - `Bắt đầu train` tự kiểm tra dependency, nếu thiếu thì cuộn tới card cài đặt thay vì để runner fail.
+- Mở rộng card môi trường theo yêu cầu tiếp theo:
+  - Check Python/pip, NVIDIA/CUDA qua `nvidia-smi`, PyTorch CUDA, GPU list và Ultralytics.
+  - Thêm nút `Cài PyTorch CUDA` và `Cài PyTorch CPU`.
+  - Thêm log `torch-cuda-install.log` và `torch-cpu-install.log`.
+  - API status xác nhận máy hiện có RTX 3050 Laptop GPU, driver `528.92`, `nvidia-smi` CUDA `12.0`, PyTorch `2.5.1+cu121`, Torch CUDA `12.1`, `cuda_available=true`.
+  - QA không chạy nút cài lại PyTorch vì có thể tải/cài lại gói CUDA lớn; đã kiểm tra API/status/UI và giữ nút cho người dùng bấm khi cần repair.
 - Playwright QA:
   - Desktop layout pass sau khi đổi custom class từ `panel-block` sang `work-panel`.
   - Mobile không còn horizontal overflow sau khi thêm `min-width:0` và width constraints.
