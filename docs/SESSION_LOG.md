@@ -11,7 +11,10 @@
   - `GET /api/health` pass.
   - `GET /api/models` pass.
   - `POST /api/datasets/inspect` với YAML tạm trả về `class_count=1`.
-  - `POST /api/train/start` tạo job, ghi log, fail đúng kỳ vọng vì thiếu `ultralytics`.
+  - `POST /api/train/start` tạo job, ghi log, fail đúng kỳ vọng lúc đầu vì thiếu `ultralytics`.
+- Cài `ultralytics 8.4.48` vào Python global đang chạy server.
+- Restart server, `GET /api/health` báo `ultralytics_installed=true`.
+- `GET /api/system` báo CUDA available, Torch `2.5.1+cu121`, GPU `NVIDIA GeForce RTX 3050 Laptop GPU` 4GB.
 - Playwright QA:
   - Desktop layout pass sau khi đổi custom class từ `panel-block` sang `work-panel`.
   - Mobile không còn horizontal overflow sau khi thêm `min-width:0` và width constraints.
@@ -20,6 +23,6 @@
 
 ### Ghi chú kỹ thuật
 
-- App chưa chạy train thật trong phiên này vì chưa có dataset thật và môi trường server hiện chưa cài `ultralytics`.
+- App chưa chạy train thật trong phiên này vì chưa có dataset thật.
 - Kiểm tra cú pháp Python bằng `python -m compileall -q yolo_gui` đã pass.
-- `torch` global hiện có và thấy GPU `NVIDIA GeForce RTX 3050 Laptop GPU (4GB)`.
+- Môi trường server hiện có `ultralytics`, `torch` global và thấy GPU `NVIDIA GeForce RTX 3050 Laptop GPU (4GB)`.

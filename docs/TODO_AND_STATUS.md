@@ -29,7 +29,10 @@
 - Chạy API smoke với `data.yaml` tạm:
   - Dataset inspect trả về `class_count=1`.
   - Job được tạo và log được ghi.
-  - Runner fail đúng kỳ vọng vì môi trường server hiện chưa cài `ultralytics`.
+  - Runner fail đúng kỳ vọng trước khi cài `ultralytics`, log có traceback đầy đủ.
+- Cài `ultralytics 8.4.48` vào Python global đang chạy server.
+- Restart server, `GET /api/health` báo `ultralytics_installed=true`.
+- `GET /api/system` thấy Torch `2.5.1+cu121`, CUDA available và GPU `NVIDIA GeForce RTX 3050 Laptop GPU` 4GB.
 - Chạy Playwright QA desktop/mobile:
   - Sửa xung đột class `panel-block` với Bulma.
   - Sửa mobile horizontal overflow.
@@ -51,6 +54,6 @@
 
 ## Rủi ro hiện tại
 
-- Chưa chạy train thật vì cần dataset/model và cài `ultralytics` trong môi trường server.
+- Chưa chạy train thật vì cần dataset thật. Môi trường hiện đã có `ultralytics`, Torch CUDA và GPU.
 - Preset YOLO26 phụ thuộc version Ultralytics hiện tại; nếu version cũ không hỗ trợ thì người dùng chọn YOLO11/YOLOv8 hoặc nhập custom model.
 - Browser không có quyền mở file picker native, nên app dùng backend path browser thay thế.
