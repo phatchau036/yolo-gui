@@ -47,6 +47,7 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
 Tab `Phiên bản` dùng `VersionManager` để gom thông tin:
 
 - Version hiện tại lấy từ `yolo_gui.__version__`.
+- Môi trường đang chạy trả về `Local` hoặc `Google Colab`.
 - Changelog đọc từ `CHANGELOG.md`.
 - Commit local lấy bằng `git rev-parse`.
 - Commit mới trên GitHub lấy bằng `git ls-remote`.
@@ -58,6 +59,8 @@ Frontend gọi:
 - `POST /api/version/update`: chạy `git pull --ff-only <remote> <branch>`.
 
 Không tự cập nhật nếu repo đang có file đã sửa (`git status --porcelain` không rỗng), để tránh ghi đè thay đổi của người dùng. Sau khi update, GUI báo người dùng tải lại trang; nếu backend Python thay đổi, cần restart app hoặc chạy lại cell Colab.
+
+Riêng Colab: sau khi update source, người dùng phải dừng cell `Chạy YOLO GUI`, chạy lại cell và mở link `trycloudflare.com` mới vì backend/tunnel đang sống trong cell cũ.
 
 ## Luồng Google Colab
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.1 - 2026-05-12
+
+- Tab `Phiên bản` hiển thị môi trường đang chạy: Local hoặc Google Colab.
+- Luồng update trên Colab có hướng dẫn riêng: dừng cell, chạy lại cell `Chạy YOLO GUI`, rồi mở link tunnel mới.
+- Bổ sung hướng dẫn Colab cho mục changelog/update trong GUI.
+- Chỉnh responsive mobile để thanh điều hướng và quick action không tạo cuộn ngang ngoài ý muốn.
+
 ## v0.4.0 - 2026-05-12
 
 - Thêm tab `Phiên bản` trong GUI.

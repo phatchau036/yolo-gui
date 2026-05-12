@@ -113,6 +113,8 @@
   - Thêm `CHANGELOG.md`.
   - Thêm API kiểm tra phiên bản và cập nhật bằng `git pull --ff-only`.
   - Ghi log update vào `logs/updates/`.
+  - Bản Google Colab cũng dùng tab này; sau update cần chạy lại cell để nạp source và tunnel mới.
+  - Mobile không dùng thanh cuộn ngang cho nav/quick action để tránh cảm giác vỡ form.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q yolo_gui` pass.

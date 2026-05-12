@@ -46,7 +46,7 @@ Dùng để chạy nhiều bước bằng một nút. Ví dụ `Full pipeline` s
 
 ### Phiên bản
 
-Dùng để xem GUI đang ở bản nào, đọc changelog và kiểm tra bản mới trên GitHub. Nếu có bản mới và thư mục dự án không có file đang chỉnh sửa, bấm `Cập nhật ngay` để GUI tự tải bản mới. Sau khi cập nhật, tải lại trang; nếu app báo cần restart thì chạy lại `start.ps1` hoặc cell Colab.
+Dùng để xem GUI đang ở bản nào, đang chạy ở Local hay Google Colab, đọc changelog và kiểm tra bản mới trên GitHub. Nếu có bản mới và thư mục dự án không có file đang chỉnh sửa, bấm `Cập nhật ngay` để GUI tự tải bản mới. Sau khi cập nhật, tải lại trang; trên Colab thì dừng cell YOLO GUI, chạy lại cell và mở link tunnel mới.
 
 ### Tiến trình
 

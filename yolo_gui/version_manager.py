@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import subprocess
 import urllib.request
+import os
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -40,6 +41,7 @@ class VersionManager:
         latest_version = latest_version or __version__
         return {
             "app_name": "YOLO GUI",
+            "runtime": "Google Colab" if self.is_colab_runtime() else "Local",
             "current_version": __version__,
             "latest_version": latest_version,
             "update_available": update_available,
@@ -120,7 +122,7 @@ class VersionManager:
             "before": before,
             "after": after,
             "restart_recommended": True,
-            "message": "Đã cập nhật. Hãy tải lại trang; nếu backend thay đổi, hãy restart app hoặc chạy lại cell Colab.",
+            "message": self.update_message(),
         }
 
     def git(self, args: list[str], timeout: int = 15) -> GitResult:
@@ -193,3 +195,20 @@ class VersionManager:
         path = UPDATE_LOG_DIR / f"update-{timestamp}.log"
         path.write_text(result.text or "No git output.", encoding="utf-8")
         return path
+
+    def update_message(self) -> str:
+        if self.is_colab_runtime():
+            return (
+                "Đã cập nhật source. Trên Google Colab, hãy dừng cell YOLO GUI, chạy lại cell "
+                "`Chạy YOLO GUI`, rồi mở link tunnel mới để dùng bản vừa cập nhật."
+            )
+        return "Đã cập nhật. Hãy tải lại trang; nếu backend thay đổi, hãy restart app."
+
+    def is_colab_runtime(self) -> bool:
+        if "COLAB_RELEASE_TAG" in os.environ:
+            return True
+        try:
+            import google.colab  # type: ignore  # noqa: F401
+        except Exception:  # noqa: BLE001 - runtime detection is best-effort.
+            return False
+        return True

@@ -242,3 +242,18 @@
   - Hiển thị changelog.
   - Có nút `Kiểm tra lại` và `Cập nhật ngay`.
 - Cập nhật docs handoff: `README`, `REPO_MAP`, `PROJECT_LOGIC`, `LOGGING_AND_DEBUGGING`, `USER_GUIDE`, `PROJECT_MEMORY`, `TODO_AND_STATUS`.
+
+## 2026-05-12 - Làm rõ tab Phiên bản cho Google Colab
+
+- Nhận feedback: bản chạy Google Colab cũng phải có mục phiên bản/changelog/update.
+- Vì Colab dùng cùng frontend/backend, tab `Phiên bản` đã dùng chung cho Windows và Colab.
+- Bump version lên `0.4.1`.
+- `VersionManager` trả thêm `runtime`: `Local` hoặc `Google Colab`.
+- Sau khi update trên Colab, thông báo GUI hướng dẫn dừng cell, chạy lại cell `Chạy YOLO GUI` và mở link tunnel mới.
+- Cập nhật `docs/COLAB_GUIDE.md`, `README.md`, `PROJECT_LOGIC.md`, `USER_GUIDE.md`, `CHANGELOG.md`.
+
+## 2026-05-12 - QA mobile cho tab Phiên bản
+
+- Kiểm tra tab `Phiên bản` trên server `127.0.0.1:8771`.
+- Desktop xác nhận `v0.4.1`, môi trường `Local`, changelog đầu tiên `v0.4.1`, console không có warning/error.
+- Chỉnh CSS mobile để nav và quick action chuyển sang grid, tránh cảm giác vỡ form hoặc phải kéo ngang để thấy nút chính.

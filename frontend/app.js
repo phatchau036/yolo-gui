@@ -373,6 +373,7 @@ function renderVersionStatus(payload) {
   qs("#versionCurrent").textContent = current;
   qs("#versionFactCurrent").textContent = current;
   qs("#versionFactLatest").textContent = latest;
+  qs("#versionFactRuntime").textContent = shortValue(payload.runtime);
   qs("#versionFactBranch").textContent = shortValue(payload.local_branch);
   qs("#versionFactCommit").textContent = shortValue(payload.local_commit_short);
   qs("#versionFactRemote").textContent = shortValue(payload.remote_commit_short);

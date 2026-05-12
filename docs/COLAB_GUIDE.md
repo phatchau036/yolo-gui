@@ -36,8 +36,24 @@ Script sẽ tự làm các bước sau:
 2. Vào tab `Dữ liệu` để chọn dataset và tạo cấu hình bằng GUI.
 3. Vào tab `Huấn luyện` để chọn model, mức huấn luyện và bấm chạy.
 4. Xem tiến trình ở tab `Tiến trình`.
+5. Vào tab `Phiên bản` để xem changelog, kiểm tra bản mới và cập nhật source từ GitHub khi cần.
 
 Dataset có thể nằm trong `/content`, Google Drive đã mount, hoặc thư mục bạn upload lên Colab.
+
+## Cập Nhật Phiên Bản Trên Colab
+
+Tab `Phiên bản` cũng có trong bản chạy Google Colab vì Colab dùng cùng web GUI với Windows.
+
+Khi có bản mới:
+
+1. Mở tab `Phiên bản`.
+2. Bấm `Cập nhật ngay`.
+3. Đợi GUI báo đã cập nhật source.
+4. Quay lại notebook Colab, dừng cell đang chạy YOLO GUI.
+5. Chạy lại cell `Chạy YOLO GUI`.
+6. Mở link `trycloudflare.com` mới.
+
+Lý do cần chạy lại cell: Cloudflare Tunnel và backend Python đang sống trong cell hiện tại. Sau khi source đổi, chạy lại cell giúp Colab nạp code backend/frontend mới nhất và tạo tunnel mới.
 
 ## Ghi Chú Về Link Cloudflare
 
@@ -54,6 +70,7 @@ Trong Colab, log nằm tại:
 - `logs/colab/cloudflared.log`: log Cloudflare Tunnel.
 - `logs/workflow_jobs/`: log train/val/predict/export.
 - `logs/dependency_installs/`: log cài PyTorch hoặc Ultralytics từ GUI.
+- `logs/updates/`: log khi bấm cập nhật ở tab `Phiên bản`.
 
 Nếu link tunnel không hiện, xem `logs/colab/cloudflared.log`.
 
@@ -66,3 +83,4 @@ Nếu GUI mở được nhưng train lỗi, xem tab `Tiến trình` hoặc file 
 - Link `trycloudflare.com` không mở: chạy lại cell để lấy tunnel mới.
 - Dataset trong Google Drive không thấy: mount Drive trước, rồi chọn đường dẫn trong `/content/drive/MyDrive/...`.
 - Cài package lâu: lần đầu Colab phải cài dependency, các lần sau cùng runtime sẽ nhanh hơn.
+- Cập nhật xong nhưng giao diện chưa đổi: dừng cell YOLO GUI, chạy lại cell và mở link tunnel mới.
