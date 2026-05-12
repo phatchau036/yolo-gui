@@ -124,6 +124,7 @@
   - Mobile cũng hiển thị thẻ `Colab hiện tại` dạng gọn, không ẩn hướng dẫn CPU/GPU.
   - Tab `Dự đoán` giữ người dùng tại chỗ, hiển thị progress bar và preview ảnh/video output sau khi job xong.
   - Tab `Phiên bản` có nút `Sao lưu rồi cập nhật` khi repo có file đã sửa.
+  - Sidebar header hiện nút `Update now` ngay cạnh version khi bản hiện tại thấp hơn bản mới nhất.
   - Sửa lỗi panel `Tạo data.yaml` bị chồng icon tooltip lên chữ.
   - Căn lại dấu `?` trong `Hướng dẫn > Các khái niệm hay gặp` để mọi card dùng cùng vị trí icon, không lệch theo dòng chữ.
   - Mobile không dùng thanh cuộn ngang cho nav/quick action để tránh cảm giác vỡ form.

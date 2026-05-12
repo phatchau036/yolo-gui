@@ -341,3 +341,15 @@
 - Thêm `dependencyActionsLocked` và guard click cho các hành động cài dependency, tránh gửi nhiều lệnh cài trùng khi người dùng bấm nhanh.
 - CSS thêm trạng thái `.dependency-card.is-action-locked` để khóa pointer event của cụm nút và làm nút mờ rõ ràng trong lúc `is-checking` hoặc `is-running`.
 - Trạng thái lỗi vẫn chỉ mở lại nút `Kiểm tra lại`, còn các nút cài tiếp tục khóa cho tới khi kiểm tra môi trường thành công.
+
+## 2026-05-12 - Update now ngay dưới version sidebar
+
+- Nhận feedback: nếu phiên bản hiện tại thấp hơn bản mới nhất thì phải hiện luôn `Update now` ở vùng version dưới logo sidebar, không bắt người dùng tự vào tab `Phiên bản`.
+- Bump version lên `0.4.10`.
+- Thêm `brandUpdateButton` cạnh `brandVersion` trong sidebar header.
+- `renderVersionStatus()` so sánh version dạng số bằng `compareVersionStrings()` để xử lý đúng `0.4.10` lớn hơn `0.4.9`.
+- Khi có bản mới:
+  - Repo sạch: nút sidebar gọi cùng luồng `updateVersion()`.
+  - Repo có file đã sửa nhưng có thể stash: nút sidebar gọi `saveAndUpdateVersion()`.
+  - Trường hợp không đủ điều kiện tự update: nút sidebar mở tab `Phiên bản` để người dùng xem lý do.
+- CSS giữ nút nhỏ, dạng pill màu vàng, nằm trong header sidebar và không làm vỡ layout mobile.

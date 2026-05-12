@@ -434,8 +434,36 @@ function shortValue(value, fallback = "-") {
   return value ? String(value) : fallback;
 }
 
+function compareVersionStrings(current, latest) {
+  const currentParts = String(current || "")
+    .replace(/^v/i, "")
+    .split(/[^\d]+/)
+    .filter(Boolean)
+    .map(Number);
+  const latestParts = String(latest || "")
+    .replace(/^v/i, "")
+    .split(/[^\d]+/)
+    .filter(Boolean)
+    .map(Number);
+  const length = Math.max(currentParts.length, latestParts.length);
+  for (let index = 0; index < length; index += 1) {
+    const currentPart = currentParts[index] || 0;
+    const latestPart = latestParts[index] || 0;
+    if (currentPart !== latestPart) return currentPart < latestPart ? -1 : 1;
+  }
+  return 0;
+}
+
 function isColabRuntime(runtime = state.runtime) {
   return runtime === "Google Colab";
+}
+
+function setBrandUpdateBusy(busy) {
+  const button = qs("#brandUpdateButton");
+  if (!button) return;
+  button.disabled = busy;
+  button.setAttribute("aria-busy", busy ? "true" : "false");
+  button.querySelector("span:not(.icon)").textContent = busy ? "Updating..." : "Update now";
 }
 
 function renderVersionStatus(payload) {
@@ -445,11 +473,29 @@ function renderVersionStatus(payload) {
   const current = `v${payload.current_version || "?"}`;
   const latest = payload.latest_version ? `v${payload.latest_version}` : "Chưa rõ";
   const brandVersion = qs("#brandVersion");
+  const brandUpdateButton = qs("#brandUpdateButton");
   const needsSaveBeforeUpdate = Boolean(payload.update_available && payload.can_save_and_update);
+  const versionBehind = compareVersionStrings(payload.current_version, payload.latest_version) < 0;
+  const canRunSidebarUpdate = Boolean(payload.can_update || needsSaveBeforeUpdate);
 
   state.runtime = payload.runtime || null;
   if (brandVersion) {
     brandVersion.textContent = current;
+    brandVersion.title = versionBehind ? `Bản mới nhất: ${latest}` : "Phiên bản GUI hiện tại";
+  }
+  if (brandUpdateButton) {
+    const showSidebarUpdate = Boolean(versionBehind || (payload.update_available && canRunSidebarUpdate));
+    brandUpdateButton.classList.toggle("is-hidden", !showSidebarUpdate);
+    brandUpdateButton.disabled = false;
+    brandUpdateButton.dataset.updateMode = payload.can_update ? "direct" : needsSaveBeforeUpdate ? "save" : "version";
+    brandUpdateButton.title = payload.can_update
+      ? `Cập nhật YOLO GUI lên ${latest}`
+      : needsSaveBeforeUpdate
+        ? `Có bản mới ${latest}. GUI sẽ sao lưu thay đổi local rồi cập nhật.`
+        : showSidebarUpdate
+          ? `Có bản mới ${latest}. Mở tab Phiên bản để xem lý do chưa cập nhật tự động được.`
+        : "Bạn đang dùng phiên bản mới nhất.";
+    brandUpdateButton.querySelector("span:not(.icon)").textContent = "Update now";
   }
   qs("#versionCurrent").textContent = current;
   qs("#versionFactCurrent").textContent = current;
@@ -529,35 +575,67 @@ async function loadVersion() {
 async function updateVersion() {
   const updateButton = qs("#updateVersionButton");
   updateButton.disabled = true;
+  setBrandUpdateBusy(true);
   qs("#versionUpdateLog").textContent = "Đang cập nhật từ GitHub...\nKhông đóng app trong lúc cập nhật.";
-  const payload = await api("/api/version/update", { method: "POST" });
-  qs("#versionUpdateLog").textContent = [
-    payload.message || "Đã chạy cập nhật.",
-    payload.log_path ? `Log: ${payload.log_path}` : null,
-    "",
-    payload.log || "",
-  ].filter(Boolean).join("\n");
-  renderVersionStatus(payload.after);
-  showToast(payload.message || "Đã cập nhật phiên bản");
+  try {
+    const payload = await api("/api/version/update", { method: "POST" });
+    qs("#versionUpdateLog").textContent = [
+      payload.message || "Đã chạy cập nhật.",
+      payload.log_path ? `Log: ${payload.log_path}` : null,
+      "",
+      payload.log || "",
+    ].filter(Boolean).join("\n");
+    renderVersionStatus(payload.after);
+    showToast(payload.message || "Đã cập nhật phiên bản");
+  } finally {
+    setBrandUpdateBusy(false);
+  }
 }
 
 async function saveAndUpdateVersion() {
   const button = qs("#saveAndUpdateVersionButton");
   button.disabled = true;
+  setBrandUpdateBusy(true);
   qs("#versionUpdateLog").textContent = [
     "Đang sao lưu thay đổi local rồi cập nhật từ GitHub...",
     "Không đóng app trong lúc cập nhật.",
   ].join("\n");
-  const payload = await api("/api/version/save-and-update", { method: "POST" });
-  qs("#versionUpdateLog").textContent = [
-    payload.message || "Đã sao lưu thay đổi và cập nhật.",
-    payload.stash_message ? `Nhãn sao lưu: ${payload.stash_message}` : null,
-    payload.log_path ? `Log: ${payload.log_path}` : null,
-    "",
-    payload.log || "",
-  ].filter(Boolean).join("\n");
-  renderVersionStatus(payload.after);
-  showToast(payload.message || "Đã sao lưu và cập nhật phiên bản");
+  try {
+    const payload = await api("/api/version/save-and-update", { method: "POST" });
+    qs("#versionUpdateLog").textContent = [
+      payload.message || "Đã sao lưu thay đổi và cập nhật.",
+      payload.stash_message ? `Nhãn sao lưu: ${payload.stash_message}` : null,
+      payload.log_path ? `Log: ${payload.log_path}` : null,
+      "",
+      payload.log || "",
+    ].filter(Boolean).join("\n");
+    renderVersionStatus(payload.after);
+    showToast(payload.message || "Đã sao lưu và cập nhật phiên bản");
+  } finally {
+    setBrandUpdateBusy(false);
+  }
+}
+
+function runBrandUpdate() {
+  const button = qs("#brandUpdateButton");
+  const mode = button.dataset.updateMode;
+  if (mode === "direct") {
+    updateVersion().catch((error) => {
+      showToast(error.message);
+      qs("#versionUpdateLog").textContent = error.message;
+      loadVersion().catch(() => {});
+    });
+    return;
+  }
+  if (mode === "save") {
+    saveAndUpdateVersion().catch((error) => {
+      showToast(error.message);
+      qs("#versionUpdateLog").textContent = error.message;
+      loadVersion().catch(() => {});
+    });
+    return;
+  }
+  setActiveSection("version");
 }
 
 function friendlyModelLabel(model) {
@@ -1698,6 +1776,7 @@ function bindEvents() {
   qs("#checkVersionButton").addEventListener("click", () => {
     loadVersion().catch((error) => showToast(error.message));
   });
+  qs("#brandUpdateButton").addEventListener("click", runBrandUpdate);
   qs("#updateVersionButton").addEventListener("click", () => {
     updateVersion().catch((error) => {
       showToast(error.message);

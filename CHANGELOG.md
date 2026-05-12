@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.10 - 2026-05-12
+
+- Sidebar header hiển thị nút `Update now` ngay cạnh phiên bản khi GUI phát hiện phiên bản hiện tại thấp hơn bản mới nhất trên GitHub.
+- Nút `Update now` dùng lại luồng cập nhật của tab `Phiên bản`: repo sạch thì chạy `Cập nhật ngay`, repo dirty thì chạy `Sao lưu rồi cập nhật`, còn trường hợp chưa đủ điều kiện sẽ mở tab `Phiên bản` để xem lý do.
+- Thêm so sánh version dạng số để nhận đúng các bản như `0.4.10` lớn hơn `0.4.9`.
+
 ## v0.4.9 - 2026-05-12
 
 - Khóa toàn bộ nút cài/kiểm tra dependency trong lúc GUI đang kiểm tra môi trường YOLO để tránh người dùng bấm nhiều lần gây job cài trùng.
