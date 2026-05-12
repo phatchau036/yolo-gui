@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.12 - 2026-05-12
+
+- Sửa vị trí panel `Kết quả dự đoán`: thanh đang chạy và preview ảnh/video giờ nằm ngay trong tab `Dự đoán`, sát phần đầu form.
+- Khi bấm `Bắt đầu dự đoán`, GUI vẫn giữ người dùng ở tab `Dự đoán`, tự scroll tới thanh tiến trình và không nhảy sang tab log.
+- Panel kết quả đổi thành dạng inline trong form, tránh bị đặt nhầm dưới tab huấn luyện/đánh giá nên người dùng không thấy tiến trình.
+
 ## v0.4.11 - 2026-05-12
 
 - Sửa sidebar desktop bị tạo khoảng trống bên trái khi scroll sâu ở các trang dài như `Phiên bản`.

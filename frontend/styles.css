@@ -912,21 +912,61 @@ body {
   margin-top: 12px;
 }
 
-.predict-run-panel {
+.predict-run-panel,
+.predict-inline-panel {
   border-color: rgba(15, 118, 110, 0.2);
   background: linear-gradient(180deg, #ffffff, #f6fbfa);
 }
 
-.predict-run-panel.is-running .panel-heading-row {
+.predict-inline-panel {
+  margin: 14px 0 18px;
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.predict-inline-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(15, 118, 110, 0.12);
+}
+
+.predict-inline-head h3,
+.predict-inline-head p {
+  margin: 0;
+}
+
+.predict-inline-head h3 {
+  color: #17211f;
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.predict-inline-head p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 5px;
+}
+
+.predict-run-panel.is-running .panel-heading-row,
+.predict-inline-panel.is-running .predict-inline-head {
   border-bottom-color: rgba(15, 118, 110, 0.18);
 }
 
-.predict-run-panel.is-completed {
+.predict-run-panel.is-completed,
+.predict-inline-panel.is-completed {
   border-color: rgba(20, 184, 166, 0.36);
+  background: linear-gradient(180deg, #ffffff, #f0fdfa);
 }
 
-.predict-run-panel.is-failed {
+.predict-run-panel.is-failed,
+.predict-inline-panel.is-failed {
   border-color: rgba(239, 68, 68, 0.3);
+  background: linear-gradient(180deg, #ffffff, #fff7f7);
 }
 
 .predict-progress {
@@ -947,16 +987,19 @@ body {
   transition: width 0.2s ease;
 }
 
-.predict-run-panel.is-running .predict-progress span {
+.predict-run-panel.is-running .predict-progress span,
+.predict-inline-panel.is-running .predict-progress span {
   width: 44%;
   animation: predict-progress 1.15s ease-in-out infinite;
 }
 
-.predict-run-panel.is-completed .predict-progress span {
+.predict-run-panel.is-completed .predict-progress span,
+.predict-inline-panel.is-completed .predict-progress span {
   width: 100%;
 }
 
-.predict-run-panel.is-failed .predict-progress span {
+.predict-run-panel.is-failed .predict-progress span,
+.predict-inline-panel.is-failed .predict-progress span {
   width: 100%;
   background: #ef4444;
 }
@@ -2326,6 +2369,11 @@ body {
 
   .section-label small {
     text-align: left;
+  }
+
+  .predict-inline-head {
+    flex-direction: column;
+    gap: 10px;
   }
 
   .quick-switch {

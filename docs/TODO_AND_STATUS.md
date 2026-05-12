@@ -123,6 +123,7 @@
   - Sidebar nhận diện Google Colab trong chính API dependency, đổi tiêu đề thành `Colab hiện tại` và hướng dẫn bật GPU runtime khi đang chạy CPU.
   - Mobile cũng hiển thị thẻ `Colab hiện tại` dạng gọn, không ẩn hướng dẫn CPU/GPU.
   - Tab `Dự đoán` giữ người dùng tại chỗ, hiển thị progress bar và preview ảnh/video output sau khi job xong.
+  - Panel progress/preview dự đoán nằm ngay trong tab `Dự đoán`, sát đầu form, không còn đặt nhầm ngoài section.
   - Tab `Phiên bản` có nút `Sao lưu rồi cập nhật` khi repo có file đã sửa.
   - Sidebar header hiện nút `Update now` ngay cạnh version khi bản hiện tại thấp hơn bản mới nhất.
   - Sidebar desktop bám cố định theo viewport khi scroll trang dài, không tạo khoảng trống bên trái.

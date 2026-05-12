@@ -362,3 +362,13 @@
 - `.app-shell` vẫn giữ cột trái 256px và `.workspace` được ghim vào cột 2 để nội dung không chui dưới sidebar fixed.
 - Media `max-width: 1180px` trả sidebar về `position: static`, `width: 100%`, `height: auto` để tablet/mobile vẫn dùng layout một cột.
 - Sidebar vẫn `overflow-y: auto`, nên màn hình thấp vẫn cuộn nội bộ được mà nền không bị hụt.
+
+## 2026-05-12 - Predict giữ tab và hiện kết quả tại chỗ
+
+- Nhận feedback: ở phần `Dự đoán`, khi chạy không được nhảy qua log liền; phải hiện thanh đang chạy trong tab hiện tại và xong thì hiện ảnh ra luôn.
+- Bump version lên `0.4.12`.
+- Kiểm tra JS: `startWorkflow("predict")` đã return trước `setActiveSection("jobs")`, nên không còn chủ động chuyển qua tab log.
+- Sửa lỗi layout chính: `#predictRunPanel` đang nằm ngoài `section-predict`, khiến người dùng ở tab `Dự đoán` không thấy thanh tiến trình sau khi bấm chạy.
+- Chuyển `#predictRunPanel` vào trong `predictForm`, ngay dưới mô tả đầu form, và đổi sang class `predict-inline-panel`.
+- CSS thêm `predict-inline-head` và style running/completed/failed cho panel inline để đang chạy có progress bar, hoàn tất có preview ảnh/video tại chỗ.
+- Nút `Xem log đầy đủ` vẫn có trong panel nhưng chỉ là hành động phụ khi người dùng muốn xem chi tiết lỗi/log.
