@@ -372,3 +372,12 @@
 - Chuyển `#predictRunPanel` vào trong `predictForm`, ngay dưới mô tả đầu form, và đổi sang class `predict-inline-panel`.
 - CSS thêm `predict-inline-head` và style running/completed/failed cho panel inline để đang chạy có progress bar, hoàn tất có preview ảnh/video tại chỗ.
 - Nút `Xem log đầy đủ` vẫn có trong panel nhưng chỉ là hành động phụ khi người dùng muốn xem chi tiết lỗi/log.
+
+## 2026-05-12 - Sidebar desktop thấp không dùng scrollbar nội bộ
+
+- Nhận feedback: card `Colab hiện tại` trong sidebar bị kẹt trong một vùng scroll riêng, nhìn như bị cắt ở đáy.
+- Bump version lên `0.4.13`.
+- Mở rộng media query compact sidebar từ `max-height: 760px` lên `max-height: 880px` để áp dụng cho màn laptop/desktop thấp như 768px.
+- Giảm nhẹ `side-panel` padding/gap, nav item height/padding, system card padding và font/line-height trong `system-lines`.
+- Rút gọn các dòng sidebar như `Train`, `GPU`, `Bật GPU` để card không bị quấn nhiều dòng; hướng dẫn dài vẫn giữ trong tab `Cài đặt`.
+- Mục tiêu: sidebar vẫn fixed theo viewport, nhưng toàn bộ nội dung chính của sidebar vừa trong chiều cao màn hình phổ biến, không sinh scrollbar nội bộ khó chịu.

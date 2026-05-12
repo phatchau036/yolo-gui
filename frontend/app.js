@@ -662,22 +662,25 @@ function runtimeFromStatus(payload) {
 
 function formatGpuDevices(torchDevices, nvidiaGpus) {
   if (torchDevices.length) {
-    return torchDevices.map((device) => `GPU ${device.id}: ${device.name} (${device.memory_gb}GB)`).join("\n");
+    return torchDevices.map((device) => `GPU: ${device.name} (${device.memory_gb}GB)`).join("\n");
   }
   if (nvidiaGpus.length) {
-    return nvidiaGpus.map((device) => `NVIDIA: ${device.name} (${device.memory_mb}MB)`).join("\n");
+    return nvidiaGpus.map((device) => {
+      const memoryGb = device.memory_mb ? `${Math.round(device.memory_mb / 1024)}GB` : "VRAM chưa rõ";
+      return `GPU: ${device.name} (${memoryGb})`;
+    }).join("\n");
   }
-  return "Không thấy NVIDIA/CUDA GPU";
+  return "GPU: chưa thấy NVIDIA/CUDA";
 }
 
 function colabGpuHelp(payload, torchDevices, nvidiaGpus) {
   if (payload.torch?.cuda_available && torchDevices.length) {
-    return `GPU Colab: ${torchDevices.map((device) => `${device.name} (${device.memory_gb}GB)`).join(", ")}`;
+    return `GPU: ${torchDevices.map((device) => `${device.name} (${device.memory_gb}GB)`).join(", ")}`;
   }
   if (payload.nvidia?.available || nvidiaGpus.length) {
-    return "GPU Colab: Colab đã có GPU NVIDIA nhưng PyTorch đang chạy CPU. Vào tab Cài đặt rồi bấm Cài PyTorch CUDA.";
+    return "GPU: có NVIDIA, PyTorch đang CPU";
   }
-  return "GPU Colab: chưa bật GPU runtime. Trong Colab bấm Runtime > Change runtime type > GPU, rồi chạy lại cell YOLO GUI.";
+  return "GPU: chưa bật runtime GPU";
 }
 
 function renderSystemStatus(payload) {
@@ -692,9 +695,11 @@ function renderSystemStatus(payload) {
         "Môi trường: Google Colab",
         `Ultralytics: ${packageStatus(payload.ultralytics)}`,
         `PyTorch: ${packageStatus(payload.torch)}`,
-        `Chế độ train: ${payload.torch?.cuda_available ? "GPU sẵn sàng" : "CPU, vẫn chạy được nhưng chậm"}`,
+        `Train: ${payload.torch?.cuda_available ? "GPU sẵn sàng" : "CPU, chậm hơn"}`,
         colabGpuHelp(payload, torchDevices, nvidiaGpus),
+        payload.torch?.cuda_available ? null : "Bật GPU: Runtime > GPU",
       ]
+        .filter(Boolean)
     : [
         `Môi trường: ${runtime}`,
         `Ultralytics: ${packageStatus(payload.ultralytics)}`,

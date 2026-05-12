@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.13 - 2026-05-12
+
+- Sửa sidebar desktop trên màn thấp bị hiện scrollbar nội bộ ở card `Colab hiện tại`/`Máy hiện tại`.
+- Mở rộng compact sidebar cho viewport desktop cao tới `880px`, giảm nhẹ padding, khoảng cách nav và font trong card hệ thống để nội dung trải đủ trong sidebar thay vì phải kéo scroll riêng.
+- Rút gọn các dòng trạng thái GPU/Colab trong sidebar; hướng dẫn dài vẫn nằm ở tab `Cài đặt`.
+- Mobile/tablet không đổi; sidebar vẫn trải theo layout một cột.
+
 ## v0.4.12 - 2026-05-12
 
 - Sửa vị trí panel `Kết quả dự đoán`: thanh đang chạy và preview ảnh/video giờ nằm ngay trong tab `Dự đoán`, sát phần đầu form.
