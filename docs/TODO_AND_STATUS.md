@@ -90,6 +90,10 @@
   - Cột trái nhập thư mục/cấu trúc ảnh/class.
   - Cột phải tạo/gán `data.yaml` và tóm tắt luồng.
   - Mobile stack lại theo thứ tự thao tác, không bị horizontal overflow.
+- Hướng dẫn người dùng:
+  - Thêm tooltip dấu hỏi cho nhãn, option card, checkbox và các cụm thuật ngữ chính.
+  - Thêm tab `Hướng dẫn` ngay trong app.
+  - Thêm `docs/USER_GUIDE.md` cho người dùng cuối đọc theo luồng thao tác.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q yolo_gui` pass.
@@ -111,6 +115,7 @@
 - Thêm test tự động cho API và JS form mapping.
 - Tiếp tục rà soát các nhãn nâng cao để giảm thuật ngữ kỹ thuật hơn nữa, nhưng không được làm mất khả năng tùy chỉnh của dev.
 - Tách thêm các form nâng cao khác theo pattern wizard nếu người dùng tiếp tục thấy bố cục quá dày.
+- Bổ sung ảnh minh họa trong tab `Hướng dẫn` khi đã có sample dataset/model thật.
 
 ## Rủi ro hiện tại
 

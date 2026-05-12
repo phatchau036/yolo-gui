@@ -156,3 +156,16 @@
   - Browser desktop `1920x900` không horizontal overflow, layout dataset cân bằng hơn.
   - Browser mobile `390x844` không horizontal overflow, wizard/action panel stack đúng.
   - Console browser không có warning/error.
+
+## 2026-05-12 - Tooltip giải thích và trang hướng dẫn
+
+- Nhận feedback: từng mục phải giải thích cho người dùng để làm gì, giảm thuật ngữ và có trang docs.
+- Thêm tab `Hướng dẫn` trong app:
+  - Luồng 4 bước từ chuẩn bị dữ liệu tới xem nhật ký.
+  - Giải thích các khái niệm hay gặp như dataset, model, GPU, CUDA, huấn luyện, đánh giá, dự đoán, đóng gói, automation.
+  - Khuyến nghị lựa chọn cho người mới.
+- Thêm hệ thống tooltip tự động trong `frontend/app.js`:
+  - `helpCatalog` chứa giải thích tiếng Việt cho label/option/checkbox.
+  - `enhanceInlineHelp()` tự gắn dấu hỏi cạnh các mục UI.
+  - Các nút/tab có `title` để hover vẫn có mô tả mà không làm rối bố cục.
+- Thêm `docs/USER_GUIDE.md` cho người dùng cuối.

@@ -20,6 +20,7 @@ const sectionTitles = {
   export: "Đóng gói model",
   dataset: "Chuẩn bị dữ liệu",
   automation: "Automation YOLO",
+  docs: "Hướng dẫn sử dụng",
   system: "Cài đặt môi trường",
   jobs: "Tiến trình và nhật ký",
 };
@@ -97,6 +98,116 @@ const predictPresets = {
   strict: { conf: 0.45, iou: 0.75 },
 };
 
+const helpCatalog = {
+  "Bộ dữ liệu": "Nơi chứa ảnh và nhãn để YOLO học. Nếu chưa có file cấu hình, hãy bấm Chuẩn bị dữ liệu.",
+  "Kiểu model": "Chọn kích thước model. Model nhỏ chạy nhanh và nhẹ GPU, model lớn thường chính xác hơn nhưng chậm hơn.",
+  "Loại bài toán": "Chọn kiểu nhận diện bạn cần: phát hiện vật thể, tách vùng, phân loại ảnh, tư thế hoặc khung xoay.",
+  "Mức huấn luyện": "Chọn mức phù hợp để GUI tự đặt số vòng học, kích thước ảnh và vài thông số chính.",
+  "Máy chạy": "Chọn phần cứng xử lý. Tự động là an toàn nhất, GPU nhanh hơn khi CUDA sẵn sàng, CPU chậm hơn nhưng dễ chạy.",
+  "Test nhanh": "Chạy ít vòng để kiểm tra dataset và luồng có lỗi không. Không dùng để lấy model cuối.",
+  "Cân bằng": "Cấu hình nên dùng cho phần lớn dataset khi mới bắt đầu.",
+  "Train kỹ": "Chạy lâu hơn để ưu tiên chất lượng khi dataset đã ổn.",
+  "Tự tinh chỉnh": "Mở phần nâng cao để tự đặt thông số. Người mới có thể bỏ qua.",
+  "Tự động": "Để GUI tự chọn cách chạy phù hợp với máy hiện tại.",
+  "Ưu tiên GPU": "Dùng card NVIDIA đầu tiên nếu PyTorch thấy CUDA.",
+  "Chạy CPU": "Không dùng GPU. Chậm hơn nhưng phù hợp khi máy thiếu CUDA.",
+  "Tăng tốc đọc dữ liệu": "Cho phép cache dữ liệu để train nhanh hơn, đổi lại có thể tốn RAM hoặc ổ đĩa.",
+  "Tiếp tục lần train trước": "Tiếp tục từ checkpoint cũ nếu job trước bị dừng hoặc chưa xong.",
+  "Tối ưu GPU tự động": "Dùng chế độ tính toán hỗn hợp để chạy GPU nhanh và tiết kiệm bộ nhớ hơn.",
+  "Tự đánh giá sau khi train": "Sau khi train xong, GUI chạy kiểm tra chất lượng trên tập kiểm tra.",
+  "Lưu biểu đồ kết quả": "Lưu biểu đồ loss/metric để xem model học tốt hay đang gặp vấn đề.",
+  "Lịch học mượt hơn": "Điều chỉnh tốc độ học giảm mượt dần, thường giúp model ổn hơn.",
+  "Giữ tỉ lệ ảnh tốt hơn": "Giữ tỉ lệ ảnh khi train để giảm méo hình, hữu ích với ảnh kích thước khác nhau.",
+  "Chỉ có một loại vật thể": "Dùng khi dataset chỉ cần nhận diện một class, kể cả nhãn có nhiều tên cũ.",
+  "Model riêng": "Chọn file model có sẵn trên máy, ví dụ checkpoint đã train trước đó.",
+  "Số vòng học": "Số lần model đi qua dataset. Nhiều hơn có thể tốt hơn nhưng lâu hơn và có nguy cơ học vẹt.",
+  "Độ lớn ảnh": "Kích thước ảnh đưa vào model. Lớn hơn thấy chi tiết tốt hơn nhưng tốn GPU hơn.",
+  "Số ảnh mỗi lượt": "Số ảnh xử lý cùng lúc. Tăng lên có thể nhanh hơn nhưng cần nhiều VRAM hơn.",
+  "Dừng khi hết cải thiện": "Nếu chất lượng không tăng sau một số vòng, GUI dừng sớm để tiết kiệm thời gian.",
+  "Luồng đọc dữ liệu": "Số luồng đọc ảnh từ ổ đĩa. Tăng có thể nhanh hơn nhưng không phải máy nào cũng cần.",
+  "Cách tối ưu": "Thuật toán cập nhật model trong lúc học. Nếu không chắc, giữ Tự động.",
+  "Nơi lưu kết quả": "Thư mục lưu output. Để trống để GUI tự dùng thư mục mặc định.",
+  "Tên lần chạy": "Tên thư mục con cho lần chạy này, giúp phân biệt nhiều lần train.",
+  "Tốc độ học đầu": "Mức thay đổi ban đầu của model. Cao quá dễ lỗi, thấp quá học chậm.",
+  "Tốc độ học cuối": "Tốc độ học về cuối quá trình train.",
+  "Đà học": "Giúp quá trình học ổn định hơn bằng cách giữ hướng cập nhật trước đó.",
+  "Chống học vẹt": "Giảm nguy cơ model nhớ dataset quá mức nhưng nhận diện kém ngoài thực tế.",
+  "Làm nóng ban đầu": "Cho model khởi động nhẹ vài vòng đầu để tránh cập nhật quá mạnh.",
+  "Ghép ảnh huấn luyện": "Ghép nhiều ảnh thành một ảnh train để model thấy bối cảnh đa dạng hơn.",
+  "Pha trộn ảnh": "Trộn ảnh và nhãn để tăng độ đa dạng dữ liệu.",
+  "Đổi màu ánh sáng": "Tạo biến thể sáng tối để model bền hơn với điều kiện ánh sáng khác nhau.",
+  "Xoay ảnh": "Tạo biến thể ảnh bị xoay nhẹ khi train.",
+  "Dịch chuyển ảnh": "Tạo biến thể ảnh bị lệch vị trí để model bền hơn.",
+  "Phóng thu ảnh": "Tạo biến thể zoom gần/xa khi train.",
+  "Lật trái phải": "Tạo biến thể ảnh lật ngang, hữu ích khi vật thể có thể xuất hiện hai hướng.",
+  "Model có sẵn": "Chọn model preset hoặc model đã train để đánh giá/dự đoán.",
+  "Model cần đánh giá": "File model muốn kiểm tra chất lượng trên bộ dữ liệu kiểm tra.",
+  "Bộ dữ liệu kiểm tra": "Dataset dùng để đo chất lượng model, thường là file cấu hình đã tạo ở tab Dữ liệu.",
+  "Mức đánh giá": "Chọn mức kiểm tra nhanh hay kỹ. Kỹ hơn chạy lâu hơn.",
+  "Nhanh": "Ưu tiên tốc độ, dùng khi muốn xem nhanh model có chạy được không.",
+  "Chuẩn": "Mức cân bằng cho đa số lần kiểm tra.",
+  "Kỹ": "Kiểm tra chặt hơn, phù hợp trước khi dùng model thật.",
+  "Nguồn dữ liệu": "Nơi lấy ảnh, video, thư mục hoặc camera để model nhận diện.",
+  "Mức lọc kết quả": "Điều chỉnh mức dễ/khó khi model quyết định có hiển thị vật thể hay không.",
+  "Nhạy": "Hiển thị nhiều kết quả hơn, có thể có nhiều nhận nhầm hơn.",
+  "Chắc chắn": "Chỉ hiển thị kết quả tự tin hơn, giảm nhận nhầm nhưng có thể bỏ sót.",
+  "Ảnh hoặc video": "Dự đoán trên một file ảnh hoặc video.",
+  "Thư mục ảnh": "Dự đoán toàn bộ ảnh trong một thư mục.",
+  "Camera": "Dùng camera mặc định của máy để nhận diện trực tiếp.",
+  "Nguồn dự đoán": "File, thư mục hoặc camera mà model sẽ chạy nhận diện.",
+  "Camera mặc định": "Camera số 0 của máy. GUI tự gửi đúng giá trị cho YOLO.",
+  "Lưu ảnh/video kết quả": "Lưu bản ảnh hoặc video đã vẽ khung nhận diện.",
+  "Lưu nhãn máy đọc": "Lưu file nhãn dạng text để dùng cho kiểm tra hoặc pipeline khác.",
+  "Lưu điểm tin cậy": "Ghi thêm điểm tự tin của từng vật thể vào file nhãn.",
+  "Cắt riêng vật thể": "Lưu từng vật thể đã phát hiện thành ảnh riêng.",
+  "Hiện tên vật thể": "Vẽ tên class lên ảnh/video kết quả.",
+  "Hiện độ tin cậy": "Vẽ phần trăm tự tin lên ảnh/video kết quả.",
+  "Vẽ khung nhận diện": "Hiển thị khung bao quanh vật thể.",
+  "Gộp hộp trùng mạnh hơn": "Gộp các khung nhận diện trùng nhau để kết quả sạch hơn.",
+  "Mask sắc nét hơn": "Dùng mask độ nét cao hơn cho bài toán tách vùng.",
+  "Tối ưu GPU nhẹ hơn": "Dùng định dạng nhẹ hơn để giảm bộ nhớ GPU khi phù hợp.",
+  "Đệm camera mượt hơn": "Giữ bộ đệm khi đọc camera/video để giảm giật hình.",
+  "Ghi đè run": "Cho phép ghi vào thư mục kết quả đã tồn tại.",
+  "Mức tin cậy tối thiểu": "Kết quả dưới mức này sẽ bị ẩn. Tăng lên để giảm nhận nhầm.",
+  "Độ khớp hộp": "Ngưỡng gộp các khung bị trùng. Nếu không chắc, giữ mặc định.",
+  "Số vật thể tối đa": "Giới hạn số vật thể được hiển thị trên mỗi ảnh.",
+  "Đọc video cách quãng": "Bỏ qua một số frame để dự đoán video nhanh hơn.",
+  "Độ dày khung": "Độ dày đường vẽ khung nhận diện trên ảnh/video kết quả.",
+  "Model cần đóng gói": "File model muốn xuất sang định dạng dùng ở app/web/mobile/thiết bị khác.",
+  "Mục đích sử dụng": "Chọn nơi bạn muốn dùng model, GUI sẽ map sang định dạng xuất phù hợp.",
+  "Nén mạnh hơn": "Giảm kích thước model, có thể nhanh hơn nhưng cần kiểm tra lại chất lượng.",
+  "Linh hoạt kích thước ảnh": "Cho phép model nhận nhiều kích thước ảnh hơn sau khi export.",
+  "Tự làm gọn model": "Tối ưu cấu trúc model export để dễ chạy ở runtime khác.",
+  "Gộp hộp trùng trong model": "Đưa bước gộp khung trùng vào model export nếu định dạng hỗ trợ.",
+  "Phiên bản xuất nâng cao": "Phiên bản opset cho một số định dạng export. Giữ tự động nếu không chắc.",
+  "Bộ nhớ GPU cho đóng gói": "Giới hạn bộ nhớ dùng khi export định dạng cần tối ưu GPU.",
+  "Bộ dữ liệu mẫu khi nén mạnh": "Dataset dùng để hiệu chỉnh khi nén mạnh, giúp giữ chất lượng tốt hơn.",
+  "Thư mục dataset": "Thư mục gốc chứa ảnh và nhãn. GUI sẽ tạo file cấu hình trong thư mục này.",
+  "File sẽ được tạo": "Đường dẫn file cấu hình dataset mà GUI ghi tự động.",
+  "Ảnh dùng để học": "Thư mục ảnh dùng để train model.",
+  "Ảnh dùng để kiểm tra": "Thư mục ảnh dùng để kiểm tra chất lượng trong lúc train hoặc validate.",
+  "Ảnh test thêm": "Thư mục test riêng nếu dataset có. Có thể để trống.",
+  "Tên nhãn, mỗi dòng một nhãn": "Danh sách class model cần nhận diện, nhập mỗi class một dòng.",
+  "Sau khi tạo": "Quyết định GUI có tự gán dataset vừa tạo sang các tab khác hay không.",
+  "Tự điền thư mục chuẩn": "Điền nhanh cấu trúc phổ biến images/train, images/val, images/test.",
+  "Tạo và dùng ngay": "Tạo file cấu hình dataset và gán ngay vào các workflow cần dataset.",
+  "Bộ dữ liệu cần kiểm tra": "Dataset muốn quét lỗi thiếu ảnh, thiếu nhãn hoặc class sai.",
+  "Thư mục XML cũ": "Nơi chứa nhãn VOC XML cũ cần đổi sang định dạng YOLO.",
+  "Nơi lưu nhãn mới": "Thư mục lưu file nhãn YOLO sau khi chuyển đổi.",
+  "Ghi đè nhãn cũ nếu đã có": "Cho phép thay file nhãn cũ bằng nhãn mới khi convert.",
+  "Nhãn model dự đoán": "Thư mục chứa file nhãn do model dự đoán.",
+  "Nhãn đúng ban đầu": "Thư mục chứa file nhãn đúng dùng làm chuẩn so sánh.",
+  "Mức khớp tối thiểu": "Mức trùng khung tối thiểu để tính là model dự đoán đúng.",
+  "Số loại nhãn": "Số class cần tính điểm. Để trống để GUI tự suy ra khi có thể.",
+  "Chuẩn bị dataset": "Tạo cấu hình dataset và kiểm tra lỗi dữ liệu trước khi train.",
+  "Chuẩn bị rồi huấn luyện": "Tự chuẩn bị dataset, quét lỗi rồi chạy train.",
+  "Đánh giá rồi đóng gói": "Kiểm tra chất lượng model, sau đó export sang định dạng bạn chọn.",
+  "Dataset -> Train -> Đánh giá -> Đóng gói": "Chạy toàn bộ pipeline từ chuẩn bị dữ liệu đến xuất model.",
+  "Automation đang chạy": "Danh sách các kịch bản tự động và trạng thái từng bước.",
+  "Báo cáo máy đang chạy": "Tạo báo cáo môi trường để biết Python, PyTorch, CUDA, GPU và Ultralytics đang như thế nào.",
+  "Trạng thái và nhật ký": "Theo dõi tiến trình và đọc log đầy đủ khi có lỗi.",
+};
+
 function qs(selector) {
   return document.querySelector(selector);
 }
@@ -128,6 +239,87 @@ function setIconRefresh() {
   if (window.lucide) {
     window.lucide.createIcons();
   }
+}
+
+function normalizeHelpKey(text) {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .replace(/[?：:]+$/g, "")
+    .trim();
+}
+
+function contextualHelp(label) {
+  const text = label.toLowerCase();
+  if (text.includes("model")) return "Model là file hoặc preset dùng để train, đánh giá, dự đoán hoặc export.";
+  if (text.includes("dataset") || text.includes("dữ liệu")) return "Mục này liên quan tới ảnh và nhãn mà YOLO dùng để học hoặc kiểm tra.";
+  if (text.includes("gpu") || text.includes("cuda")) return "Mục này liên quan tới tăng tốc bằng card NVIDIA. Nếu không chắc, giữ tự động.";
+  if (text.includes("nhật ký") || text.includes("log")) return "Nhật ký ghi tiến trình và lỗi đầy đủ để biết cần sửa gì.";
+  if (text.includes("ảnh") || text.includes("video") || text.includes("camera")) return "Mục này chọn nguồn hình ảnh hoặc cách lưu kết quả nhận diện.";
+  if (text.includes("đóng gói") || text.includes("export")) return "Mục này xuất model sang định dạng phù hợp để dùng ngoài GUI.";
+  if (text.includes("automation")) return "Automation tự chạy nhiều bước liên tiếp để giảm thao tác thủ công.";
+  return "Nếu không chắc mục này dùng để làm gì, hãy giữ mặc định của GUI.";
+}
+
+function helpTextFor(label) {
+  const key = normalizeHelpKey(label);
+  return helpCatalog[key] || contextualHelp(key);
+}
+
+function readableText(element) {
+  const clone = element.cloneNode(true);
+  clone.querySelectorAll?.("input, select, textarea, .help-term, svg").forEach((node) => node.remove());
+  return normalizeHelpKey(clone.textContent);
+}
+
+function attachHelpTerm(element, labelText = null) {
+  if (!element || element.dataset.helpReady === "true") return;
+  const label = normalizeHelpKey(labelText || readableText(element));
+  if (!label) return;
+  const help = helpTextFor(label);
+  element.dataset.helpReady = "true";
+  element.title = help;
+  element.setAttribute("aria-label", `${label}. ${help}`);
+
+  const icon = document.createElement("span");
+  icon.className = "help-term";
+  icon.tabIndex = 0;
+  icon.setAttribute("role", "button");
+  icon.setAttribute("aria-label", `Giải thích: ${help}`);
+  icon.setAttribute("data-help", help);
+  icon.title = help;
+  icon.innerHTML = '<i data-lucide="circle-help"></i>';
+  element.appendChild(icon);
+}
+
+function applyHelpTitle(element, labelText = null) {
+  if (!element || element.dataset.helpTitleReady === "true") return;
+  const label = normalizeHelpKey(labelText || readableText(element));
+  if (!label) return;
+  const help = helpTextFor(label);
+  element.dataset.helpTitleReady = "true";
+  element.title = help;
+  element.setAttribute("aria-label", `${label}. ${help}`);
+}
+
+function enhanceInlineHelp() {
+  [
+    ".field > .label",
+    ".section-label > span",
+    ".choice-card strong",
+    ".checkbox",
+    ".advanced-block summary",
+    ".panel-heading-row h3",
+    ".automation-card h3",
+    ".automation-step span",
+    ".yaml-route-preview strong",
+    ".wizard-step-strip span",
+    ".check-tile strong",
+    ".docs-card h4",
+    ".term-grid strong",
+  ].forEach((selector) => qsa(selector).forEach((element) => attachHelpTerm(element)));
+
+  qsa("button span:not(.icon), .quick-card small, .nav-item span").forEach((element) => applyHelpTitle(element));
+  setIconRefresh();
 }
 
 function setActiveSection(section) {
@@ -283,6 +475,7 @@ function renderDependencyChecklist(payload) {
       return `<div class="check-tile ${className}"><strong>${tile.label}</strong><span>${tile.text}</span></div>`;
     })
     .join("");
+  enhanceInlineHelp();
 }
 
 async function installUltralytics() {
@@ -694,6 +887,7 @@ async function loadAutomations() {
   for (const automation of automations) {
     list.appendChild(automationCard(automation));
   }
+  enhanceInlineHelp();
   setIconRefresh();
   loadAutomationLog().catch(() => {});
 }
@@ -970,7 +1164,7 @@ async function createReport() {
 }
 
 function bindEvents() {
-  qsa(".nav-item, .quick-card").forEach((button) => {
+  qsa("button[data-section]").forEach((button) => {
     button.addEventListener("click", () => setActiveSection(button.dataset.section));
   });
   qsa("[data-start-workflow]").forEach((button) => {
@@ -1046,6 +1240,7 @@ async function boot() {
   updatePredictSourceMode();
   updateDatasetDisplays();
   setYamlOutputPath(qs("#yamlOutputPath").value);
+  enhanceInlineHelp();
   browsePath("").catch(() => {});
 }
 

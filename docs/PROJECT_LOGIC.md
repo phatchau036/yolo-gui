@@ -11,6 +11,8 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
 - Tham số kỹ thuật vẫn được giữ trong schema/backend nhưng không được biến thành điều kiện bắt người dùng cuối phải biết.
 - Nếu cần thêm setting mới, ưu tiên thêm preset/card/toggle có tiếng Việt dễ hiểu rồi map sang field YOLO trong `frontend/app.js`.
 - Chỉ để thông số thô trong `details` nâng cao và phải bảo đảm workflow chạy được khi người dùng không mở phần đó.
+- Mỗi nhãn, option card và checkbox quan trọng phải có giải thích nhanh. `frontend/app.js` dùng `helpCatalog` và `enhanceInlineHelp()` để gắn tooltip tự động, tránh phải viết lại markup lặp lại ở từng field.
+- Nội dung hướng dẫn dài nằm ở tab `Hướng dẫn` và `docs/USER_GUIDE.md`, không nhồi vào workflow chính.
 
 ## Luồng chung
 

@@ -7,6 +7,7 @@
 - `requirements.txt`: dependency runtime Python.
 - `start.ps1`: entrypoint Windows, tạo `.venv`, cài dependency và chạy server.
 - `.gitignore`: bỏ qua virtualenv, cache, log, output train, weight/model artifact.
+- `docs/USER_GUIDE.md`: hướng dẫn người dùng cuối bằng tiếng Việt, không yêu cầu biết CLI.
 
 ## Backend: `yolo_gui/`
 
@@ -24,9 +25,9 @@
 
 ## Frontend: `frontend/`
 
-- `index.html`: layout dashboard nhiều tab: Train, Validate, Predict, Export, Dataset, Automation, System, Jobs.
-- `styles.css`: layout/dashboard style, responsive, status/log UI, Dataset Wizard chia cột trái/phải.
-- `app.js`: gọi API, duyệt thư mục, start/stop job, poll log, chạy dataset tools/report/automation.
+- `index.html`: layout dashboard nhiều tab: Train, Validate, Predict, Export, Dataset, Automation, Hướng dẫn, System, Jobs.
+- `styles.css`: layout/dashboard style, responsive, tooltip giải thích, docs page, status/log UI, Dataset Wizard chia cột trái/phải.
+- `app.js`: gọi API, duyệt thư mục, start/stop job, poll log, chạy dataset tools/report/automation và tự gắn tooltip giải thích vào các mục UI.
 - `favicon.svg`: icon local để console browser sạch.
 
 ## Runtime folders

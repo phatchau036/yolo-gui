@@ -18,6 +18,8 @@
 - Nguyên tắc mới: workflow chính phải 100% GUI, không bắt người dùng hiểu `data.yaml`, JSON, `device=0`, CLI args, split name hoặc tham số YOLO thô.
 - Dataset wizard không được là một form ngang quá rộng. Luồng chuẩn là bố cục có bước rõ ràng: cột chính nhập thư mục/cấu trúc/class, cột hành động bên phải tạo và gán `data.yaml`.
 - Automation là một lớp riêng trên GUI: người dùng bấm kịch bản, backend chạy nhiều bước tuần tự và ghi timeline/log riêng thay vì bắt người dùng tự chuyển tab và tự chạy từng lệnh.
+- Mọi nhãn/tùy chọn chính trong GUI phải có giải thích ngắn bằng tooltip. Không nhồi đoạn giải thích dài vào form; dùng dấu hỏi cạnh nhãn và tab `Hướng dẫn` cho nội dung dài.
+- Luôn giữ một tài liệu người dùng cuối tại `docs/USER_GUIDE.md` song song với tab `Hướng dẫn` trong app.
 
 ## Quy tắc duy trì docs
 

@@ -27,6 +27,7 @@
           <button class="nav-item" data-section="export" type="button"><i data-lucide="package-open"></i><span>Đóng gói</span></button>
           <button class="nav-item" data-section="dataset" type="button"><i data-lucide="folder-check"></i><span>Dữ liệu</span></button>
           <button class="nav-item" data-section="automation" type="button"><i data-lucide="workflow"></i><span>Automation</span></button>
+          <button class="nav-item" data-section="docs" type="button"><i data-lucide="book-open"></i><span>Hướng dẫn</span></button>
           <button class="nav-item" data-section="system" type="button"><i data-lucide="monitor-cog"></i><span>Cài đặt</span></button>
           <button class="nav-item" data-section="jobs" type="button"><i data-lucide="terminal-square"></i><span>Tiến trình</span></button>
         </nav>
@@ -75,6 +76,10 @@
           <button class="quick-card" data-section="automation" type="button">
             <i data-lucide="workflow"></i>
             <span><strong>Automation</strong><small>Chạy theo kịch bản</small></span>
+          </button>
+          <button class="quick-card" data-section="docs" type="button">
+            <i data-lucide="book-open"></i>
+            <span><strong>Hướng dẫn</strong><small>Đọc cách dùng GUI</small></span>
           </button>
         </section>
 
@@ -609,6 +614,77 @@
             </div>
             <div id="automationList" class="automation-list">Chưa có automation nào.</div>
             <pre id="automationLogOutput" class="log-output automation-log-output">Chưa có nhật ký automation.</pre>
+          </section>
+        </section>
+
+        <section id="section-docs" class="page-section">
+          <section class="docs-hero">
+            <div>
+              <p class="eyebrow">Hướng dẫn sử dụng</p>
+              <h3>Train YOLO bằng GUI từ đầu đến cuối</h3>
+              <p>Trang này giải thích các mục trong app bằng ngôn ngữ dễ hiểu. Nếu gặp từ chuyên môn, rê chuột vào biểu tượng dấu hỏi bên cạnh nhãn để xem giải thích nhanh.</p>
+            </div>
+            <button class="button is-primary" data-section="dataset" type="button">
+              <span class="icon"><i data-lucide="folder-plus"></i></span>
+              <span>Bắt đầu từ dữ liệu</span>
+            </button>
+          </section>
+
+          <section class="docs-grid">
+            <article class="docs-card">
+              <span class="docs-step">1</span>
+              <h4>Chuẩn bị dữ liệu</h4>
+              <p>Chọn thư mục dataset, nhập danh sách nhãn và để GUI tạo file cấu hình cần thiết cho YOLO.</p>
+              <button class="button is-light" data-section="dataset" type="button"><span>Xem tab Dữ liệu</span></button>
+            </article>
+            <article class="docs-card">
+              <span class="docs-step">2</span>
+              <h4>Kiểm tra môi trường</h4>
+              <p>Nếu máy thiếu PyTorch, CUDA hoặc Ultralytics, dùng các nút cài trong GUI. Log cài đặt hiện ngay trong app.</p>
+              <button class="button is-light" data-section="system" type="button"><span>Xem tab Cài đặt</span></button>
+            </article>
+            <article class="docs-card">
+              <span class="docs-step">3</span>
+              <h4>Huấn luyện model</h4>
+              <p>Chọn dataset, kiểu model và mức huấn luyện. Người mới nên giữ mức Cân bằng và Máy chạy Tự động.</p>
+              <button class="button is-light" data-section="train" type="button"><span>Xem tab Huấn luyện</span></button>
+            </article>
+            <article class="docs-card">
+              <span class="docs-step">4</span>
+              <h4>Xem kết quả</h4>
+              <p>Tab Tiến trình cho biết job đang chạy đến đâu. Nhật ký giúp biết lỗi nằm ở dữ liệu, model hay môi trường.</p>
+              <button class="button is-light" data-section="jobs" type="button"><span>Xem tab Tiến trình</span></button>
+            </article>
+          </section>
+
+          <section class="work-panel docs-panel">
+            <div class="panel-heading-row">
+              <div><p class="eyebrow">Giải thích nhanh</p><h3>Các khái niệm hay gặp</h3></div>
+            </div>
+            <div class="term-grid">
+              <div><strong>Dataset</strong><span>Thư mục chứa ảnh và nhãn để YOLO học hoặc kiểm tra.</span></div>
+              <div><strong>Model</strong><span>Bộ não nhận diện. Model nhỏ chạy nhanh hơn, model lớn thường chính xác hơn nhưng cần GPU mạnh hơn.</span></div>
+              <div><strong>GPU</strong><span>Card đồ họa giúp train nhanh hơn CPU rất nhiều khi CUDA sẵn sàng.</span></div>
+              <div><strong>CUDA</strong><span>Lớp phần mềm để PyTorch dùng được GPU NVIDIA.</span></div>
+              <div><strong>Huấn luyện</strong><span>Dạy model nhận diện đối tượng từ ảnh và nhãn của bạn.</span></div>
+              <div><strong>Đánh giá</strong><span>Kiểm tra model trên ảnh kiểm tra để biết chất lượng trước khi dùng thật.</span></div>
+              <div><strong>Dự đoán</strong><span>Cho model chạy trên ảnh, video, thư mục hoặc camera để xem kết quả nhận diện.</span></div>
+              <div><strong>Đóng gói</strong><span>Xuất model sang định dạng dùng cho app/web/mobile/thiết bị khác.</span></div>
+              <div><strong>Automation</strong><span>Chạy nhiều bước liên tiếp bằng một nút, ví dụ chuẩn bị dữ liệu rồi train rồi đóng gói.</span></div>
+              <div><strong>Nhật ký</strong><span>Nơi ghi tiến trình và lỗi đầy đủ để người dùng biết cần sửa gì.</span></div>
+            </div>
+          </section>
+
+          <section class="work-panel docs-panel">
+            <div class="panel-heading-row">
+              <div><p class="eyebrow">Lời khuyên</p><h3>Nên chọn gì khi mới bắt đầu</h3></div>
+            </div>
+            <div class="recommendation-list">
+              <p><strong>Model:</strong> chọn bản nhanh hoặc nhỏ trước để kiểm tra dataset. Khi mọi thứ ổn mới tăng lên model lớn hơn.</p>
+              <p><strong>Mức huấn luyện:</strong> chọn Cân bằng. Test nhanh chỉ dùng để phát hiện lỗi dữ liệu, Train kỹ dùng khi dataset đã ổn.</p>
+              <p><strong>Máy chạy:</strong> để Tự động. Chỉ chọn GPU khi chắc CUDA đã sẵn sàng, chọn CPU khi muốn tương thích dù chậm hơn.</p>
+              <p><strong>Automation:</strong> dùng Full pipeline khi muốn GUI tự chạy toàn bộ luồng, nhưng nên thử Chuẩn bị dataset trước nếu đây là dataset mới.</p>
+            </div>
           </section>
         </section>
 

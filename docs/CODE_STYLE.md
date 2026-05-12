@@ -31,6 +31,8 @@
 - UI phải có trạng thái rõ: chưa kiểm tra, running, completed, failed, stopped.
 - UI dạng workflow dài phải chia theo cụm thao tác và thứ tự người dùng làm thật. Không để một `settings-grid` quá rộng khiến field bị rải ngang toàn màn hình.
 - Với wizard chính, dùng pattern cột trái nhập liệu + cột phải hành động/tóm tắt. CTA chính nằm ở cột hành động để người dùng thấy bước cuối rõ ràng.
+- Tooltip giải thích dùng `helpCatalog` trong `frontend/app.js`. Khi thêm label/option mới, thêm mô tả vào catalog hoặc bảo đảm fallback vẫn dễ hiểu.
+- Không viết đoạn giải thích dài trực tiếp trong form. Dùng tooltip cho giải thích ngắn và tab `Hướng dẫn`/`docs/USER_GUIDE.md` cho hướng dẫn dài.
 - Setting mới nên đi theo thứ tự:
   1. Thêm field vào schema tương ứng trong `schemas.py`.
   2. Thêm input có `name` trùng field vào frontend.
