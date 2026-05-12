@@ -184,3 +184,17 @@
   - Desktop thường `1920x900`: thẻ hệ thống nằm gọn trong sidebar, không có horizontal overflow.
   - Mobile `390x844`: sidebar trở lại layout thường, `system-card` ẩn như thiết kế cũ, không có horizontal overflow toàn trang.
   - Console browser không có warning/error.
+
+## 2026-05-12 - Thêm ảnh demo cho GitHub README
+
+- Nhận feedback: GitHub cần có hình ảnh demo để người xem thấy GUI ngay.
+- Thêm thư mục `docs/assets/demo/` và 4 ảnh chụp:
+  - `demo-train-desktop.png`: màn hình huấn luyện desktop.
+  - `demo-dataset-wizard.png`: wizard chuẩn bị dataset và tạo cấu hình bằng GUI.
+  - `demo-automation.png`: tab automation chạy YOLO theo kịch bản.
+  - `demo-mobile.png`: layout mobile.
+- Cập nhật `README.md` với mục `Demo giao diện`, nhúng ảnh bằng đường dẫn relative để GitHub render trực tiếp.
+- Browser QA:
+  - Chụp từ app local `127.0.0.1:8767`.
+  - Desktop `1440x900` cho train/dataset/automation.
+  - Mobile `390x844` cho layout mobile.

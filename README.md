@@ -2,6 +2,23 @@
 
 Web GUI local để chạy Ultralytics YOLO mà người dùng không cần nhớ CLI, không cần tự viết `data.yaml`, không cần hiểu tham số YOLO thô. Dự án hướng tới trải nghiệm 100% thao tác bằng giao diện: chọn dữ liệu, chọn mục tiêu, chọn mức huấn luyện, bấm chạy và xem tiến trình ngay trong trình duyệt.
 
+## Demo giao diện
+
+Ảnh demo được chụp từ bản web GUI hiện tại, gồm màn hình huấn luyện, tạo dataset bằng GUI, automation và layout mobile.
+
+<p align="center">
+  <img src="docs/assets/demo/demo-train-desktop.png" alt="YOLO GUI - màn hình huấn luyện trên desktop" width="100%">
+</p>
+
+<p align="center">
+  <img src="docs/assets/demo/demo-dataset-wizard.png" alt="YOLO GUI - wizard tạo dataset và data.yaml bằng giao diện" width="49%">
+  <img src="docs/assets/demo/demo-automation.png" alt="YOLO GUI - automation train YOLO theo kịch bản" width="49%">
+</p>
+
+<p align="center">
+  <img src="docs/assets/demo/demo-mobile.png" alt="YOLO GUI - giao diện mobile" width="34%">
+</p>
+
 ## Triết lý 100% GUI
 
 - Người dùng cuối không phải mở terminal để cài Ultralytics/PyTorch hoặc chạy lệnh YOLO.

@@ -98,6 +98,9 @@
   - Sidebar desktop có scroll nội bộ khi chiều cao màn hình thấp.
   - Thẻ `Máy hiện tại` không còn tràn khỏi nền sidebar.
   - Mobile/tablet vẫn dùng layout thường, không tạo cuộn lồng trong sidebar.
+- Demo GitHub:
+  - Thêm ảnh demo vào `docs/assets/demo/`.
+  - README hiển thị trực tiếp ảnh desktop, dataset wizard, automation và mobile.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q yolo_gui` pass.
