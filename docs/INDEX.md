@@ -11,7 +11,8 @@
 7. `docs/LOGGING_AND_DEBUGGING.md`: log nằm ở đâu, debug theo job thế nào.
 8. `docs/BUG_FIX_PLAYBOOK.md`: lỗi thường gặp và cách xử lý.
 9. `docs/TODO_AND_STATUS.md`: đã xong gì, còn cần làm gì.
-10. `docs/PROJECT_MEMORY.md`: quyết định dài hạn để agent/dev sau không phải hỏi lại.
-11. `docs/SESSION_LOG.md`: nhật ký phiên làm việc mới nhất.
+10. `CHANGELOG.md`: thay đổi theo phiên bản, đồng thời là dữ liệu cho tab `Phiên bản`.
+11. `docs/PROJECT_MEMORY.md`: quyết định dài hạn để agent/dev sau không phải hỏi lại.
+12. `docs/SESSION_LOG.md`: nhật ký phiên làm việc mới nhất.
 
 Quy tắc duy trì: mọi thay đổi làm đổi hành vi workflow, API, UI hoặc logging đều phải cập nhật ít nhất một file docs tương ứng.

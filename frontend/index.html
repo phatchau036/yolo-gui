@@ -28,6 +28,7 @@
           <button class="nav-item" data-section="dataset" type="button"><i data-lucide="folder-check"></i><span>Dữ liệu</span></button>
           <button class="nav-item" data-section="automation" type="button"><i data-lucide="workflow"></i><span>Automation</span></button>
           <button class="nav-item" data-section="docs" type="button"><i data-lucide="book-open"></i><span>Hướng dẫn</span></button>
+          <button class="nav-item" data-section="version" type="button"><i data-lucide="badge-info"></i><span>Phiên bản</span></button>
           <button class="nav-item" data-section="system" type="button"><i data-lucide="monitor-cog"></i><span>Cài đặt</span></button>
           <button class="nav-item" data-section="jobs" type="button"><i data-lucide="terminal-square"></i><span>Tiến trình</span></button>
         </nav>
@@ -75,11 +76,15 @@
           </button>
           <button class="quick-card" data-section="automation" type="button">
             <i data-lucide="workflow"></i>
-            <span><strong>Automation</strong><small>Chạy theo kịch bản</small></span>
+            <span><strong>Kịch bản</strong><small>Chạy tự động</small></span>
           </button>
           <button class="quick-card" data-section="docs" type="button">
             <i data-lucide="book-open"></i>
             <span><strong>Hướng dẫn</strong><small>Đọc cách dùng GUI</small></span>
+          </button>
+          <button class="quick-card" data-section="version" type="button">
+            <i data-lucide="badge-info"></i>
+            <span><strong>Phiên bản</strong><small>Update và changelog</small></span>
           </button>
         </section>
 
@@ -695,6 +700,54 @@
               <button id="createReportButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="file-text"></i></span><span>Tạo báo cáo</span></button>
             </div>
             <pre id="systemReportOutput" class="preview-box">Chưa có báo cáo.</pre>
+          </section>
+        </section>
+
+        <section id="section-version" class="page-section">
+          <section class="version-hero">
+            <div class="version-app-mark">
+              <i data-lucide="badge-info"></i>
+            </div>
+            <div class="version-copy">
+              <p class="eyebrow">Phiên bản</p>
+              <h3>YOLO GUI</h3>
+              <p id="versionCurrent" class="version-number">Đang kiểm tra...</p>
+              <p id="versionStatus" class="version-status">GUI đang kiểm tra phiên bản hiện tại và bản mới trên GitHub.</p>
+            </div>
+            <div class="version-actions">
+              <button id="checkVersionButton" class="button is-light" type="button">
+                <span class="icon"><i data-lucide="refresh-cw"></i></span>
+                <span>Kiểm tra lại</span>
+              </button>
+              <button id="updateVersionButton" class="button is-primary" type="button" disabled>
+                <span class="icon"><i data-lucide="download"></i></span>
+                <span>Cập nhật ngay</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="version-grid">
+            <article class="work-panel version-info-panel">
+              <div class="panel-heading-row">
+                <div><p class="eyebrow">Thông tin bản đang chạy</p><h3>Trạng thái cập nhật</h3></div>
+              </div>
+              <div class="version-facts">
+                <div><span>Phiên bản hiện tại</span><strong id="versionFactCurrent">-</strong></div>
+                <div><span>Phiên bản mới nhất</span><strong id="versionFactLatest">-</strong></div>
+                <div><span>Branch local</span><strong id="versionFactBranch">-</strong></div>
+                <div><span>Commit local</span><strong id="versionFactCommit">-</strong></div>
+                <div><span>Commit GitHub</span><strong id="versionFactRemote">-</strong></div>
+                <div><span>Remote</span><strong id="versionFactRemoteUrl">-</strong></div>
+              </div>
+              <pre id="versionUpdateLog" class="preview-box">Chưa có nhật ký cập nhật.</pre>
+            </article>
+
+            <article class="work-panel changelog-panel">
+              <div class="panel-heading-row">
+                <div><p class="eyebrow">Changelog</p><h3>Có gì mới</h3></div>
+              </div>
+              <div id="changelogList" class="changelog-list">Đang tải changelog...</div>
+            </article>
           </section>
         </section>
 

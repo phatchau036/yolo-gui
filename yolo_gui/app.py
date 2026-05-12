@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from . import __version__
 from .automation_manager import AutomationManager
 from .config import FRONTEND_DIR, PROJECT_ROOT, ensure_runtime_dirs
 from .dataset_tools import audit_dataset as audit_dataset_file
@@ -29,14 +30,16 @@ from .schemas import (
 )
 from .system_report import create_system_report
 from .training_manager import TrainingManager
+from .version_manager import VersionManager
 
 
 ensure_runtime_dirs()
 
-app = FastAPI(title="YOLO GUI", version="0.2.0")
+app = FastAPI(title="YOLO GUI", version=__version__)
 manager = TrainingManager()
 automation_manager = AutomationManager(manager)
 dependency_manager = DependencyManager()
+version_manager = VersionManager()
 
 if FRONTEND_DIR.exists():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR)), name="assets")
@@ -118,6 +121,19 @@ def system_report() -> dict[str, Any]:
 @app.get("/api/models")
 def models() -> dict[str, Any]:
     return {"models": MODEL_PRESETS}
+
+
+@app.get("/api/version")
+def version_info() -> dict[str, Any]:
+    return version_manager.version_info()
+
+
+@app.post("/api/version/update")
+def update_version() -> dict[str, Any]:
+    try:
+        return version_manager.update_from_remote()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @app.get("/api/automations/templates")

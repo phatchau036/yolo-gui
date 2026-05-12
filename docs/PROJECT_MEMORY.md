@@ -20,6 +20,7 @@
 - Automation là một lớp riêng trên GUI: người dùng bấm kịch bản, backend chạy nhiều bước tuần tự và ghi timeline/log riêng thay vì bắt người dùng tự chuyển tab và tự chạy từng lệnh.
 - Mọi nhãn/tùy chọn chính trong GUI phải có giải thích ngắn bằng tooltip. Không nhồi đoạn giải thích dài vào form; dùng dấu hỏi cạnh nhãn và tab `Hướng dẫn` cho nội dung dài.
 - Luôn giữ một tài liệu người dùng cuối tại `docs/USER_GUIDE.md` song song với tab `Hướng dẫn` trong app.
+- Tab `Phiên bản` là đường update GUI cho người không biết git. Update chỉ được chạy bằng `git pull --ff-only` khi repo sạch, không dùng reset/checkout để tránh mất chỉnh sửa.
 
 ## Quy tắc duy trì docs
 
@@ -29,6 +30,7 @@ Khi thay đổi code, cập nhật docs cùng lúc:
 - Đổi luồng workflow/API: cập nhật `PROJECT_LOGIC.md`.
 - Đổi style hoặc pattern: cập nhật `CODE_STYLE.md`.
 - Đổi log/debug: cập nhật `LOGGING_AND_DEBUGGING.md`.
+- Đổi version hoặc release note: cập nhật `CHANGELOG.md` và docs liên quan.
 - Fix bug có bài học mới: cập nhật `BUG_FIX_PLAYBOOK.md`.
 - Hoàn thành/tạo todo: cập nhật `TODO_AND_STATUS.md`.
 - Quyết định dài hạn: cập nhật file này.

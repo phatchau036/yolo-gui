@@ -21,6 +21,7 @@ const sectionTitles = {
   dataset: "Chuẩn bị dữ liệu",
   automation: "Automation YOLO",
   docs: "Hướng dẫn sử dụng",
+  version: "Phiên bản và cập nhật",
   system: "Cài đặt môi trường",
   jobs: "Tiến trình và nhật ký",
 };
@@ -204,6 +205,12 @@ const helpCatalog = {
   "Đánh giá rồi đóng gói": "Kiểm tra chất lượng model, sau đó export sang định dạng bạn chọn.",
   "Dataset -> Train -> Đánh giá -> Đóng gói": "Chạy toàn bộ pipeline từ chuẩn bị dữ liệu đến xuất model.",
   "Automation đang chạy": "Danh sách các kịch bản tự động và trạng thái từng bước.",
+  "Kịch bản": "Chạy nhiều bước YOLO liên tiếp bằng một nút.",
+  "Phiên bản": "Xem phiên bản GUI hiện tại, changelog và kiểm tra bản mới trên GitHub.",
+  "Cập nhật ngay": "Tải bản mới từ GitHub bằng git pull khi thư mục dự án không có file đang sửa.",
+  "Kiểm tra lại": "Kiểm tra lại commit mới trên GitHub và trạng thái cập nhật.",
+  "Trạng thái cập nhật": "Cho biết GUI đang là bản mới nhất hay có bản mới có thể cập nhật.",
+  "Có gì mới": "Changelog các thay đổi chính theo từng phiên bản.",
   "Báo cáo máy đang chạy": "Tạo báo cáo môi trường để biết Python, PyTorch, CUDA, GPU và Ultralytics đang như thế nào.",
   "Trạng thái và nhật ký": "Theo dõi tiến trình và đọc log đầy đủ khi có lỗi.",
 };
@@ -335,6 +342,9 @@ function setActiveSection(section) {
     loadAutomations().catch((error) => showToast(error.message));
     loadAutomationLog().catch(() => {});
   }
+  if (section === "version") {
+    loadVersion().catch((error) => showToast(error.message));
+  }
 }
 
 async function loadModels() {
@@ -348,6 +358,94 @@ async function loadModels() {
       select.appendChild(option);
     }
   }
+}
+
+function shortValue(value, fallback = "-") {
+  return value ? String(value) : fallback;
+}
+
+function renderVersionStatus(payload) {
+  const status = qs("#versionStatus");
+  const updateButton = qs("#updateVersionButton");
+  const current = `v${payload.current_version || "?"}`;
+  const latest = payload.latest_version ? `v${payload.latest_version}` : "Chưa rõ";
+
+  qs("#versionCurrent").textContent = current;
+  qs("#versionFactCurrent").textContent = current;
+  qs("#versionFactLatest").textContent = latest;
+  qs("#versionFactBranch").textContent = shortValue(payload.local_branch);
+  qs("#versionFactCommit").textContent = shortValue(payload.local_commit_short);
+  qs("#versionFactRemote").textContent = shortValue(payload.remote_commit_short);
+  qs("#versionFactRemoteUrl").textContent = shortValue(payload.remote_url);
+
+  status.classList.remove("is-new", "is-current", "is-warning");
+  if (payload.update_available) {
+    status.classList.add(payload.can_update ? "is-new" : "is-warning");
+    status.textContent = payload.status_message || `Có phiên bản mới: ${latest}`;
+  } else if (payload.remote_commit) {
+    status.classList.add("is-current");
+    status.textContent = payload.status_message || "Bạn đang dùng phiên bản mới nhất.";
+  } else {
+    status.classList.add("is-warning");
+    status.textContent = payload.status_message || "Chưa kiểm tra được phiên bản mới trên GitHub.";
+  }
+
+  updateButton.disabled = !payload.can_update;
+  updateButton.querySelector("span:not(.icon)").textContent = payload.can_update
+    ? "Cập nhật ngay"
+    : payload.update_available
+      ? "Cần lưu thay đổi"
+      : "Đã mới nhất";
+  updateButton.title = payload.can_update
+    ? "Tải bản mới từ GitHub"
+    : payload.update_available
+      ? "Repo đang có file đã sửa hoặc chưa đủ điều kiện cập nhật tự động"
+      : "Chưa có bản mới để cập nhật";
+  renderChangelog(payload.changelog || []);
+}
+
+function renderChangelog(sections) {
+  const list = qs("#changelogList");
+  list.innerHTML = "";
+  if (!sections.length) {
+    list.textContent = "Chưa có changelog.";
+    return;
+  }
+  for (const section of sections) {
+    const article = document.createElement("article");
+    article.className = "changelog-entry";
+    const items = (section.items || []).map((item) => `<li>${item}</li>`).join("");
+    article.innerHTML = `
+      <div class="changelog-entry-head">
+        <strong>${section.version || "Phiên bản"}</strong>
+        <span>${section.date || ""}</span>
+      </div>
+      <ul>${items || "<li>Không có ghi chú chi tiết.</li>"}</ul>
+    `;
+    list.appendChild(article);
+  }
+  enhanceInlineHelp();
+}
+
+async function loadVersion() {
+  const payload = await api("/api/version");
+  renderVersionStatus(payload);
+  return payload;
+}
+
+async function updateVersion() {
+  const updateButton = qs("#updateVersionButton");
+  updateButton.disabled = true;
+  qs("#versionUpdateLog").textContent = "Đang cập nhật từ GitHub...\nKhông đóng app trong lúc cập nhật.";
+  const payload = await api("/api/version/update", { method: "POST" });
+  qs("#versionUpdateLog").textContent = [
+    payload.message || "Đã chạy cập nhật.",
+    payload.log_path ? `Log: ${payload.log_path}` : null,
+    "",
+    payload.log || "",
+  ].filter(Boolean).join("\n");
+  renderVersionStatus(payload.after);
+  showToast(payload.message || "Đã cập nhật phiên bản");
 }
 
 function friendlyModelLabel(model) {
@@ -1193,6 +1291,16 @@ function bindEvents() {
     loadAutomations().catch((error) => showToast(error.message));
     loadAutomationLog().catch(() => {});
   });
+  qs("#checkVersionButton").addEventListener("click", () => {
+    loadVersion().catch((error) => showToast(error.message));
+  });
+  qs("#updateVersionButton").addEventListener("click", () => {
+    updateVersion().catch((error) => {
+      showToast(error.message);
+      qs("#versionUpdateLog").textContent = error.message;
+      loadVersion().catch(() => {});
+    });
+  });
   qs("#openDatasetWizardButton").addEventListener("click", openDatasetWizard);
   qs("#stopJobButton").addEventListener("click", () => {
     stopSelectedJob().catch((error) => showToast(error.message));
@@ -1237,6 +1345,7 @@ async function boot() {
   setIconRefresh();
   bindEvents();
   await Promise.all([loadModels(), loadSystem(), loadDependencyStatus(), loadJobs(), loadAutomations()]);
+  loadVersion().catch(() => {});
   updatePredictSourceMode();
   updateDatasetDisplays();
   setYamlOutputPath(qs("#yamlOutputPath").value);

@@ -222,3 +222,23 @@
 - Thêm `docs/COLAB_GUIDE.md` hướng dẫn dùng Colab, cảnh báo link tunnel là tạm thời và public.
 - Cập nhật `README.md` với nút Open in Colab, lệnh clone nhanh và link hướng dẫn.
 - Cập nhật docs handoff: `INDEX`, `PROJECT_LOGIC`, `LOGGING_AND_DEBUGGING`, `USER_GUIDE`, `REPO_MAP`, `TODO_AND_STATUS`.
+
+## 2026-05-12 - Tab Phiên bản, changelog và cập nhật từ GUI
+
+- Nhận feedback: cần có mục phiên bản giống app có thông báo bản mới, changelog và nút update.
+- Bump `yolo_gui.__version__` lên `0.4.0`.
+- Thêm `CHANGELOG.md` để GUI hiển thị lịch sử thay đổi.
+- Thêm `VersionManager`:
+  - Đọc version hiện tại.
+  - Kiểm tra commit local và commit mới trên GitHub.
+  - Cố đọc latest version từ raw GitHub.
+  - Chặn update khi repo có file đã sửa.
+  - Update bằng `git pull --ff-only` và ghi log vào `logs/updates/`.
+- Thêm API:
+  - `GET /api/version`
+  - `POST /api/version/update`
+- Thêm tab `Phiên bản` trong sidebar/quick switch:
+  - Hiển thị version hiện tại, latest version, branch, commit local/remote, remote URL.
+  - Hiển thị changelog.
+  - Có nút `Kiểm tra lại` và `Cập nhật ngay`.
+- Cập nhật docs handoff: `README`, `REPO_MAP`, `PROJECT_LOGIC`, `LOGGING_AND_DEBUGGING`, `USER_GUIDE`, `PROJECT_MEMORY`, `TODO_AND_STATUS`.

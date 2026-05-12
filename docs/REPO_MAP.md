@@ -3,6 +3,7 @@
 ## Root
 
 - `README.md`: mô tả sản phẩm, cách chạy, cấu trúc nhanh.
+- `CHANGELOG.md`: ghi chú thay đổi theo phiên bản, được tab `Phiên bản` đọc để hiển thị trong GUI.
 - `AGENTS.md`: quy tắc làm việc cho agent/dev.
 - `requirements.txt`: dependency runtime Python.
 - `start.ps1`: entrypoint Windows, tạo `.venv`, cài dependency và chạy server.
@@ -23,6 +24,7 @@
 - `train_runner.py`: runner train cũ, giữ lại để tham khảo/tương thích nội bộ nhưng luồng mới dùng `workflow_runner.py`.
 - `dataset_tools.py`: inspect/audit dataset YOLO, tạo `data.yaml`, convert VOC XML sang YOLO txt, tính metrics từ label YOLO.
 - `system_report.py`: tạo report môi trường `.md` và `.json` trong `logs/system_reports/`.
+- `version_manager.py`: đọc version/changelog, kiểm tra commit mới trên GitHub, chạy `git pull --ff-only` khi người dùng bấm cập nhật.
 - `config.py`: đường dẫn chuẩn cho frontend, log, job, output.
 - `__init__.py`: version package.
 
@@ -45,6 +47,7 @@
 - `logs/colab/`:
   - `uvicorn.log`: log server khi chạy bằng `start_colab.py`.
   - `cloudflared.log`: log Cloudflare Tunnel và link `trycloudflare.com`.
+- `logs/updates/`: log mỗi lần người dùng bấm cập nhật phiên bản trong GUI.
 - `runs/gui_jobs/`: config JSON theo job, ví dụ `train_config.json`, `predict_config.json`.
 - `runs/train/`: output train mặc định.
 - `runs/val/`: output validate mặc định.

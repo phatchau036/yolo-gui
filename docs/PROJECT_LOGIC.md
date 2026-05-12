@@ -42,6 +42,23 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
    - `GET /api/jobs/{job_id}/logs`
 9. Nếu cần dừng, frontend gọi `POST /api/jobs/{job_id}/stop`.
 
+## Phiên bản và cập nhật
+
+Tab `Phiên bản` dùng `VersionManager` để gom thông tin:
+
+- Version hiện tại lấy từ `yolo_gui.__version__`.
+- Changelog đọc từ `CHANGELOG.md`.
+- Commit local lấy bằng `git rev-parse`.
+- Commit mới trên GitHub lấy bằng `git ls-remote`.
+- Version mới nhất cố đọc từ file `yolo_gui/__init__.py` trên raw GitHub.
+
+Frontend gọi:
+
+- `GET /api/version`: lấy trạng thái version, commit, changelog và cờ `update_available`.
+- `POST /api/version/update`: chạy `git pull --ff-only <remote> <branch>`.
+
+Không tự cập nhật nếu repo đang có file đã sửa (`git status --porcelain` không rỗng), để tránh ghi đè thay đổi của người dùng. Sau khi update, GUI báo người dùng tải lại trang; nếu backend Python thay đổi, cần restart app hoặc chạy lại cell Colab.
+
 ## Luồng Google Colab
 
 Colab dùng cùng backend/frontend với Windows, chỉ khác cách mở URL:
@@ -124,6 +141,7 @@ Workflow YOLO có thể chạy lâu, chiếm GPU và in log liên tục. Subproc
 - `training_manager.py`: không làm mất log khi subprocess lỗi.
 - `dataset_tools.py`: không xóa hoặc sửa dataset gốc trừ endpoint tạo YAML/convert được người dùng bấm rõ ràng.
 - `dependency_manager.py`: log cài đặt và trạng thái CUDA phải hiện trên GUI.
+- `version_manager.py`: chỉ dùng git để kiểm tra/cập nhật source; không chạy lệnh destructive như reset/checkout.
 - `frontend/app.js`: workflow mới phải có endpoint, form id, number field, handler start và mapping GUI -> tham số YOLO. Không thêm ô JSON/CLI thô vào workflow chính.
 - `frontend/index.html` + `frontend/styles.css`: wizard hoặc form dài phải chia theo cụm thao tác, có cột hành động rõ, không rải field ngang toàn màn hình.
 - `start_colab.py`: chỉ quản lý cài dependency, uvicorn và Cloudflare Tunnel; không nhân đôi logic train/dataset của backend.

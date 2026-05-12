@@ -108,6 +108,11 @@
   - Thêm `start_colab.py` tự cài requirements, tải `cloudflared`, chạy server và mở Cloudflare Tunnel.
   - Thêm `YOLO_GUI_Colab.ipynb` để người dùng Colab bấm chạy một cell.
   - Thêm `docs/COLAB_GUIDE.md` và cập nhật README với Open in Colab.
+- Phiên bản/changelog/update:
+  - Thêm tab `Phiên bản` trong GUI.
+  - Thêm `CHANGELOG.md`.
+  - Thêm API kiểm tra phiên bản và cập nhật bằng `git pull --ff-only`.
+  - Ghi log update vào `logs/updates/`.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q yolo_gui` pass.
@@ -127,6 +132,7 @@
 - Thêm downloader/checker cho pretrained weight nếu model chưa có local.
 - Thêm auth/local password nếu app mở ra LAN.
 - Thêm test tự động cho API và JS form mapping.
+- Thêm kiểm thử giả lập remote update cho `VersionManager`.
 - Tiếp tục rà soát các nhãn nâng cao để giảm thuật ngữ kỹ thuật hơn nữa, nhưng không được làm mất khả năng tùy chỉnh của dev.
 - Tách thêm các form nâng cao khác theo pattern wizard nếu người dùng tiếp tục thấy bố cục quá dày.
 - Bổ sung ảnh minh họa trong tab `Hướng dẫn` khi đã có sample dataset/model thật.
