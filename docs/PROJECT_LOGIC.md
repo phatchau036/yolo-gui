@@ -58,6 +58,8 @@ Frontend gọi:
 - `GET /api/version`: lấy trạng thái version, commit, changelog và cờ `update_available`.
 - `POST /api/version/update`: chạy `git pull --ff-only <remote> <branch>`.
 
+Sidebar header cũng dùng payload từ `GET /api/version` để hiển thị nhanh bản đang chạy dưới tên `YOLO GUI`, nên người dùng không cần mở tab `Phiên bản` chỉ để biết đang ở bản nào.
+
 Không tự cập nhật nếu repo đang có file đã sửa (`git status --porcelain` không rỗng), để tránh ghi đè thay đổi của người dùng. Sau khi update, GUI báo người dùng tải lại trang; nếu backend Python thay đổi, cần restart app hoặc chạy lại cell Colab.
 
 Riêng Colab: sau khi update source, người dùng phải dừng cell `Chạy YOLO GUI`, chạy lại cell và mở link `trycloudflare.com` mới vì backend/tunnel đang sống trong cell cũ.

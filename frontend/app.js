@@ -369,7 +369,11 @@ function renderVersionStatus(payload) {
   const updateButton = qs("#updateVersionButton");
   const current = `v${payload.current_version || "?"}`;
   const latest = payload.latest_version ? `v${payload.latest_version}` : "Chưa rõ";
+  const brandVersion = qs("#brandVersion");
 
+  if (brandVersion) {
+    brandVersion.textContent = current;
+  }
   qs("#versionCurrent").textContent = current;
   qs("#versionFactCurrent").textContent = current;
   qs("#versionFactLatest").textContent = latest;

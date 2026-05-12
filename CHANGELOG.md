@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.2 - 2026-05-12
+
+- Hiển thị phiên bản hiện tại ngay dưới header `YOLO GUI` trong sidebar.
+- Dòng phiên bản dùng chung dữ liệu `/api/version`, nên Windows và Google Colab đều thấy đúng bản đang chạy.
+
 ## v0.4.1 - 2026-05-12
 
 - Tab `Phiên bản` hiển thị môi trường đang chạy: Local hoặc Google Colab.

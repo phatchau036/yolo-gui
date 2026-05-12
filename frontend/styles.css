@@ -107,6 +107,22 @@ body {
   font-size: 1.24rem;
 }
 
+.brand-version {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 7px 0 0;
+  padding: 4px 8px;
+  border: 1px solid rgba(157, 231, 220, 0.3);
+  border-radius: 999px;
+  background: rgba(157, 231, 220, 0.12);
+  color: #bdf8ef;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
 .eyebrow {
   color: var(--accent);
   font-size: 0.72rem;

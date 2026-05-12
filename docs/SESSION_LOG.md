@@ -257,3 +257,10 @@
 - Kiểm tra tab `Phiên bản` trên server `127.0.0.1:8771`.
 - Desktop xác nhận `v0.4.1`, môi trường `Local`, changelog đầu tiên `v0.4.1`, console không có warning/error.
 - Chỉnh CSS mobile để nav và quick action chuyển sang grid, tránh cảm giác vỡ form hoặc phải kéo ngang để thấy nút chính.
+
+## 2026-05-12 - Hiển thị version ở sidebar header
+
+- Nhận feedback: muốn thấy phiên bản ngay dưới header của bar, bên dưới logo/tên `YOLO GUI`.
+- Bump version lên `0.4.2`.
+- Thêm `brandVersion` trong sidebar header và cập nhật bằng dữ liệu `/api/version` khi app load.
+- Áp dụng cho cả Windows local và Google Colab vì cùng dùng frontend/backend version API.
