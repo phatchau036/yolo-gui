@@ -436,3 +436,12 @@
 - Thêm cache-busting query `v=0.4.18-pro-ai-lab.2` cho CSS/JS để người dùng sau update không bị trình duyệt giữ frontend cũ.
 - Sau QA console: sửa `DependencyManager` để `importlib.invalidate_caches()` không làm endpoint dependency/logs trả 500 trên Windows khi cache có path `python311.zip` thiếu.
 - Browser QA cuối: desktop `1366x768`, mobile `390x844`, toàn bộ tab chính không horizontal overflow; dependency refresh khóa 4 nút action trong lúc kiểm tra; annotator load/lưu 2 box thành công; console sạch warning/error.
+
+## 2026-05-12 - Refresh demo images sau redesign lớn
+
+- Chụp lại toàn bộ bộ ảnh README theo UI `v0.4.18 Pro AI Lab`.
+- `demo-train-desktop.png`: dùng viewport desktop lớn để thấy sidebar, topbar, quick workflow và dependency card mới.
+- `demo-dataset-wizard.png`: chụp riêng panel wizard tạo `data.yaml` để hình GitHub tập trung vào workflow 100% GUI.
+- `demo-annotation.png`: chụp annotator đang load sample image và 2 bounding box, xác nhận toolbar không còn vỡ bởi path dài.
+- `demo-automation.png`: chụp riêng section automation để người xem thấy hero, kịch bản và timeline thay vì bị lẫn quá nhiều dependency card.
+- `demo-mobile.png`: chụp lại layout mobile theo shell/sidebar mới.
