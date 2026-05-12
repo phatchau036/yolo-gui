@@ -45,7 +45,7 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
 
 - `POST /api/datasets/inspect`: đọc nhanh `data.yaml`.
 - `POST /api/datasets/audit`: đếm ảnh/label theo split, phát hiện thiếu label, label rỗng, dòng label sai, class id vượt `names`.
-- `POST /api/datasets/create-yaml`: tạo file `data.yaml` từ root/split/classes.
+- `POST /api/datasets/create-yaml`: tạo file `data.yaml` từ root/split/classes. Frontend Dataset Wizard gọi API này, rồi tự gán YAML vừa tạo vào Train, Validate, Audit và Export calibration.
 - `POST /api/datasets/voc-to-yolo`: convert VOC XML sang YOLO txt.
 - `POST /api/datasets/metrics`: tính precision/recall/F1 từ folder label prediction và ground truth.
 

@@ -122,7 +122,11 @@
                   <option value="exportModelPath">Export model</option>
                   <option value="exportDataPath">Export calibration data</option>
                   <option value="auditPath">Dataset audit</option>
+                  <option value="yamlOutputPath">YAML output</option>
                   <option value="yamlRoot">YAML root</option>
+                  <option value="yamlTrain">YAML train split</option>
+                  <option value="yamlVal">YAML val split</option>
+                  <option value="yamlTest">YAML test split</option>
                   <option value="vocAnnotationsDir">VOC XML folder</option>
                   <option value="metricsPredictionDir">Metrics predictions</option>
                   <option value="metricsGroundTruthDir">Metrics labels</option>
@@ -171,7 +175,13 @@
               <label class="field"><span class="label">Preset model</span><span class="select is-fullwidth"><select id="trainModelSelect" class="model-preset"></select></span></label>
               <label class="field"><span class="label">Model tùy chỉnh</span><input id="trainModelCustom" class="input" type="text" data-custom-model placeholder="C:\weights\last.pt hoặc yolo11n.yaml" /></label>
               <label class="field"><span class="label">Task</span><span class="select is-fullwidth"><select name="task"><option value="detect">Detect</option><option value="segment">Segment</option><option value="classify">Classify</option><option value="pose">Pose</option><option value="obb">OBB</option></select></span></label>
-              <label class="field wide-field"><span class="label">Dataset data.yaml</span><input id="trainDataPath" name="data" class="input" type="text" required placeholder="C:\datasets\project\data.yaml" /></label>
+              <label class="field wide-field">
+                <span class="label">Dataset data.yaml</span>
+                <span class="field has-addons">
+                  <span class="control is-expanded"><input id="trainDataPath" name="data" class="input" type="text" required placeholder="C:\datasets\project\data.yaml" /></span>
+                  <span class="control"><button id="openDatasetWizardButton" class="button is-light" type="button"><span class="icon"><i data-lucide="file-plus-2"></i></span><span>Tạo YAML</span></button></span>
+                </span>
+              </label>
               <label class="field"><span class="label">Epochs</span><input name="epochs" class="input" type="number" min="1" value="100" /></label>
               <label class="field"><span class="label">Image size</span><input name="imgsz" class="input" type="number" min="32" step="32" value="640" /></label>
               <label class="field"><span class="label">Batch</span><input name="batch" class="input" type="number" step="0.01" value="16" /></label>
@@ -322,21 +332,28 @@
 
         <section id="section-dataset" class="page-section">
           <div class="tool-grid">
+            <section class="work-panel dataset-wizard-panel">
+              <div class="panel-heading-row">
+                <div><p class="eyebrow">Dataset wizard</p><h3>Tạo data.yaml bằng GUI</h3></div>
+                <div class="panel-actions">
+                  <button id="useYoloLayoutButton" class="button is-light" type="button"><span class="icon"><i data-lucide="sparkles"></i></span><span>Layout YOLO</span></button>
+                  <button id="createYamlButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="file-plus-2"></i></span><span>Tạo và gán YAML</span></button>
+                </div>
+              </div>
+              <div class="settings-grid">
+                <label class="field wide-field"><span class="label">Root dataset</span><input id="yamlRoot" class="input" type="text" placeholder="C:\datasets\project" /></label>
+                <label class="field wide-field"><span class="label">Output data.yaml</span><input id="yamlOutputPath" class="input" type="text" placeholder="C:\datasets\project\data.yaml" /></label>
+                <label class="field"><span class="label">Train images</span><input id="yamlTrain" class="input" type="text" value="images/train" /></label>
+                <label class="field"><span class="label">Val images</span><input id="yamlVal" class="input" type="text" value="images/val" /></label>
+                <label class="field"><span class="label">Test images</span><input id="yamlTest" class="input" type="text" placeholder="images/test" /></label>
+                <div class="field yaml-assign-field"><span class="label">Gán sau khi tạo</span><label class="checkbox yaml-assign-toggle"><input id="yamlAssignTargets" type="checkbox" checked /> Train, Validate, Audit</label></div>
+              </div>
+              <label class="field"><span class="label">Classes</span><textarea id="yamlNames" class="textarea" rows="5" placeholder="person&#10;car&#10;helmet"></textarea></label>
+            </section>
             <section class="work-panel">
               <div class="panel-heading-row"><div><p class="eyebrow">Audit</p><h3>Kiểm tra dataset YOLO</h3></div><button id="auditDatasetButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="search-check"></i></span><span>Audit</span></button></div>
               <label class="field"><span class="label">data.yaml</span><input id="auditPath" class="input" type="text" placeholder="C:\datasets\project\data.yaml" /></label>
               <pre id="datasetToolOutput" class="preview-box">Chưa có kết quả.</pre>
-            </section>
-            <section class="work-panel">
-              <div class="panel-heading-row"><div><p class="eyebrow">YAML</p><h3>Tạo data.yaml</h3></div><button id="createYamlButton" class="button is-light" type="button"><span class="icon"><i data-lucide="file-plus-2"></i></span><span>Tạo</span></button></div>
-              <div class="settings-grid two">
-                <label class="field"><span class="label">Output YAML</span><input id="yamlOutputPath" class="input" type="text" placeholder="C:\datasets\project\data.yaml" /></label>
-                <label class="field"><span class="label">Root</span><input id="yamlRoot" class="input" type="text" placeholder="C:\datasets\project" /></label>
-                <label class="field"><span class="label">Train</span><input id="yamlTrain" class="input" type="text" value="images/train" /></label>
-                <label class="field"><span class="label">Val</span><input id="yamlVal" class="input" type="text" value="images/val" /></label>
-                <label class="field"><span class="label">Test</span><input id="yamlTest" class="input" type="text" placeholder="images/test" /></label>
-              </div>
-              <label class="field"><span class="label">Classes</span><textarea id="yamlNames" class="textarea" rows="5" placeholder="person&#10;car&#10;helmet"></textarea></label>
             </section>
             <section class="work-panel">
               <div class="panel-heading-row"><div><p class="eyebrow">VOC</p><h3>XML sang YOLO txt</h3></div><button id="convertVocButton" class="button is-light" type="button"><span class="icon"><i data-lucide="arrow-right-left"></i></span><span>Convert</span></button></div>

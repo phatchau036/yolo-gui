@@ -447,6 +447,13 @@ body {
   min-width: 0;
 }
 
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .work-panel h3 {
   font-size: 1.16rem;
   font-weight: 850;
@@ -619,6 +626,20 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.dataset-wizard-panel {
+  grid-column: 1 / -1;
+}
+
+.yaml-assign-field {
+  margin-bottom: 0;
+}
+
+.yaml-assign-toggle {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
 }
 
 .preview-box,
@@ -852,7 +873,8 @@ body {
 
   .topbar-actions .button,
   .dependency-actions .button,
-  .panel-heading-row .button {
+  .panel-heading-row .button,
+  .panel-actions .button {
     width: 100%;
   }
 

@@ -10,7 +10,7 @@ Web GUI local để chạy Ultralytics YOLO mà không cần nhớ CLI. Dự án
 - Predict ảnh, folder, video, camera hoặc source URL, có tùy chọn save media/txt/conf/crop.
 - Export model sang ONNX, TensorRT, OpenVINO, TorchScript, CoreML, TFLite, NCNN và các format Ultralytics hỗ trợ.
 - Kiểm tra dataset sâu hơn: đếm ảnh/label, thiếu label, label rỗng, dòng label sai, class id ngoài danh sách.
-- Tạo `data.yaml`, convert VOC XML sang YOLO txt, tính precision/recall/F1 từ thư mục label prediction và ground truth.
+- Tạo và gán `data.yaml` trực tiếp trong GUI, convert VOC XML sang YOLO txt, tính precision/recall/F1 từ thư mục label prediction và ground truth.
 - Tự kiểm tra Python, pip, NVIDIA/CUDA, PyTorch và Ultralytics ngay trên GUI.
 - Có nút cài Ultralytics, PyTorch CUDA và PyTorch CPU ngay trên GUI, kèm log cài đặt.
 - Lưu config, log và kết quả theo từng job để debug/handoff dễ hơn.
@@ -55,15 +55,21 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8765
 - `runs/train`, `runs/val`, `runs/predict`: output mặc định.
 - `docs/`: tài liệu handoff cho dev tiếp theo.
 
-## Dataset kỳ vọng
+## Dataset
 
-Đường dẫn dataset nên trỏ tới file YAML của Ultralytics, ví dụ:
+Người dùng không cần tự viết `data.yaml` bằng CLI hoặc editor. Vào tab `Dataset`, chọn root dataset, train/val/test split, nhập danh sách class rồi bấm `Tạo và gán YAML`. GUI sẽ tạo file YAML và tự điền vào Train, Validate, Audit.
+
+Layout YOLO chuẩn:
 
 ```text
-C:\datasets\my-dataset\data.yaml
+dataset-root/
+  images/train/
+  images/val/
+  labels/train/
+  labels/val/
 ```
 
-Ví dụ nội dung:
+Nội dung YAML do GUI tạo có dạng:
 
 ```yaml
 path: C:/datasets/my-dataset

@@ -27,7 +27,7 @@
 - Tạo Dataset tools:
   - Inspect `data.yaml`.
   - Audit split train/val/test.
-  - Tạo `data.yaml`.
+  - Tạo `data.yaml` bằng GUI và tự gán vào Train/Validate/Audit.
   - Convert VOC XML sang YOLO txt.
   - Tính precision/recall/F1 từ label YOLO.
 - Tạo System report:
@@ -65,6 +65,12 @@
   - Thu gọn path browser vào `details` để màn hình chính đỡ rối.
   - Làm lại spacing, màu, shadow, focus state, button và form density.
   - Mobile nav và quick workflow dùng thanh cuộn ngang để giảm chiều cao.
+- Dataset wizard nâng cấp:
+  - Nút `Tạo YAML` nằm ngay cạnh ô dataset trong Train.
+  - Dataset tab có wizard tạo `data.yaml` từ root/train/val/test/classes.
+  - Nút `Layout YOLO` tự điền split chuẩn `images/train`, `images/val`, `images/test`.
+  - Path browser có thể gán vào YAML output/root/train/val/test.
+  - YAML tạo ra dùng dấu `/` trong `path` để thân thiện với Ultralytics.
 
 ## Cần làm tiếp
 

@@ -341,6 +341,9 @@ function setPathTarget(path) {
   const target = document.getElementById(targetId);
   if (target) {
     target.value = path;
+    if (targetId === "yamlRoot" && !qs("#yamlOutputPath").value.trim()) {
+      qs("#yamlOutputPath").value = `${path.replace(/[\\/]$/, "")}\\data.yaml`;
+    }
   }
 }
 
@@ -513,19 +516,54 @@ async function auditDataset() {
 }
 
 async function createYaml() {
+  const root = qs("#yamlRoot").value.trim();
+  const outputPath = qs("#yamlOutputPath").value.trim() || (root ? `${root.replace(/[\\/]$/, "")}\\data.yaml` : "");
   const payload = await api("/api/datasets/create-yaml", {
     method: "POST",
     body: JSON.stringify({
-      output_path: qs("#yamlOutputPath").value.trim(),
-      root: qs("#yamlRoot").value.trim(),
-      train: qs("#yamlTrain").value.trim(),
-      val: qs("#yamlVal").value.trim(),
+      output_path: outputPath,
+      root,
+      train: qs("#yamlTrain").value.trim() || "images/train",
+      val: qs("#yamlVal").value.trim() || "images/val",
       test: qs("#yamlTest").value.trim() || null,
       names: splitList(qs("#yamlNames").value),
     }),
   });
+  qs("#yamlOutputPath").value = payload.path;
+  if (qs("#yamlAssignTargets").checked) {
+    assignDatasetYaml(payload.path);
+  }
   writeOutput("#datasetToolOutput", payload);
-  showToast("Đã tạo data.yaml");
+  showToast("Đã tạo và gán data.yaml");
+}
+
+function assignDatasetYaml(path) {
+  qs("#trainDataPath").value = path;
+  qs("#valDataPath").value = path;
+  qs("#auditPath").value = path;
+  qs("#exportDataPath").value = path;
+}
+
+function useYoloLayoutDefaults() {
+  const root = qs("#yamlRoot").value.trim() || qs("#folderPath").value.trim();
+  if (root) {
+    const normalizedRoot = root.replace(/[\\/]$/, "");
+    qs("#yamlRoot").value = normalizedRoot;
+    qs("#yamlOutputPath").value = `${normalizedRoot}\\data.yaml`;
+  }
+  qs("#yamlTrain").value = "images/train";
+  qs("#yamlVal").value = "images/val";
+  qs("#yamlTest").value = "images/test";
+  showToast("Đã điền layout YOLO chuẩn");
+}
+
+function openDatasetWizard() {
+  setActiveSection("dataset");
+  qs(".path-tool").open = true;
+  window.setTimeout(() => {
+    qs("#yamlRoot").focus();
+    qs("#yamlRoot").scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 50);
 }
 
 async function convertVoc() {
@@ -586,6 +624,7 @@ function bindEvents() {
     loadLog().catch(() => {});
   });
   qs("#openJobsButton").addEventListener("click", () => setActiveSection("jobs"));
+  qs("#openDatasetWizardButton").addEventListener("click", openDatasetWizard);
   qs("#stopJobButton").addEventListener("click", () => {
     stopSelectedJob().catch((error) => showToast(error.message));
   });
@@ -609,6 +648,7 @@ function bindEvents() {
   qs("#createYamlButton").addEventListener("click", () => {
     createYaml().catch((error) => showToast(error.message));
   });
+  qs("#useYoloLayoutButton").addEventListener("click", useYoloLayoutDefaults);
   qs("#convertVocButton").addEventListener("click", () => {
     convertVoc().catch((error) => showToast(error.message));
   });

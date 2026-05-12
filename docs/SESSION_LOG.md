@@ -85,3 +85,19 @@
   - Làm lại visual system trong `styles.css`: nền, sidebar, card, spacing, focus state, button, form density, status cards.
   - Mobile sidebar chuyển sang thanh nav ngang, quick workflow cũng cuộn ngang để không chiếm quá nhiều chiều cao.
 - Verify lại trên browser ở `127.0.0.1:8766`: desktop/mobile không horizontal overflow, quick card chuyển tab đúng, console sạch.
+
+## 2026-05-12 - Dataset YAML wizard
+
+- Nhận feedback: không nên bắt người dùng tự tạo `C:\datasets\my-dataset\data.yaml`.
+- Nâng Dataset tab thành wizard tạo YAML:
+  - Chọn root dataset, output YAML, train/val/test split và class list trong GUI.
+  - Nút `Layout YOLO` điền nhanh `images/train`, `images/val`, `images/test`.
+  - Nút `Tạo YAML` trong Train chuyển thẳng sang Dataset wizard.
+  - Sau khi tạo, GUI tự gán YAML vào Train, Validate, Audit và Export calibration.
+  - Path browser có thêm target cho YAML output/root/train/val/test.
+- Backend `create_dataset_yaml` đổi `path` sang dấu `/` để YAML Windows dễ dùng hơn.
+- Verify:
+  - `node --check frontend/app.js` pass.
+  - `python -m compileall -q yolo_gui` pass.
+  - API tạo YAML trên `127.0.0.1:8766` pass.
+  - Browser xác nhận wizard tồn tại, tự gán form đúng, desktop/mobile không horizontal overflow, console sạch.

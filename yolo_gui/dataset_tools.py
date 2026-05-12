@@ -94,8 +94,9 @@ def audit_dataset(path: str | Path, max_examples: int = 40) -> dict[str, Any]:
 
 def create_dataset_yaml(request: Any) -> dict[str, Any]:
     output_path = Path(request.output_path).expanduser()
+    root_path = str(Path(request.root).expanduser()).replace("\\", "/")
     payload: dict[str, Any] = {
-        "path": str(Path(request.root).expanduser()),
+        "path": root_path,
         "train": request.train,
         "val": request.val,
         "names": {idx: name for idx, name in enumerate(request.names)},
