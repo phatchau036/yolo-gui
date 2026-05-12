@@ -15,6 +15,7 @@
 - Không hiển thị `extra_args` JSON cho người dùng cuối. Hook này chỉ giữ nội bộ để backend contract không phải refactor rộng.
 - Log phải đầy đủ, đặc biệt traceback từ runner.
 - Người dùng không phải tự mở CLI để cài dependency. GUI phải kiểm tra và cài được PyTorch CUDA/CPU và Ultralytics, đồng thời hiển thị log cài đặt ngay trong app.
+- Trên Google Colab, trạng thái CPU/GPU phải dùng ngôn ngữ notebook: nói rõ CPU vẫn chạy được nhưng chậm, và hướng dẫn bật GPU bằng `Runtime > Change runtime type > GPU` rồi chạy lại cell YOLO GUI. Không chỉ ghi `CUDA chưa sẵn sàng` như máy local.
 - Nguyên tắc mới: workflow chính phải 100% GUI, không bắt người dùng hiểu `data.yaml`, JSON, `device=0`, CLI args, split name hoặc tham số YOLO thô.
 - Dataset wizard không được là một form ngang quá rộng. Luồng chuẩn là bố cục có bước rõ ràng: cột chính nhập thư mục/cấu trúc/class, cột hành động bên phải tạo và gán `data.yaml`.
 - Automation là một lớp riêng trên GUI: người dùng bấm kịch bản, backend chạy nhiều bước tuần tự và ghi timeline/log riêng thay vì bắt người dùng tự chuyển tab và tự chạy từng lệnh.

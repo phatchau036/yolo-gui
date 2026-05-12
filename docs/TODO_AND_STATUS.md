@@ -119,6 +119,8 @@
   - Khóa các nút cài/kiểm tra môi trường trong lúc GUI đang kiểm tra dependency.
   - Chặn lựa chọn Camera trên Google Colab vì Ultralytics không hỗ trợ webcam `source=0` trong notebook.
   - Cụm duyệt đường dẫn dùng icon button gọn để không còn vỡ chữ ở nút Mở/Gán.
+  - Sidebar nhận diện Google Colab trong chính API dependency, đổi tiêu đề thành `Colab hiện tại` và hướng dẫn bật GPU runtime khi đang chạy CPU.
+  - Mobile cũng hiển thị thẻ `Colab hiện tại` dạng gọn, không ẩn hướng dẫn CPU/GPU.
   - Mobile không dùng thanh cuộn ngang cho nav/quick action để tránh cảm giác vỡ form.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
@@ -144,6 +146,7 @@
 - Tách thêm các form nâng cao khác theo pattern wizard nếu người dùng tiếp tục thấy bố cục quá dày.
 - Bổ sung ảnh minh họa trong tab `Hướng dẫn` khi đã có sample dataset/model thật.
 - Bổ sung smoke test thật trên Google Colab khi có runtime GPU mở sẵn; hiện đã có launcher/notebook và kiểm tra tĩnh local.
+- Bổ sung nút/hướng dẫn mở nhanh cài đặt GPU Colab nếu Colab cho phép deep-link hoặc widget runtime trong tương lai.
 
 ## Rủi ro hiện tại
 
@@ -153,3 +156,4 @@
 - TensorRT/OpenVINO/CoreML export phụ thuộc package và môi trường máy; GUI tạo job/log, còn backend chưa tự cài riêng các runtime export này.
 - Một số thuật ngữ trong phần nâng cao vẫn là khái niệm YOLO; workflow chính đã chạy được mà không cần mở phần đó.
 - Cloudflare Quick Tunnel trong Colab là link public tạm thời; không dùng để chia sẻ dữ liệu/model riêng tư nếu chưa có kiểm soát truy cập riêng.
+- Trên Colab, sau khi đổi runtime sang GPU phải chạy lại cell YOLO GUI vì backend Python và tunnel thuộc runtime/cell hiện tại.

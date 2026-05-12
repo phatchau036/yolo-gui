@@ -430,6 +430,10 @@ function shortValue(value, fallback = "-") {
   return value ? String(value) : fallback;
 }
 
+function isColabRuntime(runtime = state.runtime) {
+  return runtime === "Google Colab";
+}
+
 function renderVersionStatus(payload) {
   const status = qs("#versionStatus");
   const updateButton = qs("#updateVersionButton");
@@ -535,21 +539,61 @@ function friendlyModelLabel(model) {
   return `${family} - ${sizeMap[sizeCode] || model.label}`;
 }
 
-async function loadSystem() {
-  const payload = await api("/api/dependencies/status");
+function packageStatus(packageInfo) {
+  return packageInfo?.installed ? packageInfo.version || "đã cài" : "chưa cài";
+}
+
+function runtimeFromStatus(payload) {
+  return payload.runtime || state.runtime || "Local";
+}
+
+function formatGpuDevices(torchDevices, nvidiaGpus) {
+  if (torchDevices.length) {
+    return torchDevices.map((device) => `GPU ${device.id}: ${device.name} (${device.memory_gb}GB)`).join("\n");
+  }
+  if (nvidiaGpus.length) {
+    return nvidiaGpus.map((device) => `NVIDIA: ${device.name} (${device.memory_mb}MB)`).join("\n");
+  }
+  return "Không thấy NVIDIA/CUDA GPU";
+}
+
+function colabGpuHelp(payload, torchDevices, nvidiaGpus) {
+  if (payload.torch?.cuda_available && torchDevices.length) {
+    return `GPU Colab: ${torchDevices.map((device) => `${device.name} (${device.memory_gb}GB)`).join(", ")}`;
+  }
+  if (payload.nvidia?.available || nvidiaGpus.length) {
+    return "GPU Colab: Colab đã có GPU NVIDIA nhưng PyTorch đang chạy CPU. Vào tab Cài đặt rồi bấm Cài PyTorch CUDA.";
+  }
+  return "GPU Colab: chưa bật GPU runtime. Trong Colab bấm Runtime > Change runtime type > GPU, rồi chạy lại cell YOLO GUI.";
+}
+
+function renderSystemStatus(payload) {
+  const runtime = runtimeFromStatus(payload);
+  state.runtime = runtime;
   const torchDevices = payload.torch?.devices || [];
   const nvidiaGpus = payload.nvidia?.gpus || [];
-  const devices = torchDevices.length
-    ? torchDevices.map((device) => `GPU ${device.id}: ${device.name} (${device.memory_gb}GB)`).join("\n")
-    : nvidiaGpus.length
-      ? nvidiaGpus.map((device) => `NVIDIA: ${device.name} (${device.memory_mb}MB)`).join("\n")
-      : "Không thấy NVIDIA/CUDA GPU";
-  qs("#systemStatus").textContent = [
-    `Ultralytics: ${payload.ultralytics.installed ? payload.ultralytics.version || "đã cài" : "chưa cài"}`,
-    `Torch: ${payload.torch.installed ? payload.torch.version || "đã cài" : "chưa cài"}`,
-    `CUDA: ${payload.torch.cuda_available ? payload.torch.cuda_version || "available" : "chưa sẵn sàng"}`,
-    devices,
-  ].join("\n");
+  const card = qs(".system-card");
+  const title = qs("#systemCardTitle");
+  const lines = isColabRuntime(runtime)
+    ? [
+        "Môi trường: Google Colab",
+        `Ultralytics: ${packageStatus(payload.ultralytics)}`,
+        `PyTorch: ${packageStatus(payload.torch)}`,
+        `Chế độ train: ${payload.torch?.cuda_available ? "GPU sẵn sàng" : "CPU, vẫn chạy được nhưng chậm"}`,
+        colabGpuHelp(payload, torchDevices, nvidiaGpus),
+      ]
+    : [
+        `Môi trường: ${runtime}`,
+        `Ultralytics: ${packageStatus(payload.ultralytics)}`,
+        `PyTorch: ${packageStatus(payload.torch)}`,
+        `CUDA: ${payload.torch?.cuda_available ? payload.torch.cuda_version || "sẵn sàng" : "chưa sẵn sàng"}`,
+        formatGpuDevices(torchDevices, nvidiaGpus),
+      ];
+
+  title.textContent = isColabRuntime(runtime) ? "Colab hiện tại" : "Máy hiện tại";
+  card.classList.toggle("is-colab", isColabRuntime(runtime));
+  qs("#systemStatus").textContent = lines.join("\n");
+  updatePredictRuntimeGuards();
 }
 
 function dependencyActionButtons() {
@@ -611,6 +655,7 @@ async function loadDependencyStatus(options = {}) {
     renderDependencyErrorState(error);
     throw error;
   }
+  renderSystemStatus(payload);
   renderDependencyStatus(payload);
   if (payload.installing) {
     startDependencyPolling();
@@ -661,7 +706,9 @@ function renderDependencyStatus(payload) {
     badge.className = "status-pill status-completed";
     badge.textContent = "CPU ready";
     title.textContent = "Có thể chạy CPU, CUDA chưa sẵn sàng";
-    detail.textContent = payload.nvidia.available
+    detail.textContent = isColabRuntime(runtimeFromStatus(payload)) && !payload.nvidia.available
+      ? "Colab đang ở CPU runtime. Vào Runtime > Change runtime type > GPU, rồi chạy lại cell YOLO GUI."
+      : payload.nvidia.available
       ? "Máy có NVIDIA GPU nhưng PyTorch chưa thấy CUDA. Có thể cài PyTorch CUDA từ GUI."
       : "Không thấy NVIDIA GPU qua nvidia-smi. Có thể chạy CPU.";
     return;
@@ -683,6 +730,8 @@ function renderDependencyStatus(payload) {
 function renderDependencyChecklist(payload) {
   const nvidiaText = payload.nvidia.available
     ? `${payload.nvidia.gpus.map((gpu) => gpu.name).join(", ")} · Driver ${payload.nvidia.driver_version || "unknown"}`
+    : isColabRuntime(runtimeFromStatus(payload))
+      ? "Colab đang ở CPU runtime. Bật GPU trong Runtime > Change runtime type, rồi chạy lại cell YOLO GUI."
     : payload.nvidia.error || "Không thấy nvidia-smi";
   const torchText = payload.torch.installed
     ? `${payload.torch.version || "unknown"}${payload.torch.cuda_available ? ` · CUDA ${payload.torch.cuda_version || "available"}` : " · CPU only"}`
@@ -1471,7 +1520,6 @@ function bindEvents() {
   qs("#refreshDependencyButton").addEventListener("click", () => {
     loadDependencyStatus().catch((error) => showToast(error.message));
     loadDependencyLog().catch(() => {});
-    loadSystem().catch(() => {});
   });
   qs("#auditDatasetButton").addEventListener("click", () => {
     auditDataset().catch((error) => showToast(error.message));
@@ -1499,8 +1547,7 @@ async function boot() {
   setIconRefresh();
   bindEvents();
   startHealthCheckCron();
-  await Promise.all([loadModels(), loadSystem(), loadDependencyStatus(), loadJobs(), loadAutomations()]);
-  loadVersion().catch(() => {});
+  await Promise.all([loadModels(), loadDependencyStatus(), loadVersion().catch(() => null), loadJobs(), loadAutomations()]);
   updatePredictSourceMode();
   updatePredictRuntimeGuards();
   updateDatasetDisplays();

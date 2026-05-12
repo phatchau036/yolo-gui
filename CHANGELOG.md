@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.5 - 2026-05-12
+
+- Thẻ sidebar `Máy hiện tại` đổi thành `Colab hiện tại` khi GUI chạy trên Google Colab.
+- Trạng thái Colab không còn chỉ ghi `CUDA: chưa sẵn sàng`; GUI giải thích đang chạy CPU, vẫn chạy được nhưng chậm, và chỉ rõ cách bật GPU trong `Runtime > Change runtime type > GPU`.
+- API `/api/dependencies/status` trả thêm `runtime` để frontend không bị render nhầm kiểu local khi kiểm tra dependency chạy trước kiểm tra version.
+- Tab `Cài đặt` cũng dùng câu hướng dẫn riêng cho Colab CPU runtime thay vì chỉ báo không thấy `nvidia-smi`.
+
 ## v0.4.4 - 2026-05-12
 
 - Làm lại cụm duyệt đường dẫn để nút mở/gán là icon button gọn, không còn vỡ chữ.

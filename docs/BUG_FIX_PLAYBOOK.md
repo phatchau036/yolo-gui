@@ -64,10 +64,11 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 ## CUDA không sẵn sàng
 
 1. Kiểm tra card `NVIDIA/CUDA` trong GUI.
-2. Nếu `nvidia-smi not found`, cài hoặc sửa NVIDIA driver trước.
-3. Nếu có NVIDIA GPU nhưng PyTorch báo CPU only, bấm `Cài PyTorch CUDA`.
-4. Sau khi cài xong, restart server nếu Python vẫn giữ module cũ.
-5. Kiểm tra lại `GET /api/dependencies/status`.
+2. Nếu runtime là Google Colab và chưa thấy GPU, bật GPU bằng `Runtime > Change runtime type > GPU`, lưu lại, chạy lại cell YOLO GUI và mở link tunnel mới.
+3. Nếu là Windows/local và `nvidia-smi not found`, cài hoặc sửa NVIDIA driver trước.
+4. Nếu có NVIDIA GPU nhưng PyTorch báo CPU only, bấm `Cài PyTorch CUDA`.
+5. Sau khi cài xong, restart server nếu Python vẫn giữ module cũ.
+6. Kiểm tra lại `GET /api/dependencies/status`; payload phải có field `runtime` để frontend render đúng câu hướng dẫn.
 
 ## Stop job không dừng
 

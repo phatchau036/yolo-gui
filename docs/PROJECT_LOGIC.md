@@ -50,6 +50,13 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
 - Kết quả không hiện toast liên tục; chỉ cập nhật badge `healthStatus` trong sidebar card `Máy hiện tại`.
 - Nếu backend trả `ok: true`, badge là `Online`. Nếu request lỗi, timeout hoặc backend trả lỗi, badge chuyển sang `Mất kết nối`.
 
+## Sidebar system status
+
+- `GET /api/dependencies/status` trả thêm `runtime`: `Local` hoặc `Google Colab`.
+- Frontend dùng runtime này để render thẻ máy hiện tại. Local giữ title `Máy hiện tại`; Colab đổi thành `Colab hiện tại`.
+- Trên Colab, không chỉ hiển thị `CUDA: chưa sẵn sàng`; UI phải nói rõ đang ở CPU runtime, vẫn chạy được nhưng chậm, và hướng dẫn bật GPU bằng `Runtime > Change runtime type > GPU`, sau đó chạy lại cell YOLO GUI.
+- `loadDependencyStatus()` cũng gọi `renderSystemStatus(payload)`, nên thẻ sidebar và tab `Cài đặt` dùng cùng một payload môi trường, không bị lệch khi `/api/version` chạy chậm hoặc lỗi mạng.
+
 ## Phiên bản và cập nhật
 
 Tab `Phiên bản` dùng `VersionManager` để gom thông tin:
@@ -84,7 +91,7 @@ Colab dùng cùng backend/frontend với Windows, chỉ khác cách mở URL:
 4. Script parse link `trycloudflare.com` từ output của Cloudflare Tunnel và hiển thị nút mở GUI trong notebook.
 5. Người dùng thao tác trong GUI giống Windows. Cell Colab phải tiếp tục chạy để server và tunnel còn sống.
 
-Không thêm API riêng cho Colab. Mục tiêu là giữ một codepath GUI, còn `start_colab.py` chỉ là launcher/tunnel wrapper.
+Không thêm API launcher riêng cho Colab. Mục tiêu là giữ một codepath GUI, còn `start_colab.py` chỉ là launcher/tunnel wrapper. Các API runtime như `/api/version` và `/api/dependencies/status` vẫn trả cờ Colab để frontend đổi wording cho đúng người dùng notebook.
 
 ## Automation GUI
 
@@ -112,7 +119,7 @@ Không chạy automation trong request thread. Manager spawn background thread, 
 
 `workflow_runner.py` normalize `device` dạng `"0,1"` thành list GPU và normalize `source="0"` thành camera index `0`.
 
-Riêng Google Colab không hỗ trợ webcam trực tiếp qua `source=0`. Frontend dùng runtime từ `/api/version` để khóa lựa chọn `Camera`; backend `POST /api/predict/start` cũng chặn source dạng số khi `VersionManager.is_colab_runtime()` trả true và trả lỗi tiếng Việt trước khi tạo job.
+Riêng Google Colab không hỗ trợ webcam trực tiếp qua `source=0`. Frontend dùng runtime từ `/api/version` và `/api/dependencies/status` để khóa lựa chọn `Camera`; backend `POST /api/predict/start` cũng chặn source dạng số khi `VersionManager.is_colab_runtime()` trả true và trả lỗi tiếng Việt trước khi tạo job.
 
 ## Dataset tools
 

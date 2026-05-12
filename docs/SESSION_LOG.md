@@ -283,3 +283,18 @@
 - `loadDependencyStatus()` render trạng thái checking trước khi gọi API, đặt `aria-busy=true` và disable các nút cài/kiểm tra lại.
 - Frontend khóa lựa chọn `Camera` khi runtime từ `/api/version` là `Google Colab`.
 - Backend `POST /api/predict/start` chặn source dạng số trên Colab và trả lỗi tiếng Việt trước khi tạo job.
+
+## 2026-05-12 - Làm rõ trạng thái CPU/GPU trên Colab
+
+- Nhận feedback: chạy trên Colab sidebar vẫn hiện kiểu local với `CUDA: chưa sẵn sàng` và `Không thấy NVIDIA/CUDA GPU`, khiến người dùng không biết phải làm gì.
+- Bump version lên `0.4.5`.
+- `GET /api/dependencies/status` trả thêm `runtime` để frontend biết đang chạy `Local` hay `Google Colab` ngay trong payload dependency.
+- Frontend đổi title thẻ sidebar thành `Colab hiện tại` khi runtime là Google Colab.
+- Thẻ Colab hiển thị:
+  - Môi trường: Google Colab.
+  - Ultralytics/PyTorch đang cài hay chưa.
+  - Chế độ train: GPU sẵn sàng hoặc CPU vẫn chạy được nhưng chậm.
+  - Hướng dẫn bật GPU Colab bằng `Runtime > Change runtime type > GPU`, rồi chạy lại cell YOLO GUI.
+- Mobile không ẩn thẻ này nữa; CSS chuyển thẻ sang dạng gọn để người dùng Colab màn hình hẹp vẫn thấy hướng dẫn CPU/GPU.
+- Tab `Cài đặt` cũng đổi câu hướng dẫn khi Colab đang ở CPU runtime để người dùng không hiểu nhầm là phải tự sửa driver bằng CLI.
+- `boot()` không còn phụ thuộc riêng vào `/api/version` để biết Colab; dependency payload tự có `runtime`, nên thẻ sidebar render đúng ngay cả khi các API chạy song song.

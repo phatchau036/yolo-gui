@@ -40,6 +40,21 @@ Script sẽ tự làm các bước sau:
 
 Dataset có thể nằm trong `/content`, Google Drive đã mount, hoặc thư mục bạn upload lên Colab.
 
+## Nếu GUI Báo Colab Đang Chạy CPU
+
+Nếu thẻ `Colab hiện tại` ghi `Chế độ train: CPU, vẫn chạy được nhưng chậm`, nghĩa là notebook chưa được bật GPU hoặc PyTorch chưa thấy GPU.
+
+Trường hợp thường gặp nhất là chưa bật GPU runtime:
+
+1. Trên thanh menu Google Colab, bấm `Runtime`.
+2. Chọn `Change runtime type`.
+3. Ở `Hardware accelerator`, chọn `GPU`.
+4. Bấm `Save`.
+5. Chạy lại cell `Chạy YOLO GUI`.
+6. Mở link `trycloudflare.com` mới.
+
+Nếu đã bật GPU nhưng GUI vẫn báo PyTorch đang chạy CPU, vào tab `Cài đặt` rồi bấm `Cài PyTorch CUDA`.
+
 ## Dự Đoán Trên Colab
 
 Colab không hỗ trợ webcam trực tiếp kiểu `source=0` của Ultralytics. Trong GUI, lựa chọn `Camera` sẽ bị khóa khi app phát hiện đang chạy trên Google Colab.

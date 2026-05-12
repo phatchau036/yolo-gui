@@ -192,7 +192,9 @@ def is_camera_source(source: object) -> bool:
 
 @app.get("/api/dependencies/status")
 def dependency_status() -> dict[str, Any]:
-    return dependency_manager.environment_status()
+    status = dependency_manager.environment_status()
+    status["runtime"] = "Google Colab" if version_manager.is_colab_runtime() else "Local"
+    return status
 
 
 @app.get("/api/dependencies/ultralytics")

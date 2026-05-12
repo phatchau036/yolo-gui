@@ -66,7 +66,8 @@ Hiển thị job đang chạy và nhật ký chi tiết. Khi có lỗi, đọc t
 ## Khi Gặp Lỗi
 
 - Thiếu PyTorch hoặc Ultralytics: dùng các nút cài trong thẻ môi trường.
-- Không thấy GPU: kiểm tra NVIDIA driver/CUDA, hoặc tạm chọn CPU.
+- Không thấy GPU trên Windows/local: kiểm tra NVIDIA driver/CUDA, hoặc tạm chọn CPU.
+- Không thấy GPU trên Google Colab: vào `Runtime > Change runtime type > GPU`, lưu lại, chạy lại cell YOLO GUI và mở link tunnel mới.
 - Train lỗi ngay từ đầu: kiểm tra dataset, class list và nhãn.
 - Export lỗi: xem log vì một số định dạng cần runtime hoặc package bổ sung.
 - Cập nhật lỗi: nếu GUI báo repo có file đã sửa, không bấm update tiếp; cần lưu/commit thay đổi hoặc dùng bản clone sạch.
