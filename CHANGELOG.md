@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.16 - 2026-05-12
+
+- Đổi cơ chế update trên Google Colab sang giữ nguyên Cloudflare Tunnel/link hiện tại.
+- Sau khi `git pull`, cell Colab chỉ restart server YOLO GUI trên đúng port cũ; process `cloudflared` không bị tắt nên link `trycloudflare.com` không đổi.
+- GUI poll lại trạng thái restart; khi server sống lại, tab hiện tại tự tải lại để nạp frontend/backend mới.
+- Panel `Colab tunnel` đổi nội dung từ mở link mới sang `Tải lại GUI` trên cùng link hiện tại.
+
 ## v0.4.15 - 2026-05-12
 
 - Trên Google Colab, cập nhật phiên bản không còn bắt người dùng tự dừng cell và chạy lại ngay.

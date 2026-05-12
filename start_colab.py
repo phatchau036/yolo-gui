@@ -5,7 +5,6 @@ import os
 import platform
 import re
 import shutil
-import socket
 import subprocess
 import sys
 import threading
@@ -17,7 +16,6 @@ from urllib.request import urlopen
 
 from yolo_gui.colab_runtime import (
     COLAB_LOG_DIR,
-    RESTART_REQUEST_PATH,
     RESTART_STATE_PATH,
     read_json_file,
     timestamp,
@@ -31,7 +29,6 @@ CLOUDFLARED_DIR = PROJECT_ROOT / ".colab"
 CLOUDFLARED_BIN = CLOUDFLARED_DIR / "cloudflared"
 CLOUDFLARED_LINUX_AMD64_URL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
 TUNNEL_URL_PATTERN = re.compile(r"https://[-a-zA-Z0-9.]+\.trycloudflare\.com")
-COLAB_HANDOFF_GRACE_SECONDS = 25
 
 
 def configure_console_output() -> None:
@@ -228,18 +225,6 @@ def stop_process(process: subprocess.Popen[Any] | None, name: str) -> None:
         process.kill()
 
 
-def find_free_port(start_port: int) -> int:
-    for port in range(start_port, start_port + 80):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            try:
-                sock.bind(("127.0.0.1", port))
-            except OSError:
-                continue
-            return port
-    raise RuntimeError(f"Không tìm được port trống từ {start_port} tới {start_port + 79}.")
-
-
 def write_restart_state(request: dict[str, Any], status: str, **extra: Any) -> None:
     payload = {
         "request_id": request.get("request_id"),
@@ -262,84 +247,57 @@ def next_restart_request(handled_request_ids: set[str], script_started_epoch: fl
         handled_request_ids.add(request_id)
         return None
     state = read_json_file(RESTART_STATE_PATH) or {}
-    if state.get("request_id") == request_id and state.get("status") in {"ready", "switched", "failed"}:
+    if state.get("request_id") == request_id and state.get("status") in {"ready", "failed"}:
         handled_request_ids.add(request_id)
         return None
     return request
 
 
-def perform_update_handoff(
+def perform_same_tunnel_restart(
     *,
     request: dict[str, Any],
     current_port: int,
     current_server: subprocess.Popen[bytes],
-    current_tunnel: subprocess.Popen[str],
-    cloudflared: Path,
-    verbose_tunnel: bool,
-) -> tuple[subprocess.Popen[bytes], subprocess.Popen[str], int, Path, Path]:
+    tunnel_url: str,
+) -> tuple[subprocess.Popen[bytes], Path]:
     request_id = request.get("request_id")
-    new_server: subprocess.Popen[bytes] | None = None
-    new_tunnel: subprocess.Popen[str] | None = None
-    new_server_log: Path | None = None
-    new_tunnel_log: Path | None = None
+    server_log: Path | None = None
     try:
-        new_port = find_free_port(current_port + 1)
-        print(f"[Colab] Nhận yêu cầu cập nhật {request_id}. Mở bản mới trên port {new_port}...")
+        print(f"[Colab] Nhận yêu cầu cập nhật {request_id}. Giữ tunnel hiện tại và restart server trên port {current_port}...")
         write_restart_state(
             request,
-            "starting",
-            message="Đang mở server YOLO GUI mới và chuẩn bị Cloudflare Tunnel mới.",
-            new_port=new_port,
+            "restarting",
+            message="Đang giữ nguyên Cloudflare Tunnel và restart server YOLO GUI trên cùng port.",
+            port=current_port,
+            tunnel_url=tunnel_url,
+            same_tunnel=True,
         )
-        new_server, new_server_log = start_server(new_port)
-        new_tunnel, new_url, new_tunnel_log = start_tunnel(cloudflared, new_port, verbose_tunnel)
+
+        stop_process(current_server, "YOLO GUI server cũ")
+        time.sleep(1)
+        server, server_log = start_server(current_port)
         write_restart_state(
             request,
             "ready",
-            message=(
-                "Tunnel mới đã sẵn sàng. Hãy mở link mới; phiên cũ sẽ tự tắt sau vài giây."
-            ),
-            tunnel_url=new_url,
-            new_port=new_port,
-            old_shutdown_seconds=COLAB_HANDOFF_GRACE_SECONDS,
-            server_log=str(new_server_log),
-            tunnel_log=str(new_tunnel_log),
+            message="Đã restart server xong. Link Cloudflare hiện tại vẫn giữ nguyên, hãy tải lại GUI nếu trang chưa tự tải.",
+            tunnel_url=tunnel_url,
+            port=current_port,
+            same_tunnel=True,
+            server_log=str(server_log),
         )
-        display_colab_link(new_url, "YOLO GUI bản mới đã sẵn sàng")
-        print(
-            f"[Colab] Giữ phiên cũ thêm {COLAB_HANDOFF_GRACE_SECONDS} giây để GUI hiện link mới, "
-            "sau đó dừng tunnel/server cũ."
-        )
-        deadline = time.time() + COLAB_HANDOFF_GRACE_SECONDS
-        while time.time() < deadline:
-            if new_server.poll() is not None:
-                raise RuntimeError(f"Server mới đã dừng. Log gần nhất:\n{tail_file(new_server_log)}")
-            if new_tunnel.poll() is not None:
-                raise RuntimeError(f"Tunnel mới đã dừng. Log gần nhất:\n{tail_file(new_tunnel_log)}")
-            time.sleep(1)
-
-        stop_process(current_tunnel, "Cloudflare Tunnel cũ")
-        stop_process(current_server, "YOLO GUI server cũ")
-        write_restart_state(
-            request,
-            "switched",
-            message="Đã chuyển sang server và Cloudflare Tunnel mới.",
-            tunnel_url=new_url,
-            new_port=new_port,
-            server_log=str(new_server_log),
-            tunnel_log=str(new_tunnel_log),
-        )
-        return new_server, new_tunnel, new_port, new_server_log, new_tunnel_log
-    except Exception as exc:  # noqa: BLE001 - keep old session alive when handoff fails.
+        print("[Colab] Đã nạp bản mới sau tunnel hiện tại.")
+        print(f"[Colab] Link không đổi: {tunnel_url}")
+        return server, server_log
+    except Exception as exc:  # noqa: BLE001 - write exact failure for GUI and cell.
         write_restart_state(
             request,
             "failed",
-            message=f"Không mở được phiên Colab mới: {exc}",
-            server_log=str(new_server_log) if new_server_log else None,
-            tunnel_log=str(new_tunnel_log) if new_tunnel_log else None,
+            message=f"Không restart được server sau tunnel hiện tại: {exc}",
+            tunnel_url=tunnel_url,
+            port=current_port,
+            same_tunnel=True,
+            server_log=str(server_log) if server_log else None,
         )
-        stop_process(new_tunnel, "Cloudflare Tunnel mới lỗi")
-        stop_process(new_server, "YOLO GUI server mới lỗi")
         raise
 
 
@@ -385,16 +343,14 @@ def main() -> int:
             if request:
                 request_id = str(request.get("request_id"))
                 try:
-                    server, tunnel, port, server_log, tunnel_log = perform_update_handoff(
+                    server, server_log = perform_same_tunnel_restart(
                         request=request,
                         current_port=port,
                         current_server=server,
-                        current_tunnel=tunnel,
-                        cloudflared=cloudflared,
-                        verbose_tunnel=args.verbose_tunnel,
+                        tunnel_url=tunnel_url,
                     )
                     handled_request_ids.add(request_id)
-                    print(f"[Colab] Đang chạy bản mới trên port {port}.")
+                    print(f"[Colab] Đang chạy bản mới trên port {port}, tunnel giữ nguyên.")
                     print(f"[Colab] Log server: {server_log}")
                     print(f"[Colab] Log tunnel: {tunnel_log}")
                 except Exception as exc:  # noqa: BLE001 - do not kill the current working session.

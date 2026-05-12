@@ -119,7 +119,7 @@
   - Khóa các nút cài/kiểm tra môi trường trong lúc GUI đang kiểm tra dependency; có guard chống response cũ mở khóa nhầm và chống bấm gửi lệnh cài trùng.
   - Chặn lựa chọn Camera trên Google Colab vì Ultralytics không hỗ trợ webcam `source=0` trong notebook.
   - Fix triệt để tooltip trong Dataset Wizard và các card chọn/check: dấu `?` không còn bị selector `span/svg` rộng kéo dọc hoặc làm vỡ form.
-  - Colab update handoff: sau cập nhật, cell tự mở server/tunnel mới, GUI hiện link `trycloudflare.com` mới rồi mới dừng phiên cũ.
+  - Colab update handoff: sau cập nhật, cell giữ nguyên Cloudflare Tunnel/link `trycloudflare.com`, chỉ restart server trên cùng port rồi GUI tự tải lại.
   - Tab `Phiên bản` phân biệt bản backend đang chạy và source đã cập nhật trong repo để không báo nhầm bản cũ là mới nhất.
   - Cụm duyệt đường dẫn dùng icon button gọn để không còn vỡ chữ ở nút Mở/Gán.
   - Harden path action button để cache/markup cũ có text cũng không thể làm vỡ cụm `Đường dẫn`.

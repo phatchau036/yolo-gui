@@ -48,7 +48,7 @@ class VersionManager:
             if self.is_colab_runtime():
                 status_message = (
                     f"Source đã cập nhật lên v{source_version}, nhưng server hiện tại vẫn đang chạy v{__version__}. "
-                    "Hãy giữ tab này mở; Colab sẽ mở tunnel mới rồi báo link mới."
+                    "Hãy giữ tab này mở; Colab sẽ restart server sau Cloudflare Tunnel hiện tại rồi tự tải lại GUI."
                 )
             else:
                 status_message = (
@@ -292,12 +292,11 @@ class VersionManager:
             )
             return {
                 "required": True,
-                "mode": "colab_handoff",
+                "mode": "colab_same_tunnel_restart",
                 "request_id": request["request_id"],
                 "status_url": "/api/version/restart-status",
                 "message": (
-                    "Colab sẽ mở server và Cloudflare Tunnel mới trước, báo link mới trong GUI/cell, "
-                    "rồi mới dừng phiên cũ."
+                    "Colab sẽ giữ nguyên Cloudflare Tunnel/link hiện tại và chỉ restart server trên cùng port."
                 ),
             }
         return {
@@ -320,11 +319,11 @@ class VersionManager:
 
     def update_message(self, saved_changes: bool = False, restart: dict[str, Any] | None = None) -> str:
         saved_note = " GUI đã cất tạm thay đổi local trước khi cập nhật." if saved_changes else ""
-        if restart and restart.get("mode") == "colab_handoff":
+        if restart and restart.get("mode") == "colab_same_tunnel_restart":
             return (
                 "Đã cập nhật source."
                 + saved_note
-                + " Colab đang mở server/tunnel mới. Giữ tab này mở; khi link mới hiện ra hãy bấm mở GUI mới."
+                + " Colab đang restart server phía sau Cloudflare Tunnel hiện tại. Link không đổi; GUI sẽ tự tải lại khi server sống lại."
             )
         return "Đã cập nhật." + saved_note + " Hãy tải lại trang; nếu backend thay đổi, hãy restart app."
 

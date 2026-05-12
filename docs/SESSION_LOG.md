@@ -401,3 +401,12 @@
 - `start_colab.py` theo dõi request này, mở server mới trên port trống kế tiếp, mở Cloudflare Tunnel mới, ghi link mới vào restart state, hiển thị link trong cell, chờ thêm 25 giây rồi mới dừng tunnel/server cũ.
 - Tab `Phiên bản` thêm fact `Source trong repo` và panel `Colab tunnel`; frontend poll `/api/version/restart-status` để hiện nút `Mở GUI mới` khi link mới đã sẵn sàng.
 - Sửa logic version để không còn báo nhầm bản đang chạy là mới nhất khi source trên ổ đã được `git pull` lên bản mới nhưng backend chưa nạp lại.
+
+## 2026-05-12 - Giữ nguyên link Cloudflare khi update Colab
+
+- Nhận feedback: không cần tạo tunnel mới; chỉ cần giữ process `cloudflared`, restart server trên đúng port cũ thì link `trycloudflare.com` không đổi.
+- Bump version lên `0.4.16`.
+- Đổi `start_colab.py`: bỏ luồng mở server/tunnel mới trên port khác; khi có restart request thì dừng uvicorn cũ, mở lại uvicorn trên cùng port, giữ nguyên Cloudflare Tunnel.
+- Restart state có `same_tunnel=true`, `tunnel_url` là link hiện tại và status `restarting -> ready`.
+- Frontend `startColabRestartWatch()` poll lại trên link hiện tại; khi server sống lại sẽ tự `window.location.reload()` để nạp frontend/backend mới.
+- Panel `Colab tunnel` đổi CTA thành `Tải lại GUI`, không còn hướng người dùng sang link mới.

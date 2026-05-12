@@ -53,7 +53,7 @@ def create_restart_request(reason: str, before: dict[str, Any], after: dict[str,
     state = {
         "request_id": request["request_id"],
         "status": "requested",
-        "message": "Đã cập nhật source. Colab đang chờ cell mở server và Cloudflare Tunnel mới.",
+        "message": "Đã cập nhật source. Colab đang chờ cell restart server sau Cloudflare Tunnel hiện tại.",
         "updated_at": timestamp(),
     }
     write_json_file(RESTART_REQUEST_PATH, request)

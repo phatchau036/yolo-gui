@@ -78,14 +78,14 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 5. Sau khi cài xong, restart server nếu Python vẫn giữ module cũ.
 6. Kiểm tra lại `GET /api/dependencies/status`; payload phải có field `runtime` để frontend render đúng câu hướng dẫn.
 
-## Colab cập nhật xong nhưng không có link tunnel mới
+## Colab cập nhật xong nhưng GUI chưa tải lại
 
-1. Kiểm tra tab `Phiên bản`, panel `Colab tunnel` phải hiện trạng thái `Đang mở server và tunnel mới` hoặc `Tunnel mới đã sẵn sàng`.
+1. Kiểm tra tab `Phiên bản`, panel `Colab tunnel` phải hiện trạng thái `Đang restart server` hoặc `Đã nạp xong bản mới`.
 2. Gọi `GET /api/version/restart-status`; payload phải có `request.request_id` và `state.status`.
-3. Nếu `state.status=failed`, đọc `state.message`, `state.server_log`, `state.tunnel_log`.
-4. Trong notebook Colab, xem `logs/colab/uvicorn-<port>.log` và `logs/colab/cloudflared-<port>.log`.
-5. Nếu cập nhật từ bản quá cũ chưa có handoff, dừng cell và chạy lại cell một lần để nạp `start_colab.py` mới; các lần cập nhật sau sẽ tự handoff.
-6. Nếu tunnel mới đã hiện trong cell nhưng GUI cũ không thấy, mở link được in trong cell; old tunnel có thể đã hết thời gian chờ.
+3. Nếu `state.status=ready`, link `trycloudflare.com` vẫn là link cũ; tải lại tab hiện tại để lấy frontend mới.
+4. Nếu `state.status=failed`, đọc `state.message` và `state.server_log`.
+5. Trong notebook Colab, xem `logs/colab/uvicorn-<port>.log`; tunnel log chỉ cần xem nếu link public bị mất.
+6. Nếu cập nhật từ bản quá cũ chưa có restart sau tunnel, dừng cell và chạy lại cell một lần để nạp `start_colab.py` mới; các lần cập nhật sau sẽ restart server sau link hiện tại.
 
 ## Tooltip dấu hỏi bị lệch trong card
 

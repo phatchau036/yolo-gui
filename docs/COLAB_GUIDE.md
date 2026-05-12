@@ -75,13 +75,13 @@ Khi có bản mới:
 1. Mở tab `Phiên bản`.
 2. Bấm `Cập nhật ngay`.
 3. Giữ tab GUI và cell Colab đang chạy.
-4. Cell Colab sẽ tự mở server mới và Cloudflare Tunnel mới.
-5. Khi panel `Colab tunnel` hiện nút `Mở GUI mới`, bấm nút đó để chuyển sang link `trycloudflare.com` mới.
-6. Phiên cũ sẽ tự tắt sau vài giây sau khi link mới đã sẵn sàng.
+4. Cell Colab sẽ giữ nguyên Cloudflare Tunnel và chỉ restart server YOLO GUI trên cùng port.
+5. Link `trycloudflare.com` không đổi.
+6. Khi panel `Colab tunnel` báo đã nạp xong, GUI sẽ tự tải lại; nếu chưa tự tải, bấm `Tải lại GUI`.
 
-Nếu bạn cập nhật từ một bản rất cũ chưa có cơ chế handoff, có thể phải dừng cell và chạy lại một lần để nạp cơ chế mới. Từ các bản có handoff trở đi, GUI sẽ tự chuyển sang tunnel mới.
+Nếu bạn cập nhật từ một bản rất cũ chưa có cơ chế restart sau tunnel, có thể phải dừng cell và chạy lại một lần để nạp `start_colab.py` mới. Từ các bản có cơ chế này trở đi, GUI sẽ giữ nguyên link và tự nạp lại.
 
-Lý do vẫn cần mở tunnel mới: backend Python cũ đã import code vào bộ nhớ. Sau khi source đổi, server mới cần được mở để nạp code backend/frontend mới nhất, nhưng GUI sẽ giữ phiên cũ tới khi link mới sẵn sàng.
+Lý do vẫn cần restart server: backend Python cũ đã import code vào bộ nhớ. Sau khi source đổi, uvicorn cần được mở lại để nạp code backend/frontend mới nhất; process `cloudflared` vẫn sống nên link public không đổi.
 
 ## Ghi Chú Về Link Cloudflare
 
@@ -97,12 +97,12 @@ Trong Colab, log nằm tại:
 - `logs/colab/uvicorn.log`: log server YOLO GUI.
 - `logs/colab/uvicorn-<port>.log`: log server YOLO GUI.
 - `logs/colab/cloudflared-<port>.log`: log Cloudflare Tunnel.
-- `logs/colab/restart-state.json`: trạng thái handoff khi cập nhật trên Colab.
+- `logs/colab/restart-state.json`: trạng thái restart server sau tunnel khi cập nhật trên Colab.
 - `logs/workflow_jobs/`: log train/val/predict/export.
 - `logs/dependency_installs/`: log cài PyTorch hoặc Ultralytics từ GUI.
 - `logs/updates/`: log khi bấm cập nhật ở tab `Phiên bản`.
 
-Nếu link tunnel không hiện, xem `logs/colab/cloudflared.log`.
+Nếu link tunnel không hiện, xem `logs/colab/cloudflared-<port>.log`.
 
 Nếu GUI mở được nhưng train lỗi, xem tab `Tiến trình` hoặc file trong `logs/workflow_jobs/`.
 
@@ -113,5 +113,5 @@ Nếu GUI mở được nhưng train lỗi, xem tab `Tiến trình` hoặc file 
 - Link `trycloudflare.com` không mở: chạy lại cell để lấy tunnel mới.
 - Dataset trong Google Drive không thấy: mount Drive trước, rồi chọn đường dẫn trong `/content/drive/MyDrive/...`.
 - Cài package lâu: lần đầu Colab phải cài dependency, các lần sau cùng runtime sẽ nhanh hơn.
-- Cập nhật xong nhưng giao diện chưa đổi: xem panel `Colab tunnel` trong tab `Phiên bản`; nếu không có link mới sau khoảng 2 phút, dừng cell YOLO GUI, chạy lại cell và mở link tunnel mới.
+- Cập nhật xong nhưng giao diện chưa đổi: xem panel `Colab tunnel` trong tab `Phiên bản`; nếu server không nạp lại sau khoảng 2 phút, dừng cell YOLO GUI, chạy lại cell và mở link tunnel mới.
 - Dự đoán bằng `Camera` lỗi `source=0 webcam not supported in Colab`: Colab không hỗ trợ webcam trực tiếp. Chọn ảnh/video/thư mục ảnh, hoặc chạy GUI trên Windows/local nếu cần camera.

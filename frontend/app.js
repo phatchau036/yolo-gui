@@ -484,25 +484,28 @@ function renderColabRestartPanel(restartStatus = null, versionPayload = null) {
 
   const status = statePayload?.status || requestPayload?.status || "requested";
   const titleMap = {
-    requested: "Đã yêu cầu mở phiên mới",
-    starting: "Đang mở server và tunnel mới",
-    ready: "Tunnel mới đã sẵn sàng",
-    switched: "Đã chuyển sang tunnel mới",
-    failed: "Không mở được tunnel mới",
+    requested: "Đã yêu cầu nạp lại server",
+    starting: "Đang restart server",
+    restarting: "Đang restart server",
+    ready: "Đã nạp xong bản mới",
+    switched: "Đã nạp xong bản mới",
+    failed: "Không restart được server",
   };
   const detailMap = {
-    requested: "Giữ tab này mở. Cell Colab sẽ nhận yêu cầu và khởi động phiên mới.",
-    starting: "Colab đang chạy server mới và lấy link trycloudflare mới.",
-    ready: "Bấm nút mở GUI mới. Phiên cũ sẽ tự tắt sau vài giây.",
-    switched: "Phiên cũ đã được dọn. Hãy dùng link mới bên dưới.",
-    failed: "Không thể tự mở phiên mới. Hãy xem log trong cell Colab hoặc chạy lại cell một lần.",
+    requested: "Giữ tab này mở. Cell Colab sẽ giữ nguyên tunnel và restart server phía sau link hiện tại.",
+    starting: "Cloudflare Tunnel vẫn chạy. Server YOLO GUI đang được nạp lại trên cùng port.",
+    restarting: "Cloudflare Tunnel vẫn chạy. Server YOLO GUI đang được nạp lại trên cùng port.",
+    ready: "Link hiện tại vẫn dùng được. GUI sẽ tự tải lại hoặc bạn có thể bấm nút bên dưới.",
+    switched: "Link hiện tại vẫn dùng được. GUI sẽ tự tải lại hoặc bạn có thể bấm nút bên dưới.",
+    failed: "Không thể restart server. Hãy xem log trong cell Colab hoặc chạy lại cell một lần.",
   };
-  const url = statePayload?.tunnel_url || "";
+  const url = statePayload?.tunnel_url || window.location.href;
+  const canReload = ["ready", "switched"].includes(status);
 
   qs("#colabRestartTitle").textContent = titleMap[status] || "Đang xử lý cập nhật Colab";
   qs("#colabRestartDetail").textContent = statePayload?.message || detailMap[status] || detailMap.requested;
   const link = qs("#colabRestartLink");
-  link.classList.toggle("is-hidden", !url);
+  link.classList.toggle("is-hidden", !canReload || !url);
   if (url) {
     link.href = url;
   }
@@ -523,7 +526,7 @@ function stopColabRestartWatch() {
 }
 
 function startColabRestartWatch(restart) {
-  if (!restart || restart.mode !== "colab_handoff") return;
+  if (!restart || !["colab_handoff", "colab_same_tunnel_restart"].includes(restart.mode)) return;
   stopColabRestartWatch();
   renderColabRestartPanel(
     {
@@ -541,13 +544,14 @@ function startColabRestartWatch(restart) {
       renderColabRestartPanel(payload, { runtime: "Google Colab", restart_required: payload.restart_required });
       const status = payload.state?.status;
       const url = payload.state?.tunnel_url;
-      if ((status === "ready" || status === "switched") && url) {
+      if ((status === "ready" || status === "switched") && (url || payload.state?.same_tunnel)) {
         stopColabRestartWatch();
-        appendVersionLog(["", `Tunnel mới đã sẵn sàng: ${url}`, "Hãy mở link mới để dùng bản vừa cập nhật."]);
-        showToast("Tunnel Colab mới đã sẵn sàng");
+        appendVersionLog(["", "Server đã nạp xong sau Cloudflare Tunnel hiện tại.", "GUI sẽ tự tải lại trên cùng link."]);
+        showToast("Đã nạp xong bản mới, đang tải lại GUI");
+        window.setTimeout(() => window.location.reload(), 1200);
       } else if (status === "failed") {
         stopColabRestartWatch();
-        appendVersionLog(["", payload.state?.message || "Không mở được tunnel mới."]);
+        appendVersionLog(["", payload.state?.message || "Không restart được server sau tunnel hiện tại."]);
       }
     } catch (error) {
       if (attempts >= 60) {
@@ -637,7 +641,7 @@ function renderVersionStatus(payload) {
   updateButton.title = payload.can_update
     ? "Tải bản mới từ GitHub"
     : restartRequired
-      ? "Source đã cập nhật, cần nạp lại backend/tunnel mới trước khi cập nhật tiếp."
+      ? "Source đã cập nhật, cần nạp lại backend sau tunnel hiện tại trước khi cập nhật tiếp."
     : needsSaveBeforeUpdate
       ? "Repo đang có file đã sửa. Bấm Sao lưu rồi cập nhật để GUI cất tạm thay đổi trước."
       : payload.update_available
