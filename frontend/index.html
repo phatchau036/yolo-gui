@@ -258,6 +258,23 @@
             </details>
             <textarea class="is-hidden" data-extra-args spellcheck="false"></textarea>
           </form>
+          <section id="predictRunPanel" class="work-panel predict-run-panel is-hidden" aria-live="polite">
+            <div class="panel-heading-row">
+              <div>
+                <p class="eyebrow">Kết quả dự đoán</p>
+                <h3 id="predictRunTitle">Chưa chạy dự đoán</h3>
+                <p id="predictRunDetail" class="form-note">Sau khi bấm chạy, GUI sẽ giữ bạn ở tab này, hiện tiến trình và tự mở ảnh kết quả.</p>
+              </div>
+              <span id="predictRunBadge" class="status-pill status-starting">Sẵn sàng</span>
+            </div>
+            <div class="predict-progress" aria-hidden="true"><span id="predictProgressBar"></span></div>
+            <div id="predictPreviewGrid" class="predict-preview-grid">
+              <p class="predict-empty">Chưa có ảnh kết quả.</p>
+            </div>
+            <div class="predict-result-actions">
+              <button class="button is-light" data-section="jobs" type="button"><span class="icon"><i data-lucide="terminal-square"></i></span><span>Xem log đầy đủ</span></button>
+            </div>
+          </section>
         </section>
 
         <section id="section-val" class="page-section">
@@ -725,6 +742,10 @@
               <button id="updateVersionButton" class="button is-primary" type="button" disabled>
                 <span class="icon"><i data-lucide="download"></i></span>
                 <span>Cập nhật ngay</span>
+              </button>
+              <button id="saveAndUpdateVersionButton" class="button is-primary is-hidden" type="button" disabled>
+                <span class="icon"><i data-lucide="archive"></i></span>
+                <span>Sao lưu rồi cập nhật</span>
               </button>
             </div>
           </section>

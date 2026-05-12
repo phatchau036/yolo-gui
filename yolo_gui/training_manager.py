@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
@@ -16,6 +17,8 @@ from .config import DEFAULT_OUTPUT_DIR, DEFAULT_PREDICT_DIR, DEFAULT_VAL_DIR, JO
 
 
 RUNNER_MODULE = "yolo_gui.workflow_runner"
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov", ".avi", ".mkv"}
 JOB_DEFAULT_NAMES = {
     "train": "gui-train",
     "val": "gui-val",
@@ -149,6 +152,57 @@ class TrainingManager:
             return text[-tail:]
         return text
 
+    def list_artifacts(self, job_id: str, limit: int = 60) -> list[dict[str, Any]] | None:
+        job = self.get_job(job_id)
+        if job is None:
+            return None
+        artifacts: list[dict[str, Any]] = []
+        seen_paths: set[Path] = set()
+        for root in self._artifact_roots(job):
+            if not root.exists():
+                continue
+            files = [path for path in root.rglob("*") if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS | VIDEO_EXTENSIONS]
+            for path in sorted(files, key=lambda item: item.stat().st_mtime, reverse=True):
+                resolved_path = path.resolve()
+                if resolved_path in seen_paths:
+                    continue
+                seen_paths.add(resolved_path)
+                artifact_id = self.encode_artifact_path(path)
+                artifacts.append(
+                    {
+                        "id": artifact_id,
+                        "name": path.name,
+                        "path": str(path),
+                        "type": "video" if path.suffix.lower() in VIDEO_EXTENSIONS else "image",
+                        "url": f"/api/jobs/{job.id}/artifacts/{artifact_id}",
+                    }
+                )
+                if len(artifacts) >= limit:
+                    return artifacts
+        return artifacts
+
+    def resolve_artifact(self, job_id: str, artifact_id: str) -> Path | None:
+        job = self.get_job(job_id)
+        if job is None:
+            return None
+        try:
+            raw = base64.urlsafe_b64decode(artifact_id.encode("ascii")).decode("utf-8")
+        except Exception:
+            return None
+        path = Path(raw)
+        if not path.exists() or not path.is_file():
+            return None
+        if path.suffix.lower() not in IMAGE_EXTENSIONS | VIDEO_EXTENSIONS:
+            return None
+        resolved = path.resolve()
+        for root in self._artifact_roots(job):
+            try:
+                resolved.relative_to(root.resolve())
+                return resolved
+            except ValueError:
+                continue
+        return None
+
     def _build_config(self, request: Any, job_type: str) -> dict[str, Any]:
         raw = model_to_dict(request)
         extra = raw.pop("extra_args", {}) or {}
@@ -160,6 +214,33 @@ class TrainingManager:
 
         raw.update(extra)
         return {key: value for key, value in raw.items() if value not in (None, "")}
+
+    def _artifact_roots(self, job: TrainingJob) -> list[Path]:
+        roots: list[Path] = [job.job_dir]
+        config = self._read_job_config(job)
+        if not config:
+            return roots
+        project_value = config.get("project")
+        name = str(config.get("name") or "").strip()
+        if project_value:
+            project = Path(str(project_value)).expanduser()
+            if not project.is_absolute():
+                project = PROJECT_ROOT / project
+            if project.exists():
+                if name:
+                    roots.extend(path for path in project.glob(f"{name}*") if path.is_dir())
+                roots.append(project)
+        return list(dict.fromkeys(roots))
+
+    def _read_job_config(self, job: TrainingJob) -> dict[str, Any]:
+        try:
+            return json.loads(job.config_path.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+
+    @staticmethod
+    def encode_artifact_path(path: Path) -> str:
+        return base64.urlsafe_b64encode(str(path.resolve()).encode("utf-8")).decode("ascii")
 
     def _run_process(self, job: TrainingJob) -> None:
         env = os.environ.copy()

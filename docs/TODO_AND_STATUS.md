@@ -121,6 +121,9 @@
   - Cụm duyệt đường dẫn dùng icon button gọn để không còn vỡ chữ ở nút Mở/Gán.
   - Sidebar nhận diện Google Colab trong chính API dependency, đổi tiêu đề thành `Colab hiện tại` và hướng dẫn bật GPU runtime khi đang chạy CPU.
   - Mobile cũng hiển thị thẻ `Colab hiện tại` dạng gọn, không ẩn hướng dẫn CPU/GPU.
+  - Tab `Dự đoán` giữ người dùng tại chỗ, hiển thị progress bar và preview ảnh/video output sau khi job xong.
+  - Tab `Phiên bản` có nút `Sao lưu rồi cập nhật` khi repo có file đã sửa.
+  - Sửa lỗi panel `Tạo data.yaml` bị chồng icon tooltip lên chữ.
   - Mobile không dùng thanh cuộn ngang cho nav/quick action để tránh cảm giác vỡ form.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
@@ -136,7 +139,6 @@
 - Thêm profile cấu hình lưu lại để dùng lại.
 - Thêm gợi ý batch/imgsz theo VRAM.
 - Thêm biểu đồ metric từ `results.csv`.
-- Thêm preview ảnh/video predict ngay trong GUI.
 - Thêm ONNX Runtime smoke check riêng sau export ONNX.
 - Thêm downloader/checker cho pretrained weight nếu model chưa có local.
 - Thêm auth/local password nếu app mở ra LAN.

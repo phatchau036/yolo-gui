@@ -36,6 +36,8 @@ Dùng để đo chất lượng model trên bộ ảnh kiểm tra. Nên đánh g
 
 Dùng để chạy model trên ảnh, video, thư mục ảnh hoặc camera. Kết quả có thể lưu thành ảnh/video đã vẽ khung và file nhãn.
 
+Khi bấm `Bắt đầu dự đoán`, GUI sẽ ở lại tab `Dự đoán`, hiện thanh đang chạy và tự mở ảnh/video kết quả khi xong. Nếu cần đọc log đầy đủ, bấm `Xem log đầy đủ`.
+
 Trên Google Colab, không dùng được webcam trực tiếp. Hãy chọn ảnh, video hoặc thư mục ảnh đã upload; nếu cần camera thật, chạy GUI trên Windows/local.
 
 ### Đóng gói
@@ -48,7 +50,7 @@ Dùng để chạy nhiều bước bằng một nút. Ví dụ `Full pipeline` s
 
 ### Phiên bản
 
-Dùng để xem GUI đang ở bản nào, đang chạy ở Local hay Google Colab, đọc changelog và kiểm tra bản mới trên GitHub. Nếu có bản mới và thư mục dự án không có file đang chỉnh sửa, bấm `Cập nhật ngay` để GUI tự tải bản mới. Sau khi cập nhật, tải lại trang; trên Colab thì dừng cell YOLO GUI, chạy lại cell và mở link tunnel mới.
+Dùng để xem GUI đang ở bản nào, đang chạy ở Local hay Google Colab, đọc changelog và kiểm tra bản mới trên GitHub. Nếu có bản mới và thư mục dự án không có file đang chỉnh sửa, bấm `Cập nhật ngay` để GUI tự tải bản mới. Nếu GUI báo có file đã sửa, bấm `Sao lưu rồi cập nhật` để GUI cất tạm thay đổi rồi cập nhật. Sau khi cập nhật, tải lại trang; trên Colab thì dừng cell YOLO GUI, chạy lại cell và mở link tunnel mới.
 
 ### Tiến trình
 
@@ -70,4 +72,4 @@ Hiển thị job đang chạy và nhật ký chi tiết. Khi có lỗi, đọc t
 - Không thấy GPU trên Google Colab: vào `Runtime > Change runtime type > GPU`, lưu lại, chạy lại cell YOLO GUI và mở link tunnel mới.
 - Train lỗi ngay từ đầu: kiểm tra dataset, class list và nhãn.
 - Export lỗi: xem log vì một số định dạng cần runtime hoặc package bổ sung.
-- Cập nhật lỗi: nếu GUI báo repo có file đã sửa, không bấm update tiếp; cần lưu/commit thay đổi hoặc dùng bản clone sạch.
+- Cập nhật báo có file đã sửa: bấm `Sao lưu rồi cập nhật`. Nếu vẫn lỗi, mở log trong `logs/updates/`.

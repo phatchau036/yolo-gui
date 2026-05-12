@@ -22,6 +22,8 @@
 - Mọi nhãn/tùy chọn chính trong GUI phải có giải thích ngắn bằng tooltip. Không nhồi đoạn giải thích dài vào form; dùng dấu hỏi cạnh nhãn và tab `Hướng dẫn` cho nội dung dài.
 - Luôn giữ một tài liệu người dùng cuối tại `docs/USER_GUIDE.md` song song với tab `Hướng dẫn` trong app.
 - Tab `Phiên bản` là đường update GUI cho người không biết git. Update chỉ được chạy bằng `git pull --ff-only` khi repo sạch, không dùng reset/checkout để tránh mất chỉnh sửa.
+- Nếu repo có file đã sửa khi cập nhật, GUI dùng nút `Sao lưu rồi cập nhật` để chạy Git stash trước rồi pull; không bắt người dùng tự mở CLI.
+- Tab `Dự đoán` phải giữ người dùng tại chỗ, có progress và preview ảnh/video output; log đầy đủ vẫn nằm ở tab `Tiến trình`.
 
 ## Quy tắc duy trì docs
 

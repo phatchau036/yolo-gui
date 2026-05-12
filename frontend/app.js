@@ -3,6 +3,8 @@ const state = {
   selectedAutomationId: null,
   runtime: null,
   logTimer: null,
+  predictJobId: null,
+  predictTimer: null,
   healthTimer: null,
   dependencyTimer: null,
   automationTimer: null,
@@ -437,9 +439,11 @@ function isColabRuntime(runtime = state.runtime) {
 function renderVersionStatus(payload) {
   const status = qs("#versionStatus");
   const updateButton = qs("#updateVersionButton");
+  const saveAndUpdateButton = qs("#saveAndUpdateVersionButton");
   const current = `v${payload.current_version || "?"}`;
   const latest = payload.latest_version ? `v${payload.latest_version}` : "Chưa rõ";
   const brandVersion = qs("#brandVersion");
+  const needsSaveBeforeUpdate = Boolean(payload.update_available && payload.can_save_and_update);
 
   state.runtime = payload.runtime || null;
   if (brandVersion) {
@@ -469,14 +473,24 @@ function renderVersionStatus(payload) {
   updateButton.disabled = !payload.can_update;
   updateButton.querySelector("span:not(.icon)").textContent = payload.can_update
     ? "Cập nhật ngay"
-    : payload.update_available
-      ? "Cần lưu thay đổi"
+    : needsSaveBeforeUpdate
+      ? "Cần sao lưu trước"
+      : payload.update_available
+        ? "Không thể cập nhật"
       : "Đã mới nhất";
   updateButton.title = payload.can_update
     ? "Tải bản mới từ GitHub"
-    : payload.update_available
-      ? "Repo đang có file đã sửa hoặc chưa đủ điều kiện cập nhật tự động"
+    : needsSaveBeforeUpdate
+      ? "Repo đang có file đã sửa. Bấm Sao lưu rồi cập nhật để GUI cất tạm thay đổi trước."
+      : payload.update_available
+        ? "Chưa đủ điều kiện cập nhật tự động"
       : "Chưa có bản mới để cập nhật";
+
+  saveAndUpdateButton.classList.toggle("is-hidden", !needsSaveBeforeUpdate);
+  saveAndUpdateButton.disabled = !needsSaveBeforeUpdate;
+  saveAndUpdateButton.title = needsSaveBeforeUpdate
+    ? "Cất tạm thay đổi local bằng Git stash rồi cập nhật source từ GitHub"
+    : "Chỉ dùng khi có bản mới nhưng repo đang có file đã sửa";
   renderChangelog(payload.changelog || []);
   updatePredictRuntimeGuards();
 }
@@ -523,6 +537,25 @@ async function updateVersion() {
   ].filter(Boolean).join("\n");
   renderVersionStatus(payload.after);
   showToast(payload.message || "Đã cập nhật phiên bản");
+}
+
+async function saveAndUpdateVersion() {
+  const button = qs("#saveAndUpdateVersionButton");
+  button.disabled = true;
+  qs("#versionUpdateLog").textContent = [
+    "Đang sao lưu thay đổi local rồi cập nhật từ GitHub...",
+    "Không đóng app trong lúc cập nhật.",
+  ].join("\n");
+  const payload = await api("/api/version/save-and-update", { method: "POST" });
+  qs("#versionUpdateLog").textContent = [
+    payload.message || "Đã sao lưu thay đổi và cập nhật.",
+    payload.stash_message ? `Nhãn sao lưu: ${payload.stash_message}` : null,
+    payload.log_path ? `Log: ${payload.log_path}` : null,
+    "",
+    payload.log || "",
+  ].filter(Boolean).join("\n");
+  renderVersionStatus(payload.after);
+  showToast(payload.message || "Đã sao lưu và cập nhật phiên bản");
 }
 
 function friendlyModelLabel(model) {
@@ -990,6 +1023,14 @@ async function startWorkflow(kind) {
   showToast(`Đã tạo tiến trình ${response.job.id}`);
   await loadJobs();
   startLogPolling();
+  if (kind === "predict") {
+    state.predictJobId = response.job.id;
+    renderPredictRun(response.job, []);
+    setPredictButtonRunning(true);
+    startPredictPolling();
+    qs("#predictRunPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
   setActiveSection("jobs");
 }
 
@@ -1130,6 +1171,117 @@ function friendlyJobStatus(status) {
     completed: "Hoàn tất",
     failed: "Có lỗi",
   }[status] || status;
+}
+
+function isTerminalJobStatus(status) {
+  return ["completed", "failed", "stopped"].includes(status);
+}
+
+function setPredictButtonRunning(running) {
+  qsa('[data-start-workflow="predict"]').forEach((button) => {
+    button.disabled = running;
+    const label = button.querySelector("span:not(.icon)");
+    if (label) {
+      label.textContent = running ? "Đang dự đoán..." : "Bắt đầu dự đoán";
+    }
+  });
+}
+
+function renderPredictRun(job, artifacts = []) {
+  const panel = qs("#predictRunPanel");
+  const title = qs("#predictRunTitle");
+  const detail = qs("#predictRunDetail");
+  const badge = qs("#predictRunBadge");
+  panel.classList.remove("is-hidden", "is-running", "is-completed", "is-failed");
+  panel.classList.add(["starting", "running", "stopping"].includes(job.status) ? "is-running" : `is-${job.status}`);
+  badge.className = `status-pill status-${job.status}`;
+  badge.textContent = friendlyJobStatus(job.status);
+
+  if (["starting", "running", "stopping"].includes(job.status)) {
+    title.textContent = "Đang chạy dự đoán";
+    detail.textContent = `Tiến trình ${job.id} đang xử lý. GUI sẽ tự hiện ảnh/video khi có kết quả.`;
+    renderPredictArtifacts([], "Đang chờ ảnh/video kết quả...");
+    return;
+  }
+
+  if (job.status === "completed") {
+    title.textContent = "Dự đoán hoàn tất";
+    detail.textContent = artifacts.length
+      ? `Đã tìm thấy ${artifacts.length} file kết quả. Bấm ảnh để mở kích thước đầy đủ.`
+      : "Dự đoán đã xong nhưng chưa thấy ảnh/video lưu. Hãy kiểm tra tùy chọn Lưu ảnh/video kết quả hoặc xem log đầy đủ.";
+    renderPredictArtifacts(artifacts, "Chưa tìm thấy ảnh/video kết quả.");
+    return;
+  }
+
+  title.textContent = job.status === "stopped" ? "Dự đoán đã dừng" : "Dự đoán gặp lỗi";
+  detail.textContent = job.error || "Bấm Xem log đầy đủ để đọc nguyên lỗi và cách sửa.";
+  renderPredictArtifacts(artifacts, "Chưa có ảnh/video kết quả.");
+}
+
+function renderPredictArtifacts(artifacts, emptyText) {
+  const grid = qs("#predictPreviewGrid");
+  grid.innerHTML = "";
+  if (!artifacts.length) {
+    const empty = document.createElement("p");
+    empty.className = "predict-empty";
+    empty.textContent = emptyText;
+    grid.appendChild(empty);
+    return;
+  }
+
+  for (const artifact of artifacts.slice(0, 12)) {
+    const card = document.createElement("a");
+    card.className = "predict-preview-item";
+    card.href = artifact.url;
+    card.target = "_blank";
+    card.rel = "noreferrer";
+
+    if (artifact.type === "video") {
+      const video = document.createElement("video");
+      video.src = artifact.url;
+      video.controls = true;
+      video.preload = "metadata";
+      card.appendChild(video);
+    } else {
+      const image = document.createElement("img");
+      image.src = artifact.url;
+      image.alt = artifact.name || "Kết quả dự đoán";
+      image.loading = "lazy";
+      card.appendChild(image);
+    }
+
+    const name = document.createElement("span");
+    name.textContent = artifact.name || "Kết quả";
+    card.appendChild(name);
+    grid.appendChild(card);
+  }
+}
+
+async function loadPredictRun() {
+  if (!state.predictJobId) return;
+  const [{ job }, artifactPayload] = await Promise.all([
+    api(`/api/jobs/${state.predictJobId}`),
+    api(`/api/jobs/${state.predictJobId}/artifacts`).catch(() => ({ artifacts: [] })),
+  ]);
+  renderPredictRun(job, artifactPayload.artifacts || []);
+  if (isTerminalJobStatus(job.status)) {
+    stopPredictPolling();
+    setPredictButtonRunning(false);
+  }
+}
+
+function startPredictPolling() {
+  stopPredictPolling();
+  state.predictTimer = window.setInterval(() => {
+    loadPredictRun().catch(() => {});
+  }, 2500);
+  loadPredictRun().catch(() => {});
+}
+
+function stopPredictPolling() {
+  if (!state.predictTimer) return;
+  window.clearInterval(state.predictTimer);
+  state.predictTimer = null;
 }
 
 function friendlyAutomationStatus(status) {
@@ -1499,6 +1651,13 @@ function bindEvents() {
   });
   qs("#updateVersionButton").addEventListener("click", () => {
     updateVersion().catch((error) => {
+      showToast(error.message);
+      qs("#versionUpdateLog").textContent = error.message;
+      loadVersion().catch(() => {});
+    });
+  });
+  qs("#saveAndUpdateVersionButton").addEventListener("click", () => {
+    saveAndUpdateVersion().catch((error) => {
       showToast(error.message);
       qs("#versionUpdateLog").textContent = error.message;
       loadVersion().catch(() => {});

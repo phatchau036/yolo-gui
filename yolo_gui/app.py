@@ -136,6 +136,14 @@ def update_version() -> dict[str, Any]:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
+@app.post("/api/version/save-and-update")
+def save_changes_and_update_version() -> dict[str, Any]:
+    try:
+        return version_manager.save_changes_and_update()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
 @app.get("/api/automations/templates")
 def automation_templates() -> dict[str, Any]:
     return {"templates": automation_manager.templates()}
@@ -394,6 +402,22 @@ def get_any_logs(job_id: str, tail: int = 12000) -> dict[str, Any]:
     if log is None:
         raise HTTPException(status_code=404, detail="Log not found")
     return {"job_id": job_id, "log": log}
+
+
+@app.get("/api/jobs/{job_id}/artifacts")
+def get_job_artifacts(job_id: str) -> dict[str, Any]:
+    artifacts = manager.list_artifacts(job_id)
+    if artifacts is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"job_id": job_id, "artifacts": artifacts}
+
+
+@app.get("/api/jobs/{job_id}/artifacts/{artifact_id}")
+def get_job_artifact_file(job_id: str, artifact_id: str) -> FileResponse:
+    path = manager.resolve_artifact(job_id, artifact_id)
+    if path is None:
+        raise HTTPException(status_code=404, detail="Artifact not found")
+    return FileResponse(path)
 
 
 @app.post("/api/jobs/{job_id}/stop")

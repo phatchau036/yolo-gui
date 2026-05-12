@@ -49,6 +49,7 @@ Invoke-RestMethod http://127.0.0.1:8765/api/system
 Invoke-RestMethod http://127.0.0.1:8765/api/dependencies/status
 Invoke-RestMethod http://127.0.0.1:8765/api/models
 Invoke-RestMethod http://127.0.0.1:8765/api/jobs
+Invoke-RestMethod http://127.0.0.1:8765/api/jobs/<job_id>/artifacts
 ```
 
 Dataset/report:
@@ -70,8 +71,9 @@ Invoke-RestMethod http://127.0.0.1:8765/api/datasets/audit -Method Post -Content
 - Export TensorRT fail: thường do thiếu CUDA/TensorRT hoặc format không hợp với máy hiện tại; xem log workflow.
 - Colab không hiện link `trycloudflare.com`: đọc `logs/colab/cloudflared.log`, chạy lại cell nếu tunnel đã hết hạn hoặc Colab sleep.
 - Colab mở link nhưng GUI không tải: đọc `logs/colab/uvicorn.log` và kiểm tra cell `start_colab.py` còn đang chạy không.
-- Tab Phiên bản báo không thể update: repo có file đã sửa hoặc không phải git clone. Xem `git status` nếu là dev; người dùng thường nên tải lại repo sạch hoặc commit/lưu thay đổi trước.
+- Tab Phiên bản báo cần lưu thay đổi: bấm `Sao lưu rồi cập nhật`. GUI sẽ ghi log trong `logs/updates/` và cất tạm thay đổi bằng Git stash trước khi pull.
 - Update xong nhưng GUI chưa đổi: tải lại trang. Nếu thay đổi nằm ở backend Python, restart `start.ps1` hoặc chạy lại cell Colab.
+- Predict xong nhưng không thấy ảnh preview: kiểm tra có bật `Lưu ảnh/video kết quả` không, rồi xem `GET /api/jobs/<job_id>/artifacts` và thư mục `runs/predict/<name>/`.
 
 ## Nguyên tắc debug
 

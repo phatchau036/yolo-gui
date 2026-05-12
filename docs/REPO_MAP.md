@@ -19,12 +19,12 @@
 - `schemas.py`: Pydantic schema cho request. Khi thêm setting YOLO mới thì thêm ở đây trước.
 - `dependency_manager.py`: kiểm tra Python/pip/NVIDIA/CUDA/Torch/Ultralytics, chạy cài dependency từ GUI, ghi log cài đặt.
 - `automation_manager.py`: chạy kịch bản nhiều bước từ GUI, quản lý trạng thái từng step và log automation riêng.
-- `training_manager.py`: job manager chung cho `train`, `val`, `predict`, `export`; tạo job id, ghi config, spawn subprocess, capture log, stop job.
+- `training_manager.py`: job manager chung cho `train`, `val`, `predict`, `export`; tạo job id, ghi config, spawn subprocess, capture log, stop job và liệt kê artifact ảnh/video predict.
 - `workflow_runner.py`: tiến trình con import `ultralytics`, gọi `YOLO(...).train/val/predict/export(...)`, in traceback đầy đủ khi lỗi.
 - `train_runner.py`: runner train cũ, giữ lại để tham khảo/tương thích nội bộ nhưng luồng mới dùng `workflow_runner.py`.
 - `dataset_tools.py`: inspect/audit dataset YOLO, tạo `data.yaml`, convert VOC XML sang YOLO txt, tính metrics từ label YOLO.
 - `system_report.py`: tạo report môi trường `.md` và `.json` trong `logs/system_reports/`.
-- `version_manager.py`: đọc version/changelog, kiểm tra commit mới trên GitHub, chạy `git pull --ff-only` khi người dùng bấm cập nhật.
+- `version_manager.py`: đọc version/changelog, kiểm tra commit mới trên GitHub, chạy `git pull --ff-only` khi người dùng bấm cập nhật; có luồng stash thay đổi local rồi cập nhật khi repo dirty.
 - `config.py`: đường dẫn chuẩn cho frontend, log, job, output.
 - `__init__.py`: version package.
 
@@ -32,7 +32,7 @@
 
 - `index.html`: layout dashboard nhiều tab: Train, Validate, Predict, Export, Dataset, Automation, Hướng dẫn, System, Jobs.
 - `styles.css`: layout/dashboard style, responsive, tooltip giải thích, docs page, status/log UI, Dataset Wizard chia cột trái/phải.
-- `app.js`: gọi API, duyệt thư mục, start/stop job, poll log, chạy dataset tools/report/automation và tự gắn tooltip giải thích vào các mục UI.
+- `app.js`: gọi API, duyệt thư mục, start/stop job, poll log, preview kết quả predict, chạy dataset tools/report/automation và tự gắn tooltip giải thích vào các mục UI.
 - `favicon.svg`: icon local để console browser sạch.
 
 ## Runtime folders

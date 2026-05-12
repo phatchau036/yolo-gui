@@ -43,6 +43,8 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
    - `GET /api/jobs/{job_id}/logs`
 9. Nếu cần dừng, frontend gọi `POST /api/jobs/{job_id}/stop`.
 
+Riêng workflow `Dự đoán`: sau khi tạo job, frontend không tự chuyển sang tab `Tiến trình`. Nó giữ người dùng ở tab `Dự đoán`, hiển thị panel `Kết quả dự đoán`, poll job hiện tại và gọi `GET /api/jobs/{job_id}/artifacts` để lấy ảnh/video output. Khi người dùng cần log đầy đủ, nút trong panel mới chuyển sang tab `Tiến trình`.
+
 ## Health check frontend
 
 - Khi app khởi động, `frontend/app.js` gọi `startHealthCheckCron()`.
@@ -72,10 +74,11 @@ Frontend gọi:
 
 - `GET /api/version`: lấy trạng thái version, commit, changelog và cờ `update_available`.
 - `POST /api/version/update`: chạy `git pull --ff-only <remote> <branch>`.
+- `POST /api/version/save-and-update`: khi repo có file đã sửa, GUI chạy `git stash push --include-untracked` để cất tạm thay đổi rồi mới `git pull --ff-only`.
 
 Sidebar header cũng dùng payload từ `GET /api/version` để hiển thị nhanh bản đang chạy dưới tên `YOLO GUI`, nên người dùng không cần mở tab `Phiên bản` chỉ để biết đang ở bản nào.
 
-Không tự cập nhật nếu repo đang có file đã sửa (`git status --porcelain` không rỗng), để tránh ghi đè thay đổi của người dùng. Sau khi update, GUI báo người dùng tải lại trang; nếu backend Python thay đổi, cần restart app hoặc chạy lại cell Colab.
+Nếu repo đang có file đã sửa (`git status --porcelain` không rỗng), nút cập nhật thường bị khóa và GUI hiện nút `Sao lưu rồi cập nhật`. Luồng này dùng Git stash để không ghi đè thay đổi local. Sau khi update, GUI báo người dùng tải lại trang; nếu backend Python thay đổi, cần restart app hoặc chạy lại cell Colab.
 
 Riêng Colab: sau khi update source, người dùng phải dừng cell `Chạy YOLO GUI`, chạy lại cell và mở link `trycloudflare.com` mới vì backend/tunnel đang sống trong cell cũ.
 
@@ -120,6 +123,13 @@ Không chạy automation trong request thread. Manager spawn background thread, 
 `workflow_runner.py` normalize `device` dạng `"0,1"` thành list GPU và normalize `source="0"` thành camera index `0`.
 
 Riêng Google Colab không hỗ trợ webcam trực tiếp qua `source=0`. Frontend dùng runtime từ `/api/version` và `/api/dependencies/status` để khóa lựa chọn `Camera`; backend `POST /api/predict/start` cũng chặn source dạng số khi `VersionManager.is_colab_runtime()` trả true và trả lỗi tiếng Việt trước khi tạo job.
+
+Predict artifact preview:
+
+- `GET /api/jobs/{job_id}/artifacts`: liệt kê ảnh/video kết quả của job predict.
+- `GET /api/jobs/{job_id}/artifacts/{artifact_id}`: serve file ảnh/video để frontend preview.
+- Artifact id là path đã encode base64 URL-safe; backend chỉ resolve file nằm trong output root của job để tránh đọc file ngoài phạm vi.
+- Output root ưu tiên `project/name*` trong config job, ví dụ `runs/predict/gui-predict*`, vì Ultralytics có thể tự tăng suffix nếu thư mục đã tồn tại.
 
 ## Dataset tools
 

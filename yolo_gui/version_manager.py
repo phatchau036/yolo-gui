@@ -39,6 +39,7 @@ class VersionManager:
         update_available = bool(git["remote_commit"] and git["local_commit"] and git["remote_commit"] != git["local_commit"])
         latest_version = self.remote_version(git["remote_url"], git["remote_branch"]) if update_available else None
         latest_version = latest_version or __version__
+        can_save_and_update = bool(update_available and git["is_git_repo"] and git["dirty"])
         return {
             "app_name": "YOLO GUI",
             "runtime": "Google Colab" if self.is_colab_runtime() else "Local",
@@ -46,6 +47,7 @@ class VersionManager:
             "latest_version": latest_version,
             "update_available": update_available,
             "can_update": bool(update_available and git["is_git_repo"] and not git["dirty"]),
+            "can_save_and_update": can_save_and_update,
             "checked_at": datetime.now().isoformat(timespec="seconds"),
             "changelog": self.changelog_sections(),
             **git,
@@ -107,12 +109,14 @@ class VersionManager:
         if not before["is_git_repo"]:
             raise RuntimeError("Thư mục hiện tại không phải git repo nên không thể tự cập nhật.")
         if before["dirty"]:
-            raise RuntimeError("Repo đang có file đã sửa. Hãy commit hoặc lưu thay đổi trước khi cập nhật.")
+            raise RuntimeError("Repo đang có file đã sửa. Hãy bấm Sao lưu rồi cập nhật để GUI cất tạm thay đổi trước.")
 
         remote_name = before["remote_name"] or "origin"
         remote_branch = before["remote_branch"] or "main"
         result = self.git(["pull", "--ff-only", remote_name, remote_branch], timeout=180)
         log_path = self.write_update_log(result)
+        if not result.ok:
+            raise RuntimeError(f"Cập nhật từ GitHub lỗi. Xem log: {log_path}")
         after = self.version_info()
         return {
             "ok": result.ok,
@@ -123,6 +127,49 @@ class VersionManager:
             "after": after,
             "restart_recommended": True,
             "message": self.update_message(),
+        }
+
+    def save_changes_and_update(self) -> dict[str, Any]:
+        before = self.version_info()
+        if not before["is_git_repo"]:
+            raise RuntimeError("Thư mục hiện tại không phải git repo nên không thể tự cập nhật.")
+        if not before["update_available"]:
+            raise RuntimeError("Chưa thấy bản mới để cập nhật.")
+        if not before["dirty"]:
+            return self.update_from_remote()
+
+        remote_name = before["remote_name"] or "origin"
+        remote_branch = before["remote_branch"] or "main"
+        stash_message = f"YOLO GUI auto-save before update {datetime.now().isoformat(timespec='seconds')}"
+        stash_result = self.git(["stash", "push", "--include-untracked", "-m", stash_message], timeout=180)
+        if not stash_result.ok:
+            log_path = self.write_update_text("===== Save local changes =====\n" + (stash_result.text or "No git output."))
+            raise RuntimeError(f"Không sao lưu được thay đổi. Xem log: {log_path}")
+
+        pull_result = self.git(["pull", "--ff-only", remote_name, remote_branch], timeout=180)
+        log_text = "\n\n".join(
+            [
+                "===== Save local changes =====",
+                stash_result.text or "Git đã cất tạm thay đổi.",
+                "===== Update from GitHub =====",
+                pull_result.text or "Không có output từ git pull.",
+            ]
+        )
+        log_path = self.write_update_text(log_text)
+        if not pull_result.ok:
+            raise RuntimeError(f"Đã sao lưu thay đổi local nhưng cập nhật từ GitHub lỗi. Xem log: {log_path}")
+        after = self.version_info()
+        return {
+            "ok": pull_result.ok,
+            "returncode": pull_result.returncode,
+            "log": log_text,
+            "log_path": str(log_path),
+            "before": before,
+            "after": after,
+            "saved_changes": True,
+            "stash_message": stash_message,
+            "restart_recommended": True,
+            "message": self.update_message(saved_changes=True),
         }
 
     def git(self, args: list[str], timeout: int = 15) -> GitResult:
@@ -190,19 +237,23 @@ class VersionManager:
         return sections[:12]
 
     def write_update_log(self, result: GitResult) -> Path:
+        return self.write_update_text(result.text or "No git output.")
+
+    def write_update_text(self, text: str) -> Path:
         UPDATE_LOG_DIR.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         path = UPDATE_LOG_DIR / f"update-{timestamp}.log"
-        path.write_text(result.text or "No git output.", encoding="utf-8")
+        path.write_text(text, encoding="utf-8")
         return path
 
-    def update_message(self) -> str:
+    def update_message(self, saved_changes: bool = False) -> str:
+        saved_note = " GUI đã cất tạm thay đổi local trước khi cập nhật." if saved_changes else ""
         if self.is_colab_runtime():
             return (
-                "Đã cập nhật source. Trên Google Colab, hãy dừng cell YOLO GUI, chạy lại cell "
+                "Đã cập nhật source." + saved_note + " Trên Google Colab, hãy dừng cell YOLO GUI, chạy lại cell "
                 "`Chạy YOLO GUI`, rồi mở link tunnel mới để dùng bản vừa cập nhật."
             )
-        return "Đã cập nhật. Hãy tải lại trang; nếu backend thay đổi, hãy restart app."
+        return "Đã cập nhật." + saved_note + " Hãy tải lại trang; nếu backend thay đổi, hãy restart app."
 
     def is_colab_runtime(self) -> bool:
         if "COLAB_RELEASE_TAG" in os.environ:

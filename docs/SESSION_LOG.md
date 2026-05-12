@@ -298,3 +298,16 @@
 - Mobile không ẩn thẻ này nữa; CSS chuyển thẻ sang dạng gọn để người dùng Colab màn hình hẹp vẫn thấy hướng dẫn CPU/GPU.
 - Tab `Cài đặt` cũng đổi câu hướng dẫn khi Colab đang ở CPU runtime để người dùng không hiểu nhầm là phải tự sửa driver bằng CLI.
 - `boot()` không còn phụ thuộc riêng vào `/api/version` để biết Colab; dependency payload tự có `runtime`, nên thẻ sidebar render đúng ngay cả khi các API chạy song song.
+
+## 2026-05-12 - Predict preview và nút sao lưu cập nhật
+
+- Nhận feedback: tab `Dự đoán` không nên tự nhảy qua tab log; người dùng cần thấy thanh đang chạy và xem ảnh kết quả ngay tại tab dự đoán.
+- Nhận feedback: tab `Phiên bản` báo `Cần lưu thay đổi` nhưng thiếu nút để người không biết git xử lý.
+- Nhận feedback: panel `Tạo data.yaml` bị lỗi hiển thị, tooltip dấu hỏi chồng lên chữ `Dataset/Classes/data.yaml`.
+- Bump version lên `0.4.6`.
+- Thêm `POST /api/version/save-and-update`: dùng `git stash push --include-untracked` để cất tạm thay đổi local, sau đó chạy `git pull --ff-only`.
+- Frontend hiển thị nút `Sao lưu rồi cập nhật` khi có bản mới nhưng repo đang dirty.
+- Thêm `GET /api/jobs/{job_id}/artifacts` và `GET /api/jobs/{job_id}/artifacts/{artifact_id}` để liệt kê/serve ảnh hoặc video output của job.
+- `TrainingManager.list_artifacts()` tìm ảnh/video trong `runs/predict/<name>*` và `job_dir`, sắp theo thời gian sửa mới nhất.
+- Tab `Dự đoán` thêm panel `Kết quả dự đoán`: đang chạy có progress bar, xong thì hiện preview ảnh/video, lỗi thì giữ người dùng tại tab đó và cho nút xem log đầy đủ.
+- Sửa `.yaml-route-preview` thành grid 2 hàng rõ ràng để icon, tiêu đề, tooltip và mô tả không chồng lên nhau.

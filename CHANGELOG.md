@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.6 - 2026-05-12
+
+- Tab `Phiên bản` có nút `Sao lưu rồi cập nhật` khi GitHub có bản mới nhưng repo đang có file đã sửa; GUI tự cất tạm thay đổi bằng Git stash rồi cập nhật.
+- Tab `Dự đoán` không tự nhảy sang `Tiến trình` nữa; sau khi bấm chạy sẽ hiện panel đang xử lý ngay tại chỗ.
+- Khi predict hoàn tất, GUI tự tìm ảnh/video output và hiển thị preview trực tiếp trong tab `Dự đoán`.
+- Sửa lỗi route card trong Dataset Wizard bị chồng icon tooltip lên chữ ở panel `Tạo data.yaml`.
+
 ## v0.4.5 - 2026-05-12
 
 - Thẻ sidebar `Máy hiện tại` đổi thành `Colab hiện tại` khi GUI chạy trên Google Colab.
