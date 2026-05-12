@@ -30,6 +30,7 @@
   - Tạo `data.yaml` bằng GUI và tự gán vào Train/Validate/Audit.
   - Convert VOC XML sang YOLO txt.
   - Tính precision/recall/F1 từ label YOLO.
+  - Gán nhãn ảnh kiểu LabelImg ngay trong tab `Dữ liệu`: chọn folder ảnh, vẽ bounding box, chọn class và lưu nhãn YOLO `.txt`.
 - Tạo System report:
   - `POST /api/system/report`
   - Xuất `.md` và `.json` vào `logs/system_reports/`.
@@ -45,6 +46,21 @@
 - Cập nhật docs handoff nền.
 
 ## Đã verify trong phiên này
+
+- `python -m compileall -q .` pass sau khi thêm annotator.
+- `node --check frontend/app.js` pass.
+- `git diff --check` pass.
+- Annotation API smoke pass:
+  - `POST /api/annotations/images` liệt kê đúng ảnh tạm.
+  - `POST /api/annotations/save` ghi đúng file YOLO `.txt`.
+  - `POST /api/annotations/read` đọc lại đúng box.
+  - `GET /api/annotations/image` serve đúng ảnh PNG.
+- Browser QA trên `127.0.0.1:8788` pass:
+  - Tab `Dữ liệu` mở ảnh, chọn class, kéo bounding box trên canvas và bấm `Lưu nhãn` thành công.
+  - File `runs/annotator-smoke/labels/train/sample-annotator.txt` được ghi `1 0.485000 0.505000 0.510000 0.450000`.
+  - Desktop 1366x768 và mobile 390x844 không có horizontal overflow.
+  - Console browser không có warning/error.
+- Ảnh demo annotator đã chụp tại `docs/assets/demo/demo-annotation.png` và được README tham chiếu.
 
 - `python -m compileall -q yolo_gui` pass sau khi thêm backend mới.
 - `node --check frontend/app.js` pass sau khi refactor UI.
@@ -150,6 +166,7 @@
 - Thêm biểu đồ metric từ `results.csv`.
 - Thêm ONNX Runtime smoke check riêng sau export ONNX.
 - Thêm downloader/checker cho pretrained weight nếu model chưa có local.
+- Mở rộng annotator lên resize/move box trực tiếp bằng tay nắm nếu người dùng cần chỉnh box cũ nhanh hơn.
 - Thêm auth/local password nếu app mở ra LAN.
 - Thêm test tự động cho API và JS form mapping.
 - Thêm kiểm thử giả lập remote update cho `VersionManager`.

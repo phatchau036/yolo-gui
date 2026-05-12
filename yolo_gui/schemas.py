@@ -42,6 +42,33 @@ class MetricsRequest(BaseModel):
     class_count: int | None = Field(default=None, ge=1)
 
 
+class AnnotationListRequest(BaseModel):
+    image_dir: str
+    label_dir: str | None = None
+    limit: int = Field(default=5000, ge=1, le=20000)
+
+
+class AnnotationReadRequest(BaseModel):
+    image_path: str
+    image_dir: str | None = None
+    label_dir: str | None = None
+
+
+class AnnotationBox(BaseModel):
+    class_id: int = Field(default=0, ge=0)
+    x: float = Field(ge=0, le=1)
+    y: float = Field(ge=0, le=1)
+    w: float = Field(gt=0, le=1)
+    h: float = Field(gt=0, le=1)
+
+
+class AnnotationSaveRequest(BaseModel):
+    image_path: str
+    image_dir: str | None = None
+    label_dir: str | None = None
+    boxes: list[AnnotationBox] = Field(default_factory=list)
+
+
 class TrainRequest(BaseModel):
     model: str = Field(default="yolo26n.pt")
     data: str

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.17 - 2026-05-12
+
+- Thêm công cụ gán nhãn ảnh ngay trong tab `Dữ liệu`, thao tác tương tự LabelImg: chọn thư mục ảnh, xem danh sách ảnh, kéo chuột để vẽ bounding box, chọn class, xóa box và lưu nhãn YOLO `.txt`.
+- Thêm API annotation: liệt kê ảnh, đọc nhãn YOLO hiện có, lưu nhãn mới và serve ảnh để canvas frontend hiển thị.
+- Path browser có thêm mục gán vào `Thư mục ảnh để gán nhãn` và `Thư mục lưu nhãn box`; panel annotator cũng có nút `Chọn` để mở nhanh bộ duyệt thư mục.
+- Trong lúc mở thư mục hoặc lưu nhãn, GUI khóa các nút/field của annotator để tránh người dùng bấm chồng làm lệch trạng thái.
+- Thêm tooltip và tài liệu hướng dẫn cho luồng gán nhãn thuần GUI.
+
 ## v0.4.16 - 2026-05-12
 
 - Đổi cơ chế update trên Google Colab sang giữ nguyên Cloudflare Tunnel/link hiện tại.

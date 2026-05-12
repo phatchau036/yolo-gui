@@ -18,6 +18,7 @@
 - Trên Google Colab, trạng thái CPU/GPU phải dùng ngôn ngữ notebook: nói rõ CPU vẫn chạy được nhưng chậm, và hướng dẫn bật GPU bằng `Runtime > Change runtime type > GPU` rồi chạy lại cell YOLO GUI. Không chỉ ghi `CUDA chưa sẵn sàng` như máy local.
 - Nguyên tắc mới: workflow chính phải 100% GUI, không bắt người dùng hiểu `data.yaml`, JSON, `device=0`, CLI args, split name hoặc tham số YOLO thô.
 - Dataset wizard không được là một form ngang quá rộng. Luồng chuẩn là bố cục có bước rõ ràng: cột chính nhập thư mục/cấu trúc/class, cột hành động bên phải tạo và gán `data.yaml`.
+- Gán nhãn ảnh cũng thuộc tab `Dữ liệu`: công cụ `Vẽ bounding box như LabelImg` phải cho người dùng chọn folder ảnh, vẽ box, chọn class và lưu nhãn YOLO `.txt` ngay trong web GUI, không bắt mở tool desktop riêng.
 - Automation là một lớp riêng trên GUI: người dùng bấm kịch bản, backend chạy nhiều bước tuần tự và ghi timeline/log riêng thay vì bắt người dùng tự chuyển tab và tự chạy từng lệnh.
 - Mọi nhãn/tùy chọn chính trong GUI phải có giải thích ngắn bằng tooltip. Không nhồi đoạn giải thích dài vào form; dùng dấu hỏi cạnh nhãn và tab `Hướng dẫn` cho nội dung dài.
 - Luôn giữ một tài liệu người dùng cuối tại `docs/USER_GUIDE.md` song song với tab `Hướng dẫn` trong app.

@@ -410,3 +410,14 @@
 - Restart state có `same_tunnel=true`, `tunnel_url` là link hiện tại và status `restarting -> ready`.
 - Frontend `startColabRestartWatch()` poll lại trên link hiện tại; khi server sống lại sẽ tự `window.location.reload()` để nạp frontend/backend mới.
 - Panel `Colab tunnel` đổi CTA thành `Tải lại GUI`, không còn hướng người dùng sang link mới.
+
+## 2026-05-12 - Thêm annotator kiểu LabelImg trong GUI
+
+- Nhận yêu cầu: người dùng muốn chọn folder ảnh và vẽ bounding box ngay trong UI, tương tự LabelImg, để workflow dataset vẫn 100% GUI.
+- Bump version lên `0.4.17`.
+- Thêm `yolo_gui/annotation_tools.py` để liệt kê ảnh, suy ra path label, đọc và lưu nhãn YOLO `.txt`.
+- Thêm API `/api/annotations/images`, `/api/annotations/read`, `/api/annotations/save`, `/api/annotations/image`.
+- Tab `Dữ liệu` có panel `Vẽ bounding box như LabelImg`: chọn thư mục ảnh, chọn thư mục nhãn tùy chọn, nhập class, mở danh sách ảnh, kéo chuột trên canvas để tạo box, chọn/xóa/clear box và lưu nhãn.
+- Path browser có thêm target annotator và panel có nút `Chọn` để mở nhanh bộ duyệt thư mục, giảm thao tác nhập path thủ công.
+- Frontend khóa các field/nút annotator khi đang mở folder hoặc lưu nhãn để tránh bấm chồng gây lệch state.
+- Cập nhật README, changelog và docs handoff cho dev tiếp theo.

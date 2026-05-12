@@ -2029,6 +2029,253 @@ body {
   justify-content: center;
 }
 
+.annotation-panel {
+  grid-column: 1 / -1;
+}
+
+.annotation-setup-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(260px, 0.72fr);
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+.annotation-class-field .textarea {
+  min-height: 82px;
+  resize: vertical;
+}
+
+.annotation-path-field {
+  min-width: 0;
+}
+
+.annotation-path-row {
+  margin-bottom: 0;
+}
+
+.annotation-path-row .button {
+  height: 100%;
+  white-space: nowrap;
+}
+
+.annotation-workspace {
+  display: grid;
+  grid-template-columns: minmax(210px, 260px) minmax(0, 1fr) minmax(220px, 270px);
+  gap: 14px;
+  min-width: 0;
+}
+
+.annotation-image-panel,
+.annotation-box-panel,
+.annotation-stage-panel {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fbfdfc;
+}
+
+.annotation-image-panel,
+.annotation-box-panel {
+  padding: 12px;
+}
+
+.annotation-stage-panel {
+  padding: 12px;
+  background: linear-gradient(180deg, #ffffff, #f6fbfa);
+}
+
+.annotation-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.annotation-panel-head strong,
+.annotation-panel-head span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.annotation-panel-head strong {
+  color: #17211f;
+  font-weight: 900;
+}
+
+.annotation-panel-head span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.annotation-image-list,
+.annotation-box-list {
+  display: grid;
+  gap: 7px;
+  max-height: 560px;
+  overflow: auto;
+}
+
+.annotation-image-item,
+.annotation-box-item {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: #fff;
+  color: #24332f;
+  text-align: left;
+  cursor: pointer;
+}
+
+.annotation-image-item:hover,
+.annotation-box-item:hover,
+.annotation-image-item.is-active,
+.annotation-box-item.is-active {
+  border-color: rgba(15, 118, 110, 0.35);
+  background: #effffb;
+}
+
+.annotation-image-item strong,
+.annotation-image-item span,
+.annotation-box-item strong,
+.annotation-box-item span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.annotation-image-item strong,
+.annotation-box-item strong {
+  font-size: 0.86rem;
+}
+
+.annotation-image-item span,
+.annotation-box-item span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.annotation-toolbar {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) minmax(150px, 190px) 40px 40px 40px;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 10px;
+}
+
+.icon-button {
+  width: 40px;
+  min-width: 40px;
+  padding-inline: 0;
+}
+
+.annotation-current {
+  min-width: 0;
+}
+
+.annotation-current strong,
+.annotation-current span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.annotation-current strong {
+  color: #17211f;
+  font-size: 0.94rem;
+  font-weight: 900;
+}
+
+.annotation-current span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.annotation-class-select {
+  margin-bottom: 0;
+}
+
+.annotation-class-select .label {
+  margin-bottom: 4px;
+}
+
+.annotation-canvas-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 440px;
+  border: 1px solid #dbe7e4;
+  border-radius: 9px;
+  overflow: hidden;
+  background:
+    linear-gradient(45deg, rgba(15, 118, 110, 0.06) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(15, 118, 110, 0.06) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(15, 118, 110, 0.06) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(15, 118, 110, 0.06) 75%),
+    #f8fbfa;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  background-size: 20px 20px;
+}
+
+.annotation-canvas-shell img {
+  display: none;
+  max-width: 100%;
+  max-height: 68vh;
+  object-fit: contain;
+  user-select: none;
+}
+
+.annotation-canvas-shell canvas {
+  position: absolute;
+  display: none;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.annotation-canvas-shell.is-loaded img,
+.annotation-canvas-shell.is-loaded canvas {
+  display: block;
+}
+
+.annotation-empty-state {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 28px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.annotation-empty-state svg {
+  width: 34px;
+  height: 34px;
+  color: var(--accent);
+}
+
+.annotation-empty-state strong {
+  color: #17211f;
+  font-weight: 900;
+}
+
+.annotation-canvas-shell.is-loaded .annotation-empty-state {
+  display: none;
+}
+
+.annotation-help {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
 .preview-box,
 .log-output {
   border-radius: 8px;
@@ -2237,6 +2484,29 @@ body {
     position: static;
   }
 
+  .annotation-setup-grid,
+  .annotation-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .annotation-image-list,
+  .annotation-box-list {
+    max-height: 260px;
+  }
+
+  .annotation-toolbar {
+    grid-template-columns: 40px 40px minmax(0, 1fr) 40px 40px;
+  }
+
+  .annotation-class-select {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .annotation-current {
+    grid-column: 3;
+  }
+
   .toggle-grid,
   .dependency-checklist,
   .predict-preview-grid {
@@ -2410,6 +2680,24 @@ body {
 
   .dataset-wizard-layout {
     padding: 14px;
+  }
+
+  .annotation-canvas-shell {
+    min-height: 320px;
+  }
+
+  .annotation-toolbar {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .annotation-toolbar .icon-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .annotation-current,
+  .annotation-class-select {
+    grid-column: 1 / -1;
   }
 
   .wizard-step-strip,

@@ -148,6 +148,8 @@
                   <option value="exportDataPath">Bộ dữ liệu mẫu khi tối ưu</option>
                   <option value="auditPath">Bộ dữ liệu cần kiểm tra</option>
                   <option value="yamlRoot">Thư mục dataset</option>
+                  <option value="annotatorImageDir">Thư mục ảnh để gán nhãn</option>
+                  <option value="annotatorLabelDir">Thư mục lưu nhãn box</option>
                   <option value="yamlTrain">Thư mục ảnh để học</option>
                   <option value="yamlVal">Thư mục ảnh để kiểm tra</option>
                   <option value="yamlTest">Thư mục ảnh để test thêm</option>
@@ -567,6 +569,74 @@
                     <button id="useYoloLayoutButton" class="button is-light" type="button"><span class="icon"><i data-lucide="sparkles"></i></span><span>Tự điền thư mục chuẩn</span></button>
                     <button id="createYamlButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="file-plus-2"></i></span><span>Tạo và dùng ngay</span></button>
                   </div>
+                </aside>
+              </div>
+            </section>
+            <section class="work-panel annotation-panel">
+              <div class="panel-heading-row">
+                <div>
+                  <p class="eyebrow">Gán nhãn ảnh</p>
+                  <h3>Vẽ bounding box như LabelImg</h3>
+                </div>
+                <div class="panel-actions">
+                  <button id="loadAnnotatorButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="images"></i></span><span>Mở thư mục ảnh</span></button>
+                  <button id="saveAnnotationButton" class="button is-light" type="button" disabled><span class="icon"><i data-lucide="save"></i></span><span>Lưu nhãn</span></button>
+                </div>
+              </div>
+              <div class="annotation-setup-grid">
+                <label class="field annotation-path-field">
+                  <span class="label">Thư mục ảnh cần gán nhãn</span>
+                  <span class="field has-addons annotation-path-row">
+                    <span class="control is-expanded"><input id="annotatorImageDir" class="input" type="text" placeholder="Ví dụ: C:\datasets\helmet\images\train" /></span>
+                    <span class="control"><button class="button is-light annotation-path-pick" data-path-focus="annotatorImageDir" type="button"><span class="icon"><i data-lucide="folder-open"></i></span><span>Chọn</span></button></span>
+                  </span>
+                </label>
+                <label class="field annotation-path-field">
+                  <span class="label">Thư mục lưu nhãn</span>
+                  <span class="field has-addons annotation-path-row">
+                    <span class="control is-expanded"><input id="annotatorLabelDir" class="input" type="text" placeholder="Để trống để GUI tự suy ra labels/train" /></span>
+                    <span class="control"><button class="button is-light annotation-path-pick" data-path-focus="annotatorLabelDir" type="button"><span class="icon"><i data-lucide="folder-open"></i></span><span>Chọn</span></button></span>
+                  </span>
+                </label>
+                <label class="field annotation-class-field"><span class="label">Danh sách class để gán</span><textarea id="annotatorClasses" class="textarea" rows="3" placeholder="nguoi&#10;xe_may&#10;mu_bao_hiem"></textarea></label>
+              </div>
+              <div class="annotation-workspace">
+                <aside class="annotation-image-panel">
+                  <div class="annotation-panel-head">
+                    <strong>Ảnh trong thư mục</strong>
+                    <span id="annotatorImageCount">Chưa mở</span>
+                  </div>
+                  <div id="annotatorImageList" class="annotation-image-list">Chọn thư mục ảnh rồi bấm mở.</div>
+                </aside>
+                <div class="annotation-stage-panel">
+                  <div class="annotation-toolbar">
+                    <button id="prevAnnotatorImageButton" class="button is-light icon-button" type="button" title="Ảnh trước" aria-label="Ảnh trước" disabled><span class="icon"><i data-lucide="chevron-left"></i></span></button>
+                    <div class="annotation-current">
+                      <strong id="annotatorCurrentName">Chưa chọn ảnh</strong>
+                      <span id="annotatorLabelPath">Nhãn sẽ lưu theo chuẩn YOLO .txt</span>
+                    </div>
+                    <label class="field annotation-class-select"><span class="label">Class đang vẽ</span><select id="annotatorClassSelect" class="input"></select></label>
+                    <button id="deleteAnnotationBoxButton" class="button is-light icon-button" type="button" title="Xóa box đang chọn" aria-label="Xóa box đang chọn" disabled><span class="icon"><i data-lucide="trash-2"></i></span></button>
+                    <button id="clearAnnotationBoxesButton" class="button is-light icon-button" type="button" title="Xóa toàn bộ box trong ảnh" aria-label="Xóa toàn bộ box trong ảnh" disabled><span class="icon"><i data-lucide="eraser"></i></span></button>
+                    <button id="nextAnnotatorImageButton" class="button is-light icon-button" type="button" title="Ảnh sau" aria-label="Ảnh sau" disabled><span class="icon"><i data-lucide="chevron-right"></i></span></button>
+                  </div>
+                  <div id="annotatorCanvasShell" class="annotation-canvas-shell">
+                    <div id="annotatorEmptyState" class="annotation-empty-state">
+                      <i data-lucide="scan"></i>
+                      <strong>Chưa có ảnh để gán nhãn</strong>
+                      <span>Chọn thư mục ảnh ở trên, nhập class rồi bấm mở thư mục ảnh.</span>
+                    </div>
+                    <img id="annotatorImage" alt="Ảnh đang gán nhãn" />
+                    <canvas id="annotatorCanvas"></canvas>
+                  </div>
+                  <p class="annotation-help">Kéo chuột trên ảnh để tạo bounding box. Bấm vào box để chọn, dùng nút thùng rác hoặc phím Delete để xóa.</p>
+                </div>
+                <aside class="annotation-box-panel">
+                  <div class="annotation-panel-head">
+                    <strong>Box trong ảnh</strong>
+                    <span id="annotatorBoxCount">0 box</span>
+                  </div>
+                  <div id="annotatorBoxList" class="annotation-box-list">Chưa có box.</div>
                 </aside>
               </div>
             </section>

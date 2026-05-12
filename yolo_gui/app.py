@@ -9,6 +9,10 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import __version__
+from .annotation_tools import IMAGE_EXTENSIONS
+from .annotation_tools import list_images as list_annotation_images
+from .annotation_tools import read_labels as read_annotation_labels
+from .annotation_tools import save_labels as save_annotation_labels
 from .automation_manager import AutomationManager
 from .config import FRONTEND_DIR, PROJECT_ROOT, ensure_runtime_dirs
 from .dataset_tools import audit_dataset as audit_dataset_file
@@ -16,6 +20,9 @@ from .dataset_tools import calculate_yolo_metrics, convert_voc_to_yolo, create_d
 from .dependency_manager import DependencyManager
 from .schemas import (
     AutomationStartRequest,
+    AnnotationListRequest,
+    AnnotationReadRequest,
+    AnnotationSaveRequest,
     DatasetAuditRequest,
     DatasetInspectRequest,
     DatasetYamlCreateRequest,
@@ -336,6 +343,41 @@ def dataset_metrics(request: MetricsRequest) -> dict[str, Any]:
         )
     except Exception as exc:  # noqa: BLE001 - show exact metrics failure in GUI.
         raise HTTPException(status_code=400, detail=f"Cannot calculate metrics: {exc}") from exc
+
+
+@app.post("/api/annotations/images")
+def annotation_images(request: AnnotationListRequest) -> dict[str, Any]:
+    try:
+        return list_annotation_images(request.image_dir, label_dir=request.label_dir, limit=request.limit)
+    except Exception as exc:  # noqa: BLE001 - show exact folder issue in GUI.
+        raise HTTPException(status_code=400, detail=f"Cannot list annotation images: {exc}") from exc
+
+
+@app.post("/api/annotations/read")
+def annotation_read(request: AnnotationReadRequest) -> dict[str, Any]:
+    try:
+        return read_annotation_labels(request.image_path, label_dir=request.label_dir, image_dir=request.image_dir)
+    except Exception as exc:  # noqa: BLE001 - show exact label read issue in GUI.
+        raise HTTPException(status_code=400, detail=f"Cannot read annotation labels: {exc}") from exc
+
+
+@app.post("/api/annotations/save")
+def annotation_save(request: AnnotationSaveRequest) -> dict[str, Any]:
+    try:
+        boxes = [box.model_dump() if hasattr(box, "model_dump") else box.dict() for box in request.boxes]
+        return save_annotation_labels(request.image_path, boxes, label_dir=request.label_dir, image_dir=request.image_dir)
+    except Exception as exc:  # noqa: BLE001 - show exact save issue in GUI.
+        raise HTTPException(status_code=400, detail=f"Cannot save annotation labels: {exc}") from exc
+
+
+@app.get("/api/annotations/image")
+def annotation_image(path: str) -> FileResponse:
+    image_path = Path(path).expanduser()
+    if not image_path.exists() or not image_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Image not found: {image_path}")
+    if image_path.suffix.lower() not in IMAGE_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Unsupported image type: {image_path.suffix}")
+    return FileResponse(image_path)
 
 
 @app.post("/api/train/start")

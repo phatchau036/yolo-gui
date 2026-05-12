@@ -11,6 +11,16 @@ const state = {
   dependencyActionsLocked: true,
   automationTimer: null,
   colabRestartTimer: null,
+  annotator: {
+    images: [],
+    currentIndex: -1,
+    boxes: [],
+    selectedBoxIndex: -1,
+    draftBox: null,
+    drawing: null,
+    imageLoaded: false,
+    busy: false,
+  },
 };
 
 const HEALTH_CHECK_INTERVAL_MS = 30000;
@@ -198,6 +208,18 @@ const helpCatalog = {
   "Ảnh dùng để kiểm tra": "Thư mục ảnh dùng để kiểm tra chất lượng trong lúc train hoặc validate.",
   "Ảnh test thêm": "Thư mục test riêng nếu dataset có. Có thể để trống.",
   "Tên nhãn, mỗi dòng một nhãn": "Danh sách class model cần nhận diện, nhập mỗi class một dòng.",
+  "Thư mục ảnh cần gán nhãn": "Thư mục chứa ảnh bạn muốn vẽ bounding box. Có thể chọn images/train hoặc images/val.",
+  "Thư mục lưu nhãn": "Nơi lưu file .txt YOLO. Để trống thì GUI tự suy ra thư mục labels tương ứng.",
+  "Danh sách class để gán": "Nhập danh sách nhãn, mỗi dòng một class. Khi vẽ box, GUI lưu class bằng số thứ tự trong danh sách này.",
+  "Class đang vẽ": "Box mới sẽ dùng class đang chọn. Có thể chọn box cũ rồi đổi class.",
+  "Vẽ bounding box như LabelImg": "Công cụ gán nhãn ảnh bằng cách kéo chuột để tạo hộp bao quanh vật thể.",
+  "Mở thư mục ảnh": "Đọc danh sách ảnh trong thư mục đã chọn và tải nhãn YOLO hiện có nếu đã có file .txt.",
+  "Lưu nhãn": "Ghi toàn bộ bounding box của ảnh đang mở thành file YOLO .txt.",
+  "Chọn": "Mở bộ duyệt thư mục của GUI và gán đường dẫn vào ô này.",
+  "Ảnh trong thư mục": "Danh sách ảnh có thể gán nhãn. Bấm vào từng ảnh để mở và chỉnh box.",
+  "Box trong ảnh": "Danh sách bounding box của ảnh hiện tại. Bấm vào một box để chọn và đổi class hoặc xóa.",
+  "Xóa box đang chọn": "Xóa bounding box đang được chọn trên ảnh hiện tại.",
+  "Xóa toàn bộ box trong ảnh": "Xóa toàn bộ bounding box của ảnh hiện tại trước khi lưu lại.",
   "Sau khi tạo": "Quyết định GUI có tự gán dataset vừa tạo sang các tab khác hay không.",
   "Tự điền thư mục chuẩn": "Điền nhanh cấu trúc phổ biến images/train, images/val, images/test.",
   "Tạo và dùng ngay": "Tạo file cấu hình dataset và gán ngay vào các workflow cần dataset.",
@@ -416,6 +438,9 @@ function setActiveSection(section) {
   if (section === "version") {
     loadVersion().catch((error) => showToast(error.message));
   }
+  if (section === "dataset") {
+    window.setTimeout(syncAnnotatorCanvas, 80);
+  }
 }
 
 async function loadModels() {
@@ -433,6 +458,15 @@ async function loadModels() {
 
 function shortValue(value, fallback = "-") {
   return value ? String(value) : fallback;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function compareVersionStrings(current, latest) {
@@ -1110,7 +1144,7 @@ function pathButton(name, path, type, isDataYaml = false) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "path-item";
-  button.innerHTML = `<i data-lucide="${type === "dir" ? "folder" : "file"}"></i><span>${name}</span>`;
+  button.innerHTML = `<i data-lucide="${type === "dir" ? "folder" : "file"}"></i><span>${escapeHtml(name)}</span>`;
   button.addEventListener("click", () => {
     if (type === "dir") {
       browsePath(path).catch((error) => showToast(error.message));
@@ -1134,6 +1168,22 @@ function setPathTarget(path) {
     }
     updateDatasetDisplays();
   }
+}
+
+function openPathPickerForTarget(targetId) {
+  const target = document.getElementById(targetId);
+  const picker = qs(".path-tool");
+  qs("#pathTarget").value = targetId;
+  if (picker) {
+    picker.open = true;
+    picker.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  const selectedPath = target?.value?.trim();
+  if (selectedPath) {
+    qs("#folderPath").value = selectedPath;
+    browsePath(selectedPath).catch((error) => showToast(error.message));
+  }
+  qs("#folderPath").focus();
 }
 
 function useCurrentPath() {
@@ -1169,6 +1219,411 @@ function setYamlOutputPath(path) {
   const preview = qs("#yamlOutputPreview");
   if (preview) {
     preview.value = value;
+  }
+}
+
+function annotatorClasses() {
+  const classes = splitList(qs("#annotatorClasses").value);
+  return classes.length ? classes : ["object"];
+}
+
+function updateAnnotatorClassSelect() {
+  const select = qs("#annotatorClassSelect");
+  const previous = select.value;
+  select.innerHTML = "";
+  annotatorClasses().forEach((name, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${index}: ${name}`;
+    select.appendChild(option);
+  });
+  if ([...select.options].some((option) => option.value === previous)) {
+    select.value = previous;
+  }
+}
+
+function setButtonLabel(button, text) {
+  const label = button?.querySelector("span:last-child");
+  if (label) label.textContent = text;
+}
+
+function setAnnotatorBusy(busy, action = null) {
+  state.annotator.busy = busy;
+  setButtonLabel(qs("#loadAnnotatorButton"), busy && action === "load" ? "Đang mở ảnh..." : "Mở thư mục ảnh");
+  setButtonLabel(qs("#saveAnnotationButton"), busy && action === "save" ? "Đang lưu..." : "Lưu nhãn");
+  qsa("#annotatorImageDir, #annotatorLabelDir, #annotatorClasses, #annotatorClassSelect, .annotation-path-pick").forEach((element) => {
+    element.disabled = busy;
+  });
+  qsa(".annotation-image-item, .annotation-box-item").forEach((button) => {
+    button.disabled = busy;
+  });
+  updateAnnotatorButtons();
+}
+
+async function loadAnnotatorImages() {
+  const imageDir = qs("#annotatorImageDir").value.trim();
+  const labelDir = qs("#annotatorLabelDir").value.trim();
+  if (!imageDir) throw new Error("Hãy chọn thư mục ảnh cần gán nhãn.");
+  setAnnotatorBusy(true, "load");
+  try {
+    updateAnnotatorClassSelect();
+    const payload = await api("/api/annotations/images", {
+      method: "POST",
+      body: JSON.stringify({ image_dir: imageDir, label_dir: labelDir || null }),
+    });
+    state.annotator.images = payload.images || [];
+    state.annotator.currentIndex = -1;
+    state.annotator.boxes = [];
+    state.annotator.selectedBoxIndex = -1;
+    qs("#annotatorImageCount").textContent = `${payload.count || 0} ảnh`;
+    renderAnnotatorImageList();
+    if (!state.annotator.images.length) {
+      resetAnnotatorStage("Không tìm thấy ảnh trong thư mục đã chọn.");
+      return;
+    }
+    await selectAnnotatorImage(0);
+  } finally {
+    setAnnotatorBusy(false);
+  }
+}
+
+function resetAnnotatorStage(message = "Chọn thư mục ảnh rồi bấm mở.") {
+  const shell = qs("#annotatorCanvasShell");
+  shell.classList.remove("is-loaded");
+  qs("#annotatorImage").removeAttribute("src");
+  state.annotator.imageLoaded = false;
+  state.annotator.boxes = [];
+  state.annotator.selectedBoxIndex = -1;
+  qs("#annotatorCurrentName").textContent = "Chưa chọn ảnh";
+  qs("#annotatorLabelPath").textContent = "Nhãn sẽ lưu theo chuẩn YOLO .txt";
+  qs("#annotatorEmptyState span").textContent = message;
+  renderAnnotatorBoxes();
+  updateAnnotatorButtons();
+}
+
+function renderAnnotatorImageList() {
+  const list = qs("#annotatorImageList");
+  list.innerHTML = "";
+  if (!state.annotator.images.length) {
+    list.textContent = "Chưa có ảnh.";
+    return;
+  }
+  state.annotator.images.forEach((image, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `annotation-image-item ${index === state.annotator.currentIndex ? "is-active" : ""}`;
+    button.disabled = state.annotator.busy;
+    button.innerHTML = `
+      <strong>${escapeHtml(image.name)}</strong>
+      <span>${escapeHtml(image.relative || image.path)}</span>
+      <span>${image.annotated ? "Đã có nhãn" : "Chưa có nhãn"} · ${image.box_count || 0} box</span>
+    `;
+    button.addEventListener("click", () => {
+      selectAnnotatorImage(index).catch((error) => showToast(error.message));
+    });
+    list.appendChild(button);
+  });
+}
+
+async function selectAnnotatorImage(index) {
+  if (index < 0 || index >= state.annotator.images.length) return;
+  state.annotator.currentIndex = index;
+  state.annotator.selectedBoxIndex = -1;
+  state.annotator.draftBox = null;
+  state.annotator.drawing = null;
+  state.annotator.imageLoaded = false;
+  renderAnnotatorImageList();
+  updateAnnotatorButtons();
+
+  const image = state.annotator.images[index];
+  qs("#annotatorCurrentName").textContent = image.relative || image.name;
+  qs("#annotatorLabelPath").textContent = image.label_path || "Đang đọc nhãn...";
+  const shell = qs("#annotatorCanvasShell");
+  shell.classList.add("is-loaded");
+  const img = qs("#annotatorImage");
+  img.onload = () => {
+    state.annotator.imageLoaded = true;
+    window.requestAnimationFrame(() => {
+      syncAnnotatorCanvas();
+      window.requestAnimationFrame(syncAnnotatorCanvas);
+    });
+  };
+  img.onerror = () => {
+    resetAnnotatorStage("Không mở được ảnh này.");
+    showToast("Không mở được ảnh để gán nhãn");
+  };
+  img.src = `/api/annotations/image?path=${encodeURIComponent(image.path)}&t=${Date.now()}`;
+
+  const payload = await api("/api/annotations/read", {
+    method: "POST",
+    body: JSON.stringify({
+      image_path: image.path,
+      image_dir: qs("#annotatorImageDir").value.trim() || null,
+      label_dir: qs("#annotatorLabelDir").value.trim() || null,
+    }),
+  });
+  if (state.annotator.currentIndex !== index) return;
+  state.annotator.boxes = payload.boxes || [];
+  qs("#annotatorLabelPath").textContent = payload.label_path || image.label_path || "Nhãn YOLO .txt";
+  renderAnnotatorBoxes();
+  updateAnnotatorButtons();
+  drawAnnotator();
+  if (payload.errors?.length) {
+    showToast(`File nhãn có ${payload.errors.length} dòng cần kiểm tra`);
+  }
+}
+
+function syncAnnotatorCanvas() {
+  if (!state.annotator.imageLoaded) return;
+  const shell = qs("#annotatorCanvasShell");
+  const img = qs("#annotatorImage");
+  const canvas = qs("#annotatorCanvas");
+  const imageRect = img.getBoundingClientRect();
+  const shellRect = shell.getBoundingClientRect();
+  const width = Math.max(1, Math.round(imageRect.width));
+  const height = Math.max(1, Math.round(imageRect.height));
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  canvas.style.left = `${Math.round(imageRect.left - shellRect.left)}px`;
+  canvas.style.top = `${Math.round(imageRect.top - shellRect.top)}px`;
+  drawAnnotator();
+}
+
+function drawAnnotator() {
+  const canvas = qs("#annotatorCanvas");
+  if (!canvas || !canvas.width || !canvas.height) return;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  state.annotator.boxes.forEach((box, index) => {
+    drawAnnotatorBox(ctx, box, index === state.annotator.selectedBoxIndex);
+  });
+  if (state.annotator.draftBox) {
+    drawAnnotatorRect(ctx, state.annotator.draftBox, "#f59e0b", true);
+  }
+}
+
+function drawAnnotatorBox(ctx, box, selected) {
+  const classes = annotatorClasses();
+  const rect = boxToCanvasRect(box);
+  drawAnnotatorRect(ctx, rect, selected ? "#f97316" : "#0f766e", false);
+  const label = classes[box.class_id] || `class ${box.class_id}`;
+  ctx.font = "12px Arial";
+  const textWidth = ctx.measureText(label).width + 12;
+  ctx.fillStyle = selected ? "#f97316" : "#0f766e";
+  ctx.fillRect(rect.x, Math.max(0, rect.y - 22), textWidth, 20);
+  ctx.fillStyle = "#fff";
+  ctx.fillText(label, rect.x + 6, Math.max(14, rect.y - 8));
+}
+
+function drawAnnotatorRect(ctx, rect, color, dashed) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.fillStyle = dashed ? "rgba(245, 158, 11, 0.12)" : "rgba(15, 118, 110, 0.08)";
+  if (dashed) ctx.setLineDash([6, 4]);
+  ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+  ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+  ctx.restore();
+}
+
+function boxToCanvasRect(box) {
+  const canvas = qs("#annotatorCanvas");
+  return {
+    x: (box.x - box.w / 2) * canvas.width,
+    y: (box.y - box.h / 2) * canvas.height,
+    w: box.w * canvas.width,
+    h: box.h * canvas.height,
+  };
+}
+
+function canvasRectToBox(rect) {
+  const canvas = qs("#annotatorCanvas");
+  const x1 = Math.max(0, Math.min(rect.x, rect.x + rect.w));
+  const y1 = Math.max(0, Math.min(rect.y, rect.y + rect.h));
+  const x2 = Math.min(canvas.width, Math.max(rect.x, rect.x + rect.w));
+  const y2 = Math.min(canvas.height, Math.max(rect.y, rect.y + rect.h));
+  return {
+    class_id: Number(qs("#annotatorClassSelect").value || 0),
+    x: ((x1 + x2) / 2) / canvas.width,
+    y: ((y1 + y2) / 2) / canvas.height,
+    w: (x2 - x1) / canvas.width,
+    h: (y2 - y1) / canvas.height,
+  };
+}
+
+function annotatorPointerPosition(event) {
+  const rect = qs("#annotatorCanvas").getBoundingClientRect();
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  };
+}
+
+function annotatorHitTest(point) {
+  for (let index = state.annotator.boxes.length - 1; index >= 0; index -= 1) {
+    const rect = boxToCanvasRect(state.annotator.boxes[index]);
+    if (point.x >= rect.x && point.x <= rect.x + rect.w && point.y >= rect.y && point.y <= rect.y + rect.h) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+function annotatorPointerDown(event) {
+  if (!state.annotator.imageLoaded) return;
+  event.preventDefault();
+  const point = annotatorPointerPosition(event);
+  state.annotator.drawing = { start: point, current: point, hitIndex: annotatorHitTest(point) };
+  state.annotator.draftBox = null;
+  qs("#annotatorCanvas").setPointerCapture?.(event.pointerId);
+}
+
+function annotatorPointerMove(event) {
+  if (!state.annotator.drawing) return;
+  event.preventDefault();
+  const point = annotatorPointerPosition(event);
+  const start = state.annotator.drawing.start;
+  const rect = { x: start.x, y: start.y, w: point.x - start.x, h: point.y - start.y };
+  if (Math.abs(rect.w) > 3 || Math.abs(rect.h) > 3) {
+    state.annotator.draftBox = rect;
+  }
+  drawAnnotator();
+}
+
+function annotatorPointerUp(event) {
+  if (!state.annotator.drawing) return;
+  event.preventDefault();
+  const point = annotatorPointerPosition(event);
+  const start = state.annotator.drawing.start;
+  const width = Math.abs(point.x - start.x);
+  const height = Math.abs(point.y - start.y);
+  if (width < 6 || height < 6) {
+    selectAnnotatorBox(state.annotator.drawing.hitIndex);
+  } else {
+    const box = canvasRectToBox({ x: start.x, y: start.y, w: point.x - start.x, h: point.y - start.y });
+    if (box.w > 0 && box.h > 0) {
+      state.annotator.boxes.push(box);
+      selectAnnotatorBox(state.annotator.boxes.length - 1);
+    }
+  }
+  state.annotator.drawing = null;
+  state.annotator.draftBox = null;
+  qs("#annotatorCanvas").releasePointerCapture?.(event.pointerId);
+  drawAnnotator();
+  renderAnnotatorBoxes();
+  updateAnnotatorButtons();
+}
+
+function selectAnnotatorBox(index) {
+  state.annotator.selectedBoxIndex = index;
+  const box = state.annotator.boxes[index];
+  if (box) {
+    updateAnnotatorClassSelect();
+    qs("#annotatorClassSelect").value = String(box.class_id);
+  }
+  renderAnnotatorBoxes();
+  updateAnnotatorButtons();
+  drawAnnotator();
+}
+
+function renderAnnotatorBoxes() {
+  const list = qs("#annotatorBoxList");
+  const boxes = state.annotator.boxes;
+  qs("#annotatorBoxCount").textContent = `${boxes.length} box`;
+  if (!boxes.length) {
+    list.textContent = "Chưa có box.";
+    return;
+  }
+  const classes = annotatorClasses();
+  list.innerHTML = "";
+  boxes.forEach((box, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `annotation-box-item ${index === state.annotator.selectedBoxIndex ? "is-active" : ""}`;
+    button.disabled = state.annotator.busy;
+    const label = classes[box.class_id] || `class ${box.class_id}`;
+    button.innerHTML = `
+      <strong>${escapeHtml(index + 1)}. ${escapeHtml(label)}</strong>
+      <span>x ${(box.x * 100).toFixed(1)}%, y ${(box.y * 100).toFixed(1)}%</span>
+      <span>w ${(box.w * 100).toFixed(1)}%, h ${(box.h * 100).toFixed(1)}%</span>
+    `;
+    button.addEventListener("click", () => selectAnnotatorBox(index));
+    list.appendChild(button);
+  });
+}
+
+function updateAnnotatorButtons() {
+  const hasImage = state.annotator.currentIndex >= 0;
+  const busy = state.annotator.busy;
+  qs("#loadAnnotatorButton").disabled = busy;
+  qs("#saveAnnotationButton").disabled = busy || !hasImage;
+  qs("#prevAnnotatorImageButton").disabled = busy || !hasImage || state.annotator.currentIndex <= 0;
+  qs("#nextAnnotatorImageButton").disabled = busy || !hasImage || state.annotator.currentIndex >= state.annotator.images.length - 1;
+  qs("#deleteAnnotationBoxButton").disabled = busy || state.annotator.selectedBoxIndex < 0;
+  qs("#clearAnnotationBoxesButton").disabled = busy || !hasImage || state.annotator.boxes.length === 0;
+}
+
+function updateSelectedAnnotatorClass() {
+  const index = state.annotator.selectedBoxIndex;
+  if (index < 0 || !state.annotator.boxes[index]) return;
+  state.annotator.boxes[index].class_id = Number(qs("#annotatorClassSelect").value || 0);
+  renderAnnotatorBoxes();
+  drawAnnotator();
+}
+
+function deleteSelectedAnnotatorBox() {
+  const index = state.annotator.selectedBoxIndex;
+  if (index < 0) return;
+  state.annotator.boxes.splice(index, 1);
+  state.annotator.selectedBoxIndex = -1;
+  renderAnnotatorBoxes();
+  updateAnnotatorButtons();
+  drawAnnotator();
+}
+
+function clearAnnotatorBoxes() {
+  state.annotator.boxes = [];
+  state.annotator.selectedBoxIndex = -1;
+  renderAnnotatorBoxes();
+  updateAnnotatorButtons();
+  drawAnnotator();
+}
+
+async function saveCurrentAnnotation() {
+  const image = state.annotator.images[state.annotator.currentIndex];
+  if (!image) throw new Error("Chưa chọn ảnh để lưu nhãn.");
+  setAnnotatorBusy(true, "save");
+  try {
+    const payload = await api("/api/annotations/save", {
+      method: "POST",
+      body: JSON.stringify({
+        image_path: image.path,
+        image_dir: qs("#annotatorImageDir").value.trim() || null,
+        label_dir: qs("#annotatorLabelDir").value.trim() || null,
+        boxes: state.annotator.boxes,
+      }),
+    });
+    image.annotated = true;
+    image.box_count = payload.box_count;
+    image.label_path = payload.label_path;
+    qs("#annotatorLabelPath").textContent = payload.label_path;
+    renderAnnotatorImageList();
+    showToast(`Đã lưu ${payload.box_count} box`);
+  } finally {
+    setAnnotatorBusy(false);
+  }
+}
+
+function handleAnnotatorKeydown(event) {
+  const active = document.activeElement;
+  if (active && ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName)) return;
+  if (event.key === "Delete" || event.key === "Backspace") {
+    if (state.annotator.selectedBoxIndex >= 0) {
+      event.preventDefault();
+      deleteSelectedAnnotatorBox();
+    }
   }
 }
 
@@ -1936,6 +2391,40 @@ function bindEvents() {
   qs("#createYamlButton").addEventListener("click", () => {
     createYaml().catch((error) => showToast(error.message));
   });
+  qs("#loadAnnotatorButton").addEventListener("click", () => {
+    loadAnnotatorImages().catch((error) => showToast(error.message));
+  });
+  qs("#saveAnnotationButton").addEventListener("click", () => {
+    saveCurrentAnnotation().catch((error) => showToast(error.message));
+  });
+  qs("#prevAnnotatorImageButton").addEventListener("click", () => {
+    selectAnnotatorImage(state.annotator.currentIndex - 1).catch((error) => showToast(error.message));
+  });
+  qs("#nextAnnotatorImageButton").addEventListener("click", () => {
+    selectAnnotatorImage(state.annotator.currentIndex + 1).catch((error) => showToast(error.message));
+  });
+  qs("#deleteAnnotationBoxButton").addEventListener("click", deleteSelectedAnnotatorBox);
+  qs("#clearAnnotationBoxesButton").addEventListener("click", clearAnnotatorBoxes);
+  qs("#annotatorClassSelect").addEventListener("change", updateSelectedAnnotatorClass);
+  qs("#annotatorClasses").addEventListener("input", () => {
+    updateAnnotatorClassSelect();
+    renderAnnotatorBoxes();
+    drawAnnotator();
+  });
+  qs("#annotatorCanvas").addEventListener("pointerdown", annotatorPointerDown);
+  qs("#annotatorCanvas").addEventListener("pointermove", annotatorPointerMove);
+  qs("#annotatorCanvas").addEventListener("pointerup", annotatorPointerUp);
+  qs("#annotatorCanvas").addEventListener("pointercancel", (event) => {
+    state.annotator.drawing = null;
+    state.annotator.draftBox = null;
+    qs("#annotatorCanvas").releasePointerCapture?.(event.pointerId);
+    drawAnnotator();
+  });
+  window.addEventListener("resize", syncAnnotatorCanvas);
+  document.addEventListener("keydown", handleAnnotatorKeydown);
+  qsa("[data-path-focus]").forEach((button) => {
+    button.addEventListener("click", () => openPathPickerForTarget(button.dataset.pathFocus));
+  });
   qs("#useYoloLayoutButton").addEventListener("click", useYoloLayoutDefaults);
   qs("#yamlRoot").addEventListener("input", () => {
     const root = qs("#yamlRoot").value.trim();
@@ -1960,6 +2449,8 @@ async function boot() {
   updatePredictSourceMode();
   updatePredictRuntimeGuards();
   updateDatasetDisplays();
+  updateAnnotatorClassSelect();
+  updateAnnotatorButtons();
   setYamlOutputPath(qs("#yamlOutputPath").value);
   enhanceInlineHelp();
   browsePath("").catch(() => {});

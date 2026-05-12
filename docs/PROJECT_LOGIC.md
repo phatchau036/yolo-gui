@@ -80,7 +80,7 @@ Sidebar header cũng dùng payload từ `GET /api/version` để hiển thị nh
 
 Nếu repo đang có file đã sửa (`git status --porcelain` không rỗng), nút cập nhật thường bị khóa và GUI hiện nút `Sao lưu rồi cập nhật`. Luồng này dùng Git stash để không ghi đè thay đổi local. Sau khi update, GUI báo người dùng tải lại trang; nếu backend Python thay đổi, cần restart app hoặc chạy lại cell Colab.
 
-Riêng Colab: sau khi update source, người dùng phải dừng cell `Chạy YOLO GUI`, chạy lại cell và mở link `trycloudflare.com` mới vì backend/tunnel đang sống trong cell cũ.
+Riêng Colab: sau khi update source, `start_colab.py` giữ nguyên process `cloudflared`, chỉ restart uvicorn trên cùng port. Vì vậy link `trycloudflare.com` không đổi; khi server mới sẵn sàng, GUI tự tải lại hoặc người dùng bấm `Tải lại GUI` trong panel `Colab tunnel`.
 
 ## Luồng Google Colab
 
@@ -138,6 +138,19 @@ Predict artifact preview:
 - `POST /api/datasets/create-yaml`: tạo file cấu hình dataset từ thư mục gốc, thư mục ảnh học/kiểm tra/test và danh sách nhãn. Frontend Dataset Wizard gọi API này, rồi tự gán file vừa tạo vào Huấn luyện, Đánh giá, Kiểm tra và Đóng gói tối ưu.
 - `POST /api/datasets/voc-to-yolo`: convert VOC XML sang YOLO txt.
 - `POST /api/datasets/metrics`: tính precision/recall/F1 từ folder label prediction và ground truth.
+
+## Annotation tools
+
+Panel `Vẽ bounding box như LabelImg` trong tab `Dữ liệu` giúp người dùng tạo nhãn YOLO ngay trong web GUI:
+
+- `POST /api/annotations/images`: nhận `image_dir`, `label_dir` tùy chọn, liệt kê ảnh hỗ trợ và đếm số box đã có trong file nhãn tương ứng.
+- `POST /api/annotations/read`: đọc file `.txt` YOLO của một ảnh và trả về box dạng normalized `class_id, x, y, w, h`.
+- `POST /api/annotations/save`: ghi lại box đang có trên canvas vào file `.txt` YOLO.
+- `GET /api/annotations/image`: serve ảnh cho canvas frontend; endpoint chỉ nhận extension ảnh nằm trong danh sách hỗ trợ.
+
+Quy tắc suy ra file nhãn nằm trong `annotation_tools.py`: nếu người dùng chọn `label_dir`, nhãn lưu theo đường dẫn tương đối của ảnh trong `image_dir`; nếu không chọn, path có segment `images` sẽ được đổi sang `labels`, ví dụ `images/train/a.jpg` -> `labels/train/a.txt`. Nếu path không có segment `images`, GUI dùng folder `labels` bên cạnh folder ảnh.
+
+Frontend khóa cụm annotator trong lúc mở folder hoặc lưu nhãn để tránh click chồng. Canvas lưu tọa độ theo chuẩn YOLO normalized, nên kích thước ảnh hiển thị trên màn hình không làm thay đổi nhãn.
 
 ## System report
 

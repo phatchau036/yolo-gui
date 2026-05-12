@@ -34,6 +34,7 @@
 - Sidebar desktop cố định theo viewport phải có scroll nội bộ (`overflow-y: auto`) nếu có thêm nav/card mới. Không để phần tử con tràn ra ngoài nền sidebar; với màn hình thấp cần breakpoint riêng để giảm padding/gap thay vì để card bị cắt hoặc tràn khỏi layout.
 - Tooltip giải thích dùng `helpCatalog` trong `frontend/app.js`. Khi thêm label/option mới, thêm mô tả vào catalog hoặc bảo đảm fallback vẫn dễ hiểu.
 - Không viết đoạn giải thích dài trực tiếp trong form. Dùng tooltip cho giải thích ngắn và tab `Hướng dẫn`/`docs/USER_GUIDE.md` cho hướng dẫn dài.
+- Với công cụ canvas như annotator, giữ state trong `state.<feature>` của `frontend/app.js`, khóa control khi đang gọi API, và lưu dữ liệu theo format backend chuẩn thay vì đọc DOM rời rạc ở nhiều nơi.
 - Setting mới nên đi theo thứ tự:
   1. Thêm field vào schema tương ứng trong `schemas.py`.
   2. Thêm input có `name` trùng field vào frontend.
