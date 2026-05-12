@@ -51,8 +51,10 @@ body {
 }
 
 .side-panel {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  width: 256px;
   height: 100vh;
   height: 100dvh;
   padding: 22px 18px;
@@ -307,6 +309,7 @@ body {
 }
 
 .workspace {
+  grid-column: 2;
   width: 100%;
   max-width: 1480px;
   min-width: 0;
@@ -2079,9 +2082,14 @@ body {
 
   .side-panel {
     position: static;
+    inset: auto;
     height: auto;
-    overflow: visible;
     width: 100%;
+    overflow: visible;
+  }
+
+  .workspace {
+    grid-column: 1;
   }
 
   .nav-stack {
@@ -2184,6 +2192,7 @@ body {
 
 @media (max-width: 760px) {
   .workspace {
+    grid-column: 1;
     padding: 14px;
     width: 100%;
   }

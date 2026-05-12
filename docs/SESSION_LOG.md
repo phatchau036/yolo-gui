@@ -353,3 +353,12 @@
   - Repo có file đã sửa nhưng có thể stash: nút sidebar gọi `saveAndUpdateVersion()`.
   - Trường hợp không đủ điều kiện tự update: nút sidebar mở tab `Phiên bản` để người dùng xem lý do.
 - CSS giữ nút nhỏ, dạng pill màu vàng, nằm trong header sidebar và không làm vỡ layout mobile.
+
+## 2026-05-12 - Sidebar không tạo khoảng trống khi scroll
+
+- Nhận feedback: khi scroll xuống trang dài, nền sidebar bên trái kết thúc giữa màn hình và tạo khoảng trống nền body.
+- Bump version lên `0.4.11`.
+- Desktop `.side-panel` đổi từ `position: sticky` sang `position: fixed` với `inset: 0 auto 0 0`, `width: 256px`, `height: 100dvh`.
+- `.app-shell` vẫn giữ cột trái 256px và `.workspace` được ghim vào cột 2 để nội dung không chui dưới sidebar fixed.
+- Media `max-width: 1180px` trả sidebar về `position: static`, `width: 100%`, `height: auto` để tablet/mobile vẫn dùng layout một cột.
+- Sidebar vẫn `overflow-y: auto`, nên màn hình thấp vẫn cuộn nội bộ được mà nền không bị hụt.

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.11 - 2026-05-12
+
+- Sửa sidebar desktop bị tạo khoảng trống bên trái khi scroll sâu ở các trang dài như `Phiên bản`.
+- Sidebar desktop chuyển sang `position: fixed`, phủ đủ chiều cao viewport và vẫn có scroll nội bộ nếu nội dung sidebar cao hơn màn hình.
+- Tablet/mobile vẫn dùng sidebar `static` để không chiếm màn hình và không tạo layout hai cột trên màn hình hẹp.
+
 ## v0.4.10 - 2026-05-12
 
 - Sidebar header hiển thị nút `Update now` ngay cạnh phiên bản khi GUI phát hiện phiên bản hiện tại thấp hơn bản mới nhất trên GitHub.
