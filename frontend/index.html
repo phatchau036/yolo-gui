@@ -21,13 +21,13 @@
         </div>
 
         <nav class="nav-stack" aria-label="Điều hướng">
-          <button class="nav-item is-active" data-section="train" type="button"><i data-lucide="dumbbell"></i><span>Train</span></button>
-          <button class="nav-item" data-section="val" type="button"><i data-lucide="badge-check"></i><span>Validate</span></button>
-          <button class="nav-item" data-section="predict" type="button"><i data-lucide="scan-search"></i><span>Predict</span></button>
-          <button class="nav-item" data-section="export" type="button"><i data-lucide="package-open"></i><span>Export</span></button>
-          <button class="nav-item" data-section="dataset" type="button"><i data-lucide="folder-check"></i><span>Dataset</span></button>
-          <button class="nav-item" data-section="system" type="button"><i data-lucide="monitor-cog"></i><span>System</span></button>
-          <button class="nav-item" data-section="jobs" type="button"><i data-lucide="terminal-square"></i><span>Jobs</span></button>
+          <button class="nav-item is-active" data-section="train" type="button"><i data-lucide="dumbbell"></i><span>Huấn luyện</span></button>
+          <button class="nav-item" data-section="val" type="button"><i data-lucide="badge-check"></i><span>Đánh giá</span></button>
+          <button class="nav-item" data-section="predict" type="button"><i data-lucide="scan-search"></i><span>Dự đoán</span></button>
+          <button class="nav-item" data-section="export" type="button"><i data-lucide="package-open"></i><span>Đóng gói</span></button>
+          <button class="nav-item" data-section="dataset" type="button"><i data-lucide="folder-check"></i><span>Dữ liệu</span></button>
+          <button class="nav-item" data-section="system" type="button"><i data-lucide="monitor-cog"></i><span>Cài đặt</span></button>
+          <button class="nav-item" data-section="jobs" type="button"><i data-lucide="terminal-square"></i><span>Tiến trình</span></button>
         </nav>
 
         <div class="system-card">
@@ -39,17 +39,17 @@
       <section class="workspace">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Web GUI thay YOLO CLI</p>
-            <h2 id="sectionTitle">Train model</h2>
+            <p class="eyebrow">Web GUI thuần thao tác</p>
+            <h2 id="sectionTitle">Huấn luyện model</h2>
           </div>
           <div class="topbar-actions">
             <button id="refreshJobsButton" class="button is-light" type="button">
               <span class="icon"><i data-lucide="refresh-cw"></i></span>
-              <span>Làm mới job</span>
+              <span>Làm mới tiến trình</span>
             </button>
             <button id="openJobsButton" class="button is-light" type="button">
               <span class="icon"><i data-lucide="terminal"></i></span>
-              <span>Mở log</span>
+              <span>Mở nhật ký</span>
             </button>
           </div>
         </header>
@@ -57,19 +57,19 @@
         <section class="quick-switch" aria-label="Chọn workflow nhanh">
           <button class="quick-card is-active" data-section="train" type="button">
             <i data-lucide="dumbbell"></i>
-            <span><strong>Train</strong><small>Huấn luyện model</small></span>
+            <span><strong>Huấn luyện</strong><small>Tạo model từ dữ liệu</small></span>
           </button>
           <button class="quick-card" data-section="predict" type="button">
             <i data-lucide="scan-search"></i>
-            <span><strong>Predict</strong><small>Ảnh, video, camera</small></span>
+            <span><strong>Dự đoán</strong><small>Ảnh, video, camera</small></span>
           </button>
           <button class="quick-card" data-section="export" type="button">
             <i data-lucide="package-open"></i>
-            <span><strong>Export</strong><small>ONNX, TensorRT</small></span>
+            <span><strong>Đóng gói</strong><small>Dùng model ở app khác</small></span>
           </button>
           <button class="quick-card" data-section="dataset" type="button">
             <i data-lucide="folder-check"></i>
-            <span><strong>Dataset</strong><small>Audit, convert, metrics</small></span>
+            <span><strong>Dữ liệu</strong><small>Chuẩn bị và kiểm tra</small></span>
           </button>
         </section>
 
@@ -100,13 +100,13 @@
             </button>
           </div>
           <div id="dependencyChecklist" class="dependency-checklist"></div>
-          <pre id="dependencyLogOutput" class="dependency-log">Chưa có log cài đặt.</pre>
+          <pre id="dependencyLogOutput" class="dependency-log">Chưa có nhật ký cài đặt.</pre>
         </section>
 
         <details class="path-tool work-panel">
           <summary class="path-summary">
-            <span>
-              <span class="eyebrow">Local path</span>
+              <span>
+              <span class="eyebrow">Chọn trên máy</span>
               <strong>Duyệt file và thư mục</strong>
             </span>
             <i data-lucide="chevron-down"></i>
@@ -116,20 +116,19 @@
               <label class="label is-small" for="pathTarget">Gán vào</label>
               <div class="select is-small">
                 <select id="pathTarget">
-                  <option value="trainDataPath">Train data.yaml</option>
-                  <option value="valDataPath">Validate data.yaml</option>
-                  <option value="predictSourcePath">Predict source</option>
-                  <option value="exportModelPath">Export model</option>
-                  <option value="exportDataPath">Export calibration data</option>
-                  <option value="auditPath">Dataset audit</option>
-                  <option value="yamlOutputPath">YAML output</option>
-                  <option value="yamlRoot">YAML root</option>
-                  <option value="yamlTrain">YAML train split</option>
-                  <option value="yamlVal">YAML val split</option>
-                  <option value="yamlTest">YAML test split</option>
-                  <option value="vocAnnotationsDir">VOC XML folder</option>
-                  <option value="metricsPredictionDir">Metrics predictions</option>
-                  <option value="metricsGroundTruthDir">Metrics labels</option>
+                  <option value="trainDataPath">Bộ dữ liệu huấn luyện</option>
+                  <option value="valDataPath">Bộ dữ liệu đánh giá</option>
+                  <option value="predictSourcePath">Ảnh/video/thư mục dự đoán</option>
+                  <option value="exportModelPath">Model cần đóng gói</option>
+                  <option value="exportDataPath">Bộ dữ liệu mẫu khi tối ưu</option>
+                  <option value="auditPath">Bộ dữ liệu cần kiểm tra</option>
+                  <option value="yamlRoot">Thư mục dataset</option>
+                  <option value="yamlTrain">Thư mục ảnh để học</option>
+                  <option value="yamlVal">Thư mục ảnh để kiểm tra</option>
+                  <option value="yamlTest">Thư mục ảnh để test thêm</option>
+                  <option value="vocAnnotationsDir">Thư mục XML cũ</option>
+                  <option value="metricsPredictionDir">Nhãn model dự đoán</option>
+                  <option value="metricsGroundTruthDir">Nhãn đúng ban đầu</option>
                 </select>
               </div>
             </div>
@@ -163,170 +162,273 @@
           <form id="trainForm" class="work-panel">
             <div class="panel-heading-row">
               <div>
-                <p class="eyebrow">Train</p>
+                <p class="eyebrow">Huấn luyện</p>
                 <h3>Huấn luyện model</h3>
               </div>
               <button class="button is-primary" data-start-workflow="train" type="button">
                 <span class="icon"><i data-lucide="play"></i></span>
-                <span>Bắt đầu train</span>
+                <span>Bắt đầu huấn luyện</span>
               </button>
             </div>
+            <p class="form-note">Màn hình này chỉ cần chọn dữ liệu, kiểu model và mức huấn luyện. File cấu hình dataset và tham số YOLO sẽ được GUI tự chuẩn bị phía sau.</p>
             <div class="settings-grid">
-              <label class="field"><span class="label">Preset model</span><span class="select is-fullwidth"><select id="trainModelSelect" class="model-preset"></select></span></label>
-              <label class="field"><span class="label">Model tùy chỉnh</span><input id="trainModelCustom" class="input" type="text" data-custom-model placeholder="C:\weights\last.pt hoặc yolo11n.yaml" /></label>
-              <label class="field"><span class="label">Task</span><span class="select is-fullwidth"><select name="task"><option value="detect">Detect</option><option value="segment">Segment</option><option value="classify">Classify</option><option value="pose">Pose</option><option value="obb">OBB</option></select></span></label>
               <label class="field wide-field">
-                <span class="label">Dataset data.yaml</span>
+                <span class="label">Bộ dữ liệu</span>
+                <input id="trainDataPath" name="data" type="hidden" required />
                 <span class="field has-addons">
-                  <span class="control is-expanded"><input id="trainDataPath" name="data" class="input" type="text" required placeholder="C:\datasets\project\data.yaml" /></span>
-                  <span class="control"><button id="openDatasetWizardButton" class="button is-light" type="button"><span class="icon"><i data-lucide="file-plus-2"></i></span><span>Tạo YAML</span></button></span>
+                  <span class="control is-expanded"><input id="trainDatasetDisplay" class="input" type="text" readonly placeholder="Chưa chọn bộ dữ liệu" /></span>
+                  <span class="control"><button id="openDatasetWizardButton" class="button is-light" type="button"><span class="icon"><i data-lucide="folder-plus"></i></span><span>Chuẩn bị dữ liệu</span></button></span>
                 </span>
               </label>
-              <label class="field"><span class="label">Epochs</span><input name="epochs" class="input" type="number" min="1" value="100" /></label>
-              <label class="field"><span class="label">Image size</span><input name="imgsz" class="input" type="number" min="32" step="32" value="640" /></label>
-              <label class="field"><span class="label">Batch</span><input name="batch" class="input" type="number" step="0.01" value="16" /></label>
-              <label class="field"><span class="label">Device</span><input name="device" class="input" type="text" placeholder="auto, cpu, 0, 0,1, -1" /></label>
-              <label class="field"><span class="label">Workers</span><input name="workers" class="input" type="number" min="0" value="8" /></label>
-              <label class="field"><span class="label">Patience</span><input name="patience" class="input" type="number" min="0" value="100" /></label>
-              <label class="field"><span class="label">Optimizer</span><span class="select is-fullwidth"><select name="optimizer"><option value="auto">auto</option><option value="MuSGD">MuSGD</option><option value="SGD">SGD</option><option value="AdamW">AdamW</option><option value="Adam">Adam</option><option value="RMSProp">RMSProp</option></select></span></label>
-              <label class="field"><span class="label">Project</span><input name="project" class="input" type="text" placeholder="Để trống: runs/train" /></label>
-              <label class="field"><span class="label">Run name</span><input name="name" class="input" type="text" value="gui-train" /></label>
+              <label class="field"><span class="label">Kiểu model</span><span class="select is-fullwidth"><select id="trainModelSelect" class="model-preset"></select></span></label>
+              <label class="field"><span class="label">Loại bài toán</span><span class="select is-fullwidth"><select name="task"><option value="detect">Phát hiện vật thể</option><option value="segment">Tách vùng vật thể</option><option value="classify">Phân loại ảnh</option><option value="pose">Nhận diện tư thế</option><option value="obb">Khung xoay</option></select></span></label>
             </div>
+
+            <div class="choice-section">
+              <div class="section-label"><span>Mức huấn luyện</span><small>Chọn theo mục tiêu, GUI tự đặt thời gian học và kích thước ảnh.</small></div>
+              <div class="choice-grid">
+                <label class="choice-card"><input type="radio" name="ui_train_preset" value="quick" /><strong>Test nhanh</strong><span>Chạy thử để kiểm tra dữ liệu.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_train_preset" value="balanced" checked /><strong>Cân bằng</strong><span>Phù hợp đa số dataset.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_train_preset" value="deep" /><strong>Train kỹ</strong><span>Lâu hơn, ưu tiên chất lượng.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_train_preset" value="custom" /><strong>Tự tinh chỉnh</strong><span>Dùng phần nâng cao bên dưới.</span></label>
+              </div>
+            </div>
+
+            <div class="choice-section">
+              <div class="section-label"><span>Máy chạy</span><small>Để tự động nếu không chắc.</small></div>
+              <div class="choice-grid compact-choice">
+                <label class="choice-card"><input type="radio" name="device" value="" checked /><strong>Tự động</strong><span>GUI chọn cách chạy phù hợp.</span></label>
+                <label class="choice-card"><input type="radio" name="device" value="0" /><strong>Ưu tiên GPU</strong><span>Dùng card NVIDIA khi sẵn sàng.</span></label>
+                <label class="choice-card"><input type="radio" name="device" value="cpu" /><strong>Chạy CPU</strong><span>Chậm hơn nhưng dễ tương thích.</span></label>
+              </div>
+            </div>
+
             <div class="toggle-grid">
-              <label class="checkbox"><input name="cache" type="checkbox" /> Cache dataset</label>
-              <label class="checkbox"><input name="resume" type="checkbox" /> Resume</label>
-              <label class="checkbox"><input name="amp" type="checkbox" checked /> AMP</label>
-              <label class="checkbox"><input name="val" type="checkbox" checked /> Validate</label>
-              <label class="checkbox"><input name="plots" type="checkbox" checked /> Plots</label>
-              <label class="checkbox"><input name="cos_lr" type="checkbox" /> Cosine LR</label>
-              <label class="checkbox"><input name="rect" type="checkbox" /> Rect train</label>
-              <label class="checkbox"><input name="single_cls" type="checkbox" /> Single class</label>
+              <label class="checkbox"><input name="cache" type="checkbox" /> Tăng tốc đọc dữ liệu</label>
+              <label class="checkbox"><input name="resume" type="checkbox" /> Tiếp tục lần train trước</label>
+              <label class="checkbox"><input name="amp" type="checkbox" checked /> Tối ưu GPU tự động</label>
+              <label class="checkbox"><input name="val" type="checkbox" checked /> Tự đánh giá sau khi train</label>
+              <label class="checkbox"><input name="plots" type="checkbox" checked /> Lưu biểu đồ kết quả</label>
+              <label class="checkbox"><input name="cos_lr" type="checkbox" /> Lịch học mượt hơn</label>
+              <label class="checkbox"><input name="rect" type="checkbox" /> Giữ tỉ lệ ảnh tốt hơn</label>
+              <label class="checkbox"><input name="single_cls" type="checkbox" /> Chỉ có một loại vật thể</label>
             </div>
-            <details class="advanced-block" open>
-              <summary>Hyperparameter và augmentation</summary>
+            <details class="advanced-block">
+              <summary>Tùy chỉnh nâng cao, không bắt buộc</summary>
               <div class="settings-grid compact">
-                <label class="field"><span class="label">lr0</span><input name="lr0" class="input" type="number" step="0.0001" value="0.01" /></label>
-                <label class="field"><span class="label">lrf</span><input name="lrf" class="input" type="number" step="0.0001" value="0.01" /></label>
-                <label class="field"><span class="label">Momentum</span><input name="momentum" class="input" type="number" step="0.001" value="0.937" /></label>
-                <label class="field"><span class="label">Weight decay</span><input name="weight_decay" class="input" type="number" step="0.0001" value="0.0005" /></label>
-                <label class="field"><span class="label">Warmup epochs</span><input name="warmup_epochs" class="input" type="number" step="0.1" value="3.0" /></label>
-                <label class="field"><span class="label">Close mosaic</span><input name="close_mosaic" class="input" type="number" value="10" /></label>
-                <label class="field"><span class="label">Mosaic</span><input name="mosaic" class="input" type="number" step="0.01" value="1.0" /></label>
-                <label class="field"><span class="label">Mixup</span><input name="mixup" class="input" type="number" step="0.01" value="0.0" /></label>
-                <label class="field"><span class="label">Copy paste</span><input name="copy_paste" class="input" type="number" step="0.01" value="0.0" /></label>
-                <label class="field"><span class="label">HSV H</span><input name="hsv_h" class="input" type="number" step="0.001" value="0.015" /></label>
-                <label class="field"><span class="label">HSV S</span><input name="hsv_s" class="input" type="number" step="0.01" value="0.7" /></label>
-                <label class="field"><span class="label">HSV V</span><input name="hsv_v" class="input" type="number" step="0.01" value="0.4" /></label>
-                <label class="field"><span class="label">Degrees</span><input name="degrees" class="input" type="number" step="0.1" value="0.0" /></label>
-                <label class="field"><span class="label">Translate</span><input name="translate" class="input" type="number" step="0.01" value="0.1" /></label>
-                <label class="field"><span class="label">Scale</span><input name="scale" class="input" type="number" step="0.01" value="0.5" /></label>
-                <label class="field"><span class="label">Flip LR</span><input name="fliplr" class="input" type="number" step="0.01" value="0.5" /></label>
-                <label class="field"><span class="label">Box loss</span><input name="box" class="input" type="number" step="0.1" value="7.5" /></label>
-                <label class="field"><span class="label">Cls loss</span><input name="cls" class="input" type="number" step="0.1" value="0.5" /></label>
-                <label class="field"><span class="label">DFL loss</span><input name="dfl" class="input" type="number" step="0.1" value="1.5" /></label>
+                <label class="field"><span class="label">Model riêng</span><input id="trainModelCustom" class="input" type="text" data-custom-model placeholder="Chọn file model hoặc để trống" /></label>
+                <label class="field"><span class="label">Số vòng học</span><input name="epochs" class="input" type="number" min="1" value="100" /></label>
+                <label class="field"><span class="label">Độ lớn ảnh</span><input name="imgsz" class="input" type="number" min="32" step="32" value="640" /></label>
+                <label class="field"><span class="label">Số ảnh mỗi lượt</span><input name="batch" class="input" type="number" step="0.01" value="16" /></label>
+                <label class="field"><span class="label">Dừng khi hết cải thiện</span><input name="patience" class="input" type="number" min="0" value="100" /></label>
+                <label class="field"><span class="label">Luồng đọc dữ liệu</span><input name="workers" class="input" type="number" min="0" value="8" /></label>
+                <label class="field"><span class="label">Cách tối ưu</span><span class="select is-fullwidth"><select name="optimizer"><option value="auto">Tự động</option><option value="MuSGD">MuSGD</option><option value="SGD">SGD</option><option value="AdamW">AdamW</option><option value="Adam">Adam</option><option value="RMSProp">RMSProp</option></select></span></label>
+                <label class="field"><span class="label">Nơi lưu kết quả</span><input name="project" class="input" type="text" placeholder="Để trống để GUI tự lưu" /></label>
+                <label class="field"><span class="label">Tên lần chạy</span><input name="name" class="input" type="text" value="gui-train" /></label>
+                <label class="field"><span class="label">Tốc độ học đầu</span><input name="lr0" class="input" type="number" step="0.0001" value="0.01" /></label>
+                <label class="field"><span class="label">Tốc độ học cuối</span><input name="lrf" class="input" type="number" step="0.0001" value="0.01" /></label>
+                <label class="field"><span class="label">Đà học</span><input name="momentum" class="input" type="number" step="0.001" value="0.937" /></label>
+                <label class="field"><span class="label">Chống học vẹt</span><input name="weight_decay" class="input" type="number" step="0.0001" value="0.0005" /></label>
+                <label class="field"><span class="label">Làm nóng ban đầu</span><input name="warmup_epochs" class="input" type="number" step="0.1" value="3.0" /></label>
+                <label class="field"><span class="label">Ghép ảnh huấn luyện</span><input name="mosaic" class="input" type="number" step="0.01" value="1.0" /></label>
+                <label class="field"><span class="label">Pha trộn ảnh</span><input name="mixup" class="input" type="number" step="0.01" value="0.0" /></label>
+                <label class="field"><span class="label">Đổi màu ánh sáng</span><input name="hsv_v" class="input" type="number" step="0.01" value="0.4" /></label>
+                <label class="field"><span class="label">Xoay ảnh</span><input name="degrees" class="input" type="number" step="0.1" value="0.0" /></label>
+                <label class="field"><span class="label">Dịch chuyển ảnh</span><input name="translate" class="input" type="number" step="0.01" value="0.1" /></label>
+                <label class="field"><span class="label">Phóng thu ảnh</span><input name="scale" class="input" type="number" step="0.01" value="0.5" /></label>
+                <label class="field"><span class="label">Lật trái phải</span><input name="fliplr" class="input" type="number" step="0.01" value="0.5" /></label>
               </div>
             </details>
-            <label class="field"><span class="label">Extra args JSON</span><textarea class="textarea code-input" rows="5" data-extra-args spellcheck="false" placeholder='{"classes":[0,1], "save_period":5}'></textarea></label>
+            <textarea class="is-hidden" data-extra-args spellcheck="false"></textarea>
           </form>
         </section>
 
         <section id="section-val" class="page-section">
           <form id="valForm" class="work-panel">
             <div class="panel-heading-row">
-              <div><p class="eyebrow">Validate</p><h3>Đánh giá model</h3></div>
-              <button class="button is-primary" data-start-workflow="val" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Chạy val</span></button>
+              <div><p class="eyebrow">Đánh giá</p><h3>Kiểm tra chất lượng model</h3></div>
+              <button class="button is-primary" data-start-workflow="val" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Bắt đầu đánh giá</span></button>
             </div>
+            <p class="form-note">Dùng để biết model đang nhận diện tốt đến đâu trên bộ ảnh kiểm tra.</p>
             <div class="settings-grid">
-              <label class="field"><span class="label">Preset model</span><span class="select is-fullwidth"><select id="valModelSelect" class="model-preset"></select></span></label>
-              <label class="field"><span class="label">Model</span><input id="valModelCustom" class="input" data-custom-model type="text" placeholder="C:\weights\best.pt" /></label>
-              <label class="field wide-field"><span class="label">Dataset data.yaml</span><input id="valDataPath" name="data" class="input" type="text" /></label>
-              <label class="field"><span class="label">Task</span><span class="select is-fullwidth"><select name="task"><option value="detect">Detect</option><option value="segment">Segment</option><option value="classify">Classify</option><option value="pose">Pose</option><option value="obb">OBB</option></select></span></label>
-              <label class="field"><span class="label">Split</span><span class="select is-fullwidth"><select name="split"><option value="val">val</option><option value="test">test</option><option value="train">train</option></select></span></label>
-              <label class="field"><span class="label">Image size</span><input name="imgsz" class="input" type="number" min="32" step="32" value="640" /></label>
-              <label class="field"><span class="label">Batch</span><input name="batch" class="input" type="number" step="0.01" value="16" /></label>
-              <label class="field"><span class="label">Conf</span><input name="conf" class="input" type="number" min="0" max="1" step="0.01" placeholder="auto" /></label>
-              <label class="field"><span class="label">IoU</span><input name="iou" class="input" type="number" min="0" max="1" step="0.01" value="0.7" /></label>
-              <label class="field"><span class="label">Device</span><input name="device" class="input" type="text" placeholder="cpu, 0, 0,1" /></label>
-              <label class="field"><span class="label">Workers</span><input name="workers" class="input" type="number" min="0" value="8" /></label>
-              <label class="field"><span class="label">Project</span><input name="project" class="input" type="text" placeholder="Để trống: runs/val" /></label>
-              <label class="field"><span class="label">Run name</span><input name="name" class="input" type="text" value="gui-val" /></label>
-              <label class="field"><span class="label">Max det</span><input name="max_det" class="input" type="number" min="1" value="300" /></label>
+              <label class="field"><span class="label">Model có sẵn</span><span class="select is-fullwidth"><select id="valModelSelect" class="model-preset"></select></span></label>
+              <label class="field wide-field"><span class="label">Model cần đánh giá</span><input id="valModelCustom" class="input" data-custom-model type="text" placeholder="Chọn file model hoặc để trống" /></label>
+              <label class="field wide-field">
+                <span class="label">Bộ dữ liệu kiểm tra</span>
+                <input id="valDataPath" name="data" type="hidden" />
+                <input id="valDatasetDisplay" class="input" type="text" readonly placeholder="Chưa chọn bộ dữ liệu" />
+              </label>
+              <label class="field"><span class="label">Loại bài toán</span><span class="select is-fullwidth"><select name="task"><option value="detect">Phát hiện vật thể</option><option value="segment">Tách vùng vật thể</option><option value="classify">Phân loại ảnh</option><option value="pose">Nhận diện tư thế</option><option value="obb">Khung xoay</option></select></span></label>
             </div>
+
+            <div class="choice-section">
+              <div class="section-label"><span>Mức đánh giá</span><small>Chọn càng kỹ thì chạy lâu hơn nhưng số liệu ổn hơn.</small></div>
+              <div class="choice-grid compact-choice">
+                <label class="choice-card"><input type="radio" name="ui_val_preset" value="quick" /><strong>Nhanh</strong><span>Kiểm tra sơ bộ.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_val_preset" value="balanced" checked /><strong>Chuẩn</strong><span>Phù hợp báo cáo thường ngày.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_val_preset" value="strict" /><strong>Kỹ</strong><span>Ưu tiên số liệu chặt chẽ.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_val_preset" value="custom" /><strong>Tự tinh chỉnh</strong><span>Dùng phần nâng cao bên dưới.</span></label>
+              </div>
+            </div>
+
+            <div class="choice-section">
+              <div class="section-label"><span>Máy chạy</span><small>Để tự động nếu không chắc.</small></div>
+              <div class="choice-grid compact-choice">
+                <label class="choice-card"><input type="radio" name="device" value="" checked /><strong>Tự động</strong><span>GUI chọn cách chạy phù hợp.</span></label>
+                <label class="choice-card"><input type="radio" name="device" value="0" /><strong>Ưu tiên GPU</strong><span>Dùng card NVIDIA khi sẵn sàng.</span></label>
+                <label class="choice-card"><input type="radio" name="device" value="cpu" /><strong>Chạy CPU</strong><span>Chậm hơn nhưng dễ tương thích.</span></label>
+              </div>
+            </div>
+
             <div class="toggle-grid">
-              <label class="checkbox"><input name="save_json" type="checkbox" /> Save JSON</label>
-              <label class="checkbox"><input name="save_hybrid" type="checkbox" /> Save hybrid</label>
-              <label class="checkbox"><input name="plots" type="checkbox" checked /> Plots</label>
-              <label class="checkbox"><input name="half" type="checkbox" /> FP16</label>
-              <label class="checkbox"><input name="dnn" type="checkbox" /> OpenCV DNN</label>
+              <label class="checkbox"><input name="save_json" type="checkbox" /> Lưu báo cáo chi tiết</label>
+              <label class="checkbox"><input name="save_hybrid" type="checkbox" /> Lưu nhãn hỗ trợ kiểm tra</label>
+              <label class="checkbox"><input name="plots" type="checkbox" checked /> Lưu biểu đồ kết quả</label>
+              <label class="checkbox"><input name="half" type="checkbox" /> Tối ưu GPU nhẹ hơn</label>
+              <label class="checkbox"><input name="dnn" type="checkbox" /> Dùng OpenCV khi cần</label>
               <label class="checkbox"><input name="exist_ok" type="checkbox" /> Ghi đè run</label>
             </div>
-            <label class="field"><span class="label">Extra args JSON</span><textarea class="textarea code-input" rows="5" data-extra-args spellcheck="false"></textarea></label>
+            <details class="advanced-block">
+              <summary>Tùy chỉnh đánh giá, không bắt buộc</summary>
+              <div class="settings-grid compact">
+                <label class="field"><span class="label">Tập ảnh cần đo</span><span class="select is-fullwidth"><select name="split"><option value="val">Ảnh kiểm tra</option><option value="test">Ảnh test thêm</option><option value="train">Ảnh đã học</option></select></span></label>
+                <label class="field"><span class="label">Độ lớn ảnh</span><input name="imgsz" class="input" type="number" min="32" step="32" value="640" /></label>
+                <label class="field"><span class="label">Số ảnh mỗi lượt</span><input name="batch" class="input" type="number" step="0.01" value="16" /></label>
+                <label class="field"><span class="label">Mức tin cậy tối thiểu</span><input name="conf" class="input" type="number" min="0" max="1" step="0.01" placeholder="Tự động" /></label>
+                <label class="field"><span class="label">Độ khớp hộp</span><input name="iou" class="input" type="number" min="0" max="1" step="0.01" value="0.7" /></label>
+                <label class="field"><span class="label">Số vật thể tối đa</span><input name="max_det" class="input" type="number" min="1" value="300" /></label>
+                <label class="field"><span class="label">Luồng đọc dữ liệu</span><input name="workers" class="input" type="number" min="0" value="8" /></label>
+                <label class="field"><span class="label">Nơi lưu kết quả</span><input name="project" class="input" type="text" placeholder="Để trống để GUI tự lưu" /></label>
+                <label class="field"><span class="label">Tên lần chạy</span><input name="name" class="input" type="text" value="gui-val" /></label>
+              </div>
+            </details>
+            <textarea class="is-hidden" data-extra-args spellcheck="false"></textarea>
           </form>
         </section>
 
         <section id="section-predict" class="page-section">
           <form id="predictForm" class="work-panel">
             <div class="panel-heading-row">
-              <div><p class="eyebrow">Predict</p><h3>Inference ảnh, folder, video, camera</h3></div>
-              <button class="button is-primary" data-start-workflow="predict" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Chạy predict</span></button>
+              <div><p class="eyebrow">Dự đoán</p><h3>Nhận diện trên ảnh, video hoặc camera</h3></div>
+              <button class="button is-primary" data-start-workflow="predict" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Bắt đầu dự đoán</span></button>
             </div>
+            <p class="form-note">Chọn nguồn đầu vào bằng giao diện, không cần nhập số camera hoặc cú pháp dòng lệnh.</p>
             <div class="settings-grid">
-              <label class="field"><span class="label">Preset model</span><span class="select is-fullwidth"><select id="predictModelSelect" class="model-preset"></select></span></label>
-              <label class="field"><span class="label">Model</span><input id="predictModelCustom" class="input" data-custom-model type="text" placeholder="C:\weights\best.pt" /></label>
-              <label class="field wide-field"><span class="label">Source</span><input id="predictSourcePath" name="source" class="input" type="text" placeholder="C:\images hoặc 0 cho camera" /></label>
-              <label class="field"><span class="label">Task</span><span class="select is-fullwidth"><select name="task"><option value="detect">Detect</option><option value="segment">Segment</option><option value="classify">Classify</option><option value="pose">Pose</option><option value="obb">OBB</option></select></span></label>
-              <label class="field"><span class="label">Image size</span><input name="imgsz" class="input" type="number" min="32" step="32" value="640" /></label>
-              <label class="field"><span class="label">Conf</span><input name="conf" class="input" type="number" min="0" max="1" step="0.01" value="0.25" /></label>
-              <label class="field"><span class="label">IoU</span><input name="iou" class="input" type="number" min="0" max="1" step="0.01" value="0.7" /></label>
-              <label class="field"><span class="label">Device</span><input name="device" class="input" type="text" placeholder="cpu, 0, 0,1" /></label>
-              <label class="field"><span class="label">Project</span><input name="project" class="input" type="text" placeholder="Để trống: runs/predict" /></label>
-              <label class="field"><span class="label">Run name</span><input name="name" class="input" type="text" value="gui-predict" /></label>
-              <label class="field"><span class="label">Max det</span><input name="max_det" class="input" type="number" min="1" value="300" /></label>
-              <label class="field"><span class="label">Vid stride</span><input name="vid_stride" class="input" type="number" min="1" value="1" /></label>
-              <label class="field"><span class="label">Line width</span><input name="line_width" class="input" type="number" min="1" placeholder="auto" /></label>
+              <label class="field"><span class="label">Model có sẵn</span><span class="select is-fullwidth"><select id="predictModelSelect" class="model-preset"></select></span></label>
+              <label class="field wide-field"><span class="label">Model cần dùng</span><input id="predictModelCustom" class="input" data-custom-model type="text" placeholder="Chọn file model hoặc để trống" /></label>
+              <label class="field"><span class="label">Loại bài toán</span><span class="select is-fullwidth"><select name="task"><option value="detect">Phát hiện vật thể</option><option value="segment">Tách vùng vật thể</option><option value="classify">Phân loại ảnh</option><option value="pose">Nhận diện tư thế</option><option value="obb">Khung xoay</option></select></span></label>
             </div>
+
+            <div class="choice-section">
+              <div class="section-label"><span>Nguồn cần nhận diện</span><small>Chọn ảnh, video, thư mục hoặc camera bằng nút bấm.</small></div>
+              <div class="choice-grid">
+                <label class="choice-card"><input type="radio" name="ui_predict_source_mode" value="file" checked /><strong>Ảnh hoặc video</strong><span>Chọn file từ máy.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_predict_source_mode" value="folder" /><strong>Thư mục ảnh</strong><span>Chạy hàng loạt.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_predict_source_mode" value="camera" /><strong>Camera</strong><span>Dùng webcam đang cắm.</span></label>
+              </div>
+              <div class="source-panel" id="predictFilePanel">
+                <label class="field">
+                  <span class="label">File hoặc thư mục</span>
+                  <input id="predictSourcePath" name="source" class="input" type="text" placeholder="Chọn bằng khung duyệt file phía trên" />
+                </label>
+              </div>
+              <div class="source-panel is-hidden" id="predictCameraPanel">
+                <label class="field">
+                  <span class="label">Camera</span>
+                  <span class="select is-fullwidth"><select id="predictCameraSelect"><option value="0">Camera mặc định</option><option value="1">Camera phụ</option><option value="2">Camera thứ 3</option></select></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="choice-section">
+              <div class="section-label"><span>Mức lọc kết quả</span><small>Chặt hơn sẽ ít báo nhầm hơn nhưng có thể bỏ sót vật thể nhỏ.</small></div>
+              <div class="choice-grid compact-choice">
+                <label class="choice-card"><input type="radio" name="ui_predict_preset" value="sensitive" /><strong>Nhạy</strong><span>Ưu tiên không bỏ sót.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_predict_preset" value="balanced" checked /><strong>Cân bằng</strong><span>Phù hợp đa số ảnh.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_predict_preset" value="strict" /><strong>Chắc chắn</strong><span>Chỉ giữ kết quả tin cậy cao.</span></label>
+                <label class="choice-card"><input type="radio" name="ui_predict_preset" value="custom" /><strong>Tự tinh chỉnh</strong><span>Dùng phần nâng cao bên dưới.</span></label>
+              </div>
+            </div>
+
+            <div class="choice-section">
+              <div class="section-label"><span>Máy chạy</span><small>Để tự động nếu không chắc.</small></div>
+              <div class="choice-grid compact-choice">
+                <label class="choice-card"><input type="radio" name="device" value="" checked /><strong>Tự động</strong><span>GUI chọn cách chạy phù hợp.</span></label>
+                <label class="choice-card"><input type="radio" name="device" value="0" /><strong>Ưu tiên GPU</strong><span>Dùng card NVIDIA khi sẵn sàng.</span></label>
+                <label class="choice-card"><input type="radio" name="device" value="cpu" /><strong>Chạy CPU</strong><span>Chậm hơn nhưng dễ tương thích.</span></label>
+              </div>
+            </div>
+
             <div class="toggle-grid">
-              <label class="checkbox"><input name="save" type="checkbox" checked /> Save media</label>
-              <label class="checkbox"><input name="save_txt" type="checkbox" /> Save txt</label>
-              <label class="checkbox"><input name="save_conf" type="checkbox" /> Save conf</label>
-              <label class="checkbox"><input name="save_crop" type="checkbox" /> Save crop</label>
-              <label class="checkbox"><input name="show_labels" type="checkbox" checked /> Labels</label>
-              <label class="checkbox"><input name="show_conf" type="checkbox" checked /> Conf</label>
-              <label class="checkbox"><input name="show_boxes" type="checkbox" checked /> Boxes</label>
-              <label class="checkbox"><input name="agnostic_nms" type="checkbox" /> Agnostic NMS</label>
-              <label class="checkbox"><input name="retina_masks" type="checkbox" /> Retina masks</label>
-              <label class="checkbox"><input name="half" type="checkbox" /> FP16</label>
-              <label class="checkbox"><input name="stream_buffer" type="checkbox" /> Stream buffer</label>
+              <label class="checkbox"><input name="save" type="checkbox" checked /> Lưu ảnh/video kết quả</label>
+              <label class="checkbox"><input name="save_txt" type="checkbox" /> Lưu nhãn máy đọc</label>
+              <label class="checkbox"><input name="save_conf" type="checkbox" /> Lưu điểm tin cậy</label>
+              <label class="checkbox"><input name="save_crop" type="checkbox" /> Cắt riêng vật thể</label>
+              <label class="checkbox"><input name="show_labels" type="checkbox" checked /> Hiện tên vật thể</label>
+              <label class="checkbox"><input name="show_conf" type="checkbox" checked /> Hiện độ tin cậy</label>
+              <label class="checkbox"><input name="show_boxes" type="checkbox" checked /> Vẽ khung nhận diện</label>
+              <label class="checkbox"><input name="agnostic_nms" type="checkbox" /> Gộp hộp trùng mạnh hơn</label>
+              <label class="checkbox"><input name="retina_masks" type="checkbox" /> Mask sắc nét hơn</label>
+              <label class="checkbox"><input name="half" type="checkbox" /> Tối ưu GPU nhẹ hơn</label>
+              <label class="checkbox"><input name="stream_buffer" type="checkbox" /> Đệm camera mượt hơn</label>
               <label class="checkbox"><input name="exist_ok" type="checkbox" /> Ghi đè run</label>
             </div>
-            <label class="field"><span class="label">Extra args JSON</span><textarea class="textarea code-input" rows="5" data-extra-args spellcheck="false"></textarea></label>
+            <details class="advanced-block">
+              <summary>Tùy chỉnh dự đoán, không bắt buộc</summary>
+              <div class="settings-grid compact">
+                <label class="field"><span class="label">Độ lớn ảnh</span><input name="imgsz" class="input" type="number" min="32" step="32" value="640" /></label>
+                <label class="field"><span class="label">Mức tin cậy tối thiểu</span><input name="conf" class="input" type="number" min="0" max="1" step="0.01" value="0.25" /></label>
+                <label class="field"><span class="label">Độ khớp hộp</span><input name="iou" class="input" type="number" min="0" max="1" step="0.01" value="0.7" /></label>
+                <label class="field"><span class="label">Số vật thể tối đa</span><input name="max_det" class="input" type="number" min="1" value="300" /></label>
+                <label class="field"><span class="label">Đọc video cách quãng</span><input name="vid_stride" class="input" type="number" min="1" value="1" /></label>
+                <label class="field"><span class="label">Độ dày khung</span><input name="line_width" class="input" type="number" min="1" placeholder="Tự động" /></label>
+                <label class="field"><span class="label">Nơi lưu kết quả</span><input name="project" class="input" type="text" placeholder="Để trống để GUI tự lưu" /></label>
+                <label class="field"><span class="label">Tên lần chạy</span><input name="name" class="input" type="text" value="gui-predict" /></label>
+              </div>
+            </details>
+            <textarea class="is-hidden" data-extra-args spellcheck="false"></textarea>
           </form>
         </section>
 
         <section id="section-export" class="page-section">
           <form id="exportForm" class="work-panel">
             <div class="panel-heading-row">
-              <div><p class="eyebrow">Export</p><h3>Chuyển model sang ONNX/TensorRT/OpenVINO</h3></div>
-              <button class="button is-primary" data-start-workflow="export" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Chạy export</span></button>
+              <div><p class="eyebrow">Đóng gói</p><h3>Chuẩn bị model để dùng ở nơi khác</h3></div>
+              <button class="button is-primary" data-start-workflow="export" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Bắt đầu đóng gói</span></button>
             </div>
+            <p class="form-note">Chọn mục đích sử dụng, GUI sẽ chọn kiểu xuất phù hợp và ghi nhật ký nếu máy thiếu runtime.</p>
             <div class="settings-grid">
-              <label class="field wide-field"><span class="label">Model</span><input id="exportModelPath" name="model" class="input" type="text" placeholder="C:\weights\best.pt" /></label>
-              <label class="field"><span class="label">Format</span><span class="select is-fullwidth"><select name="format"><option value="onnx">ONNX</option><option value="engine">TensorRT engine</option><option value="openvino">OpenVINO</option><option value="torchscript">TorchScript</option><option value="coreml">CoreML</option><option value="saved_model">SavedModel</option><option value="tflite">TFLite</option><option value="ncnn">NCNN</option><option value="paddle">Paddle</option><option value="mnn">MNN</option><option value="rknn">RKNN</option></select></span></label>
-              <label class="field"><span class="label">Image size</span><input name="imgsz" class="input" type="number" min="32" step="32" value="640" /></label>
-              <label class="field"><span class="label">Batch</span><input name="batch" class="input" type="number" min="1" value="1" /></label>
-              <label class="field"><span class="label">Device</span><input name="device" class="input" type="text" placeholder="cpu hoặc 0" /></label>
-              <label class="field"><span class="label">Opset</span><input name="opset" class="input" type="number" min="7" placeholder="auto" /></label>
-              <label class="field"><span class="label">Workspace GB</span><input name="workspace" class="input" type="number" min="0" step="0.5" placeholder="TensorRT" /></label>
-              <label class="field wide-field"><span class="label">Calibration data.yaml</span><input id="exportDataPath" name="data" class="input" type="text" placeholder="Cần cho INT8" /></label>
+              <label class="field wide-field"><span class="label">Model cần đóng gói</span><input id="exportModelPath" name="model" class="input" type="text" placeholder="Chọn file model đã train" /></label>
+              <label class="field wide-field"><span class="label">Mục đích sử dụng</span><span class="select is-fullwidth"><select name="format"><option value="onnx">Dùng phổ biến cho app/web</option><option value="engine">Tối ưu mạnh cho NVIDIA GPU</option><option value="openvino">Tối ưu cho máy CPU Intel</option><option value="torchscript">Dùng trong ứng dụng Python/PyTorch</option><option value="coreml">Dùng cho iPhone/Mac</option><option value="tflite">Dùng cho Android/mobile nhẹ</option><option value="ncnn">Dùng cho thiết bị nhúng/mobile</option><option value="saved_model">Dùng trong TensorFlow</option><option value="paddle">Dùng trong Paddle</option><option value="mnn">Dùng trong MNN</option><option value="rknn">Dùng cho Rockchip NPU</option></select></span></label>
             </div>
+
+            <div class="choice-section">
+              <div class="section-label"><span>Máy chạy</span><small>Để tự động nếu không chắc.</small></div>
+              <div class="choice-grid compact-choice">
+                <label class="choice-card"><input type="radio" name="device" value="" checked /><strong>Tự động</strong><span>GUI chọn cách chạy phù hợp.</span></label>
+                <label class="choice-card"><input type="radio" name="device" value="0" /><strong>Ưu tiên GPU</strong><span>Dùng card NVIDIA khi sẵn sàng.</span></label>
+                <label class="choice-card"><input type="radio" name="device" value="cpu" /><strong>Chạy CPU</strong><span>Chậm hơn nhưng dễ tương thích.</span></label>
+              </div>
+            </div>
+
             <div class="toggle-grid">
-              <label class="checkbox"><input name="half" type="checkbox" /> FP16</label>
-              <label class="checkbox"><input name="int8" type="checkbox" /> INT8</label>
-              <label class="checkbox"><input name="dynamic" type="checkbox" /> Dynamic axes</label>
-              <label class="checkbox"><input name="simplify" type="checkbox" checked /> Simplify</label>
-              <label class="checkbox"><input name="nms" type="checkbox" /> NMS</label>
+              <label class="checkbox"><input name="half" type="checkbox" /> Tối ưu GPU nhẹ hơn</label>
+              <label class="checkbox"><input name="int8" type="checkbox" /> Nén mạnh hơn</label>
+              <label class="checkbox"><input name="dynamic" type="checkbox" /> Linh hoạt kích thước ảnh</label>
+              <label class="checkbox"><input name="simplify" type="checkbox" checked /> Tự làm gọn model</label>
+              <label class="checkbox"><input name="nms" type="checkbox" /> Gộp hộp trùng trong model</label>
             </div>
-            <label class="field"><span class="label">Extra args JSON</span><textarea class="textarea code-input" rows="5" data-extra-args spellcheck="false"></textarea></label>
+            <details class="advanced-block">
+              <summary>Tùy chỉnh đóng gói, không bắt buộc</summary>
+              <div class="settings-grid compact">
+                <label class="field"><span class="label">Độ lớn ảnh</span><input name="imgsz" class="input" type="number" min="32" step="32" value="640" /></label>
+                <label class="field"><span class="label">Số ảnh mỗi lượt</span><input name="batch" class="input" type="number" min="1" value="1" /></label>
+                <label class="field"><span class="label">Phiên bản xuất nâng cao</span><input name="opset" class="input" type="number" min="7" placeholder="Tự động" /></label>
+                <label class="field"><span class="label">Bộ nhớ GPU cho đóng gói</span><input name="workspace" class="input" type="number" min="0" step="0.5" placeholder="Tự động" /></label>
+                <label class="field wide-field"><span class="label">Bộ dữ liệu mẫu khi nén mạnh</span><input id="exportDataPath" name="data" type="hidden" /><input id="exportDatasetDisplay" class="input" type="text" readonly placeholder="Chưa chọn, chỉ cần khi bật nén mạnh" /></label>
+              </div>
+            </details>
+            <textarea class="is-hidden" data-extra-args spellcheck="false"></textarea>
           </form>
         </section>
 
@@ -334,41 +436,42 @@
           <div class="tool-grid">
             <section class="work-panel dataset-wizard-panel">
               <div class="panel-heading-row">
-                <div><p class="eyebrow">Dataset wizard</p><h3>Tạo data.yaml bằng GUI</h3></div>
+                <div><p class="eyebrow">Chuẩn bị dữ liệu</p><h3>Tạo bộ dữ liệu train bằng GUI</h3></div>
                 <div class="panel-actions">
-                  <button id="useYoloLayoutButton" class="button is-light" type="button"><span class="icon"><i data-lucide="sparkles"></i></span><span>Layout YOLO</span></button>
-                  <button id="createYamlButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="file-plus-2"></i></span><span>Tạo và gán YAML</span></button>
+                  <button id="useYoloLayoutButton" class="button is-light" type="button"><span class="icon"><i data-lucide="sparkles"></i></span><span>Tự điền thư mục chuẩn</span></button>
+                  <button id="createYamlButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="file-plus-2"></i></span><span>Tạo và dùng ngay</span></button>
                 </div>
               </div>
+              <p class="form-note">Chỉ cần chọn thư mục dataset và nhập tên nhãn. File cấu hình cần cho YOLO sẽ được tạo tự động, không phải tự viết.</p>
               <div class="settings-grid">
-                <label class="field wide-field"><span class="label">Root dataset</span><input id="yamlRoot" class="input" type="text" placeholder="C:\datasets\project" /></label>
-                <label class="field wide-field"><span class="label">Output data.yaml</span><input id="yamlOutputPath" class="input" type="text" placeholder="C:\datasets\project\data.yaml" /></label>
-                <label class="field"><span class="label">Train images</span><input id="yamlTrain" class="input" type="text" value="images/train" /></label>
-                <label class="field"><span class="label">Val images</span><input id="yamlVal" class="input" type="text" value="images/val" /></label>
-                <label class="field"><span class="label">Test images</span><input id="yamlTest" class="input" type="text" placeholder="images/test" /></label>
-                <div class="field yaml-assign-field"><span class="label">Gán sau khi tạo</span><label class="checkbox yaml-assign-toggle"><input id="yamlAssignTargets" type="checkbox" checked /> Train, Validate, Audit</label></div>
+                <label class="field wide-field"><span class="label">Thư mục dataset</span><input id="yamlRoot" class="input" type="text" placeholder="Chọn thư mục gốc chứa images và labels" /></label>
+                <input id="yamlOutputPath" type="hidden" />
+                <label class="field"><span class="label">Ảnh dùng để học</span><input id="yamlTrain" class="input" type="text" value="images/train" /></label>
+                <label class="field"><span class="label">Ảnh dùng để kiểm tra</span><input id="yamlVal" class="input" type="text" value="images/val" /></label>
+                <label class="field"><span class="label">Ảnh test thêm</span><input id="yamlTest" class="input" type="text" placeholder="Có thể để trống" /></label>
+                <div class="field yaml-assign-field"><span class="label">Sau khi tạo</span><label class="checkbox yaml-assign-toggle"><input id="yamlAssignTargets" type="checkbox" checked /> Dùng ngay cho huấn luyện, đánh giá và kiểm tra</label></div>
               </div>
-              <label class="field"><span class="label">Classes</span><textarea id="yamlNames" class="textarea" rows="5" placeholder="person&#10;car&#10;helmet"></textarea></label>
+              <label class="field"><span class="label">Tên nhãn, mỗi dòng một nhãn</span><textarea id="yamlNames" class="textarea" rows="5" placeholder="nguoi&#10;xe_may&#10;mu_bao_hiem"></textarea></label>
             </section>
             <section class="work-panel">
-              <div class="panel-heading-row"><div><p class="eyebrow">Audit</p><h3>Kiểm tra dataset YOLO</h3></div><button id="auditDatasetButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="search-check"></i></span><span>Audit</span></button></div>
-              <label class="field"><span class="label">data.yaml</span><input id="auditPath" class="input" type="text" placeholder="C:\datasets\project\data.yaml" /></label>
+              <div class="panel-heading-row"><div><p class="eyebrow">Kiểm tra</p><h3>Quét lỗi bộ dữ liệu</h3></div><button id="auditDatasetButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="search-check"></i></span><span>Kiểm tra</span></button></div>
+              <label class="field"><span class="label">Bộ dữ liệu cần kiểm tra</span><input id="auditPath" type="hidden" /><input id="auditDatasetDisplay" class="input" type="text" readonly placeholder="Chưa chọn bộ dữ liệu" /></label>
               <pre id="datasetToolOutput" class="preview-box">Chưa có kết quả.</pre>
             </section>
             <section class="work-panel">
-              <div class="panel-heading-row"><div><p class="eyebrow">VOC</p><h3>XML sang YOLO txt</h3></div><button id="convertVocButton" class="button is-light" type="button"><span class="icon"><i data-lucide="arrow-right-left"></i></span><span>Convert</span></button></div>
-              <label class="field"><span class="label">VOC XML folder</span><input id="vocAnnotationsDir" class="input" type="text" /></label>
-              <label class="field"><span class="label">Output labels</span><input id="vocOutputDir" class="input" type="text" /></label>
-              <label class="field"><span class="label">Classes</span><textarea id="vocClasses" class="textarea" rows="4" placeholder="person&#10;car"></textarea></label>
-              <label class="checkbox"><input id="vocOverwrite" type="checkbox" checked /> Ghi đè label cũ</label>
+              <div class="panel-heading-row"><div><p class="eyebrow">Chuyển đổi</p><h3>Đổi nhãn XML cũ sang nhãn train</h3></div><button id="convertVocButton" class="button is-light" type="button"><span class="icon"><i data-lucide="arrow-right-left"></i></span><span>Chuyển đổi</span></button></div>
+              <label class="field"><span class="label">Thư mục XML cũ</span><input id="vocAnnotationsDir" class="input" type="text" /></label>
+              <label class="field"><span class="label">Nơi lưu nhãn mới</span><input id="vocOutputDir" class="input" type="text" /></label>
+              <label class="field"><span class="label">Tên nhãn, mỗi dòng một nhãn</span><textarea id="vocClasses" class="textarea" rows="4" placeholder="nguoi&#10;xe_may"></textarea></label>
+              <label class="checkbox"><input id="vocOverwrite" type="checkbox" checked /> Ghi đè nhãn cũ nếu đã có</label>
             </section>
             <section class="work-panel">
-              <div class="panel-heading-row"><div><p class="eyebrow">Metrics</p><h3>Precision/Recall/F1 từ label YOLO</h3></div><button id="metricsButton" class="button is-light" type="button"><span class="icon"><i data-lucide="calculator"></i></span><span>Tính</span></button></div>
-              <label class="field"><span class="label">Prediction labels</span><input id="metricsPredictionDir" class="input" type="text" /></label>
-              <label class="field"><span class="label">Ground-truth labels</span><input id="metricsGroundTruthDir" class="input" type="text" /></label>
+              <div class="panel-heading-row"><div><p class="eyebrow">So sánh</p><h3>Tính điểm dự đoán</h3></div><button id="metricsButton" class="button is-light" type="button"><span class="icon"><i data-lucide="calculator"></i></span><span>Tính điểm</span></button></div>
+              <label class="field"><span class="label">Nhãn model dự đoán</span><input id="metricsPredictionDir" class="input" type="text" /></label>
+              <label class="field"><span class="label">Nhãn đúng ban đầu</span><input id="metricsGroundTruthDir" class="input" type="text" /></label>
               <div class="settings-grid two">
-                <label class="field"><span class="label">IoU threshold</span><input id="metricsIou" class="input" type="number" min="0" max="1" step="0.01" value="0.5" /></label>
-                <label class="field"><span class="label">Class count</span><input id="metricsClassCount" class="input" type="number" min="1" placeholder="auto" /></label>
+                <label class="field"><span class="label">Mức khớp tối thiểu</span><input id="metricsIou" class="input" type="number" min="0" max="1" step="0.01" value="0.5" /></label>
+                <label class="field"><span class="label">Số loại nhãn</span><input id="metricsClassCount" class="input" type="number" min="1" placeholder="Tự động" /></label>
               </div>
             </section>
           </div>
@@ -377,21 +480,21 @@
         <section id="section-system" class="page-section">
           <section class="work-panel">
             <div class="panel-heading-row">
-              <div><p class="eyebrow">System report</p><h3>Báo cáo môi trường</h3></div>
-              <button id="createReportButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="file-text"></i></span><span>Tạo report</span></button>
+              <div><p class="eyebrow">Cài đặt</p><h3>Báo cáo máy đang chạy</h3></div>
+              <button id="createReportButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="file-text"></i></span><span>Tạo báo cáo</span></button>
             </div>
-            <pre id="systemReportOutput" class="preview-box">Chưa có report.</pre>
+            <pre id="systemReportOutput" class="preview-box">Chưa có báo cáo.</pre>
           </section>
         </section>
 
         <section id="section-jobs" class="page-section">
           <section class="work-panel">
             <div class="panel-heading-row">
-              <div><p class="eyebrow">Jobs</p><h3>Trạng thái và log</h3></div>
-              <button id="stopJobButton" class="button is-danger is-light" type="button" disabled><span class="icon"><i data-lucide="square"></i></span><span>Stop job</span></button>
+              <div><p class="eyebrow">Tiến trình</p><h3>Trạng thái và nhật ký</h3></div>
+              <button id="stopJobButton" class="button is-danger is-light" type="button" disabled><span class="icon"><i data-lucide="square"></i></span><span>Dừng</span></button>
             </div>
             <div id="jobList" class="job-list"></div>
-            <pre id="logOutput" class="log-output">Chưa có job nào.</pre>
+            <pre id="logOutput" class="log-output">Chưa có tiến trình nào.</pre>
           </section>
         </section>
       </section>

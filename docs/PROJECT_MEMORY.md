@@ -10,10 +10,12 @@
 - `TrainingManager` hiện là job manager chung cho `train`, `val`, `predict`, `export`; tên class giữ lại để tránh refactor rộng.
 - `workflow_runner.py` là runner chính mới; `train_runner.py` là runner cũ, chưa xóa để giữ lịch sử và fallback.
 - Full setting được xử lý bằng hai lớp:
-  - Form cho setting phổ biến.
-  - `extra_args` JSON cho toàn bộ tham số còn lại.
+  - GUI chính dùng preset/card/toggle tiếng Việt dễ hiểu.
+  - Mapping nội bộ trong `frontend/app.js` chuyển preset sang tham số Ultralytics.
+- Không hiển thị `extra_args` JSON cho người dùng cuối. Hook này chỉ giữ nội bộ để backend contract không phải refactor rộng.
 - Log phải đầy đủ, đặc biệt traceback từ runner.
 - Người dùng không phải tự mở CLI để cài dependency. GUI phải kiểm tra và cài được PyTorch CUDA/CPU và Ultralytics, đồng thời hiển thị log cài đặt ngay trong app.
+- Nguyên tắc mới: workflow chính phải 100% GUI, không bắt người dùng hiểu `data.yaml`, JSON, `device=0`, CLI args, split name hoặc tham số YOLO thô.
 
 ## Quy tắc duy trì docs
 
@@ -29,7 +31,7 @@ Khi thay đổi code, cập nhật docs cùng lúc:
 
 ## Hướng sản phẩm
 
-Người dùng mục tiêu là người muốn train và dùng YOLO nhưng không muốn nhớ CLI. UI cần rõ, nhiều setting nhưng vẫn chia nhóm dễ hiểu. Màn hình đầu tiên phải là công cụ thao tác thật, không phải landing page.
+Người dùng mục tiêu là người muốn train và dùng YOLO nhưng không muốn nhớ CLI hoặc thuật ngữ YOLO kỹ thuật. UI cần rõ, nhiều setting nhưng phải chia thành lựa chọn theo mục tiêu/tác động: mức huấn luyện, máy chạy, nguồn dự đoán, mục đích đóng gói. Màn hình đầu tiên phải là công cụ thao tác thật, không phải landing page.
 
 ## Học từ repo tham khảo YOLOX GUI
 

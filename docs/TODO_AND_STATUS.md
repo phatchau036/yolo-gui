@@ -71,6 +71,22 @@
   - Nút `Layout YOLO` tự điền split chuẩn `images/train`, `images/val`, `images/test`.
   - Path browser có thể gán vào YAML output/root/train/val/test.
   - YAML tạo ra dùng dấu `/` trong `path` để thân thiện với Ultralytics.
+- Chuyển UX sang định hướng 100% GUI:
+  - Đổi nav/workflow sang tiếng Việt: Huấn luyện, Đánh giá, Dự đoán, Đóng gói, Dữ liệu, Cài đặt, Tiến trình.
+  - Train dùng card `Test nhanh`, `Cân bằng`, `Train kỹ`, `Tự tinh chỉnh`; frontend tự map sang epochs/imgsz/batch/patience.
+  - Device đổi thành `Tự động`, `Ưu tiên GPU`, `Chạy CPU`; frontend map sang giá trị YOLO nội bộ.
+  - Dataset wizard không bắt người dùng thấy `data.yaml` output; GUI tự tạo và gán.
+  - Predict có lựa chọn nguồn Ảnh/video, Thư mục ảnh, Camera; camera không bắt nhập `0`.
+  - Export đổi format thô thành mục đích sử dụng như app/web, NVIDIA GPU, CPU Intel, mobile.
+  - Ẩn `extra_args JSON` khỏi UI người dùng, chỉ giữ hook nội bộ trong JS.
+  - Output dataset/report đổi từ JSON thô sang tóm tắt dễ đọc.
+- Verify 100% GUI pass:
+  - `node --check frontend/app.js` pass.
+  - `python -m compileall -q yolo_gui` pass.
+  - Browser desktop/mobile trên `127.0.0.1:8766` không có horizontal overflow.
+  - Console browser không có warning/error.
+  - Dataset wizard tạo cấu hình và tự gán vào form đúng.
+  - Predict camera card map đúng sang source nội bộ.
 
 ## Cần làm tiếp
 
@@ -83,6 +99,7 @@
 - Thêm downloader/checker cho pretrained weight nếu model chưa có local.
 - Thêm auth/local password nếu app mở ra LAN.
 - Thêm test tự động cho API và JS form mapping.
+- Tiếp tục rà soát các nhãn nâng cao để giảm thuật ngữ kỹ thuật hơn nữa, nhưng không được làm mất khả năng tùy chỉnh của dev.
 
 ## Rủi ro hiện tại
 
@@ -90,3 +107,4 @@
 - Preset YOLO26 phụ thuộc version Ultralytics hiện tại; nếu version không hỗ trợ thì chọn YOLO11/YOLOv8 hoặc nhập custom model.
 - Browser không có quyền mở file picker native, nên app dùng backend path browser thay thế.
 - TensorRT/OpenVINO/CoreML export phụ thuộc package và môi trường máy; GUI tạo job/log, còn backend chưa tự cài riêng các runtime export này.
+- Một số thuật ngữ trong phần nâng cao vẫn là khái niệm YOLO; workflow chính đã chạy được mà không cần mở phần đó.

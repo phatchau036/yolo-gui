@@ -101,3 +101,33 @@
   - `python -m compileall -q yolo_gui` pass.
   - API tạo YAML trên `127.0.0.1:8766` pass.
   - Browser xác nhận wizard tồn tại, tự gán form đúng, desktop/mobile không horizontal overflow, console sạch.
+
+## 2026-05-12 - 100% GUI cho người dùng cuối
+
+- Nhận feedback: dự án phải thuần GUI, không có điểm nào bắt người dùng hiểu kỹ thuật.
+- Chuyển wording workflow sang tiếng Việt nghiệp vụ:
+  - Huấn luyện.
+  - Đánh giá.
+  - Dự đoán.
+  - Đóng gói.
+  - Dữ liệu.
+  - Cài đặt.
+  - Tiến trình.
+- Refactor form chính:
+  - Train dùng card preset `Test nhanh`, `Cân bằng`, `Train kỹ`, `Tự tinh chỉnh`.
+  - Validate dùng card `Nhanh`, `Chuẩn`, `Kỹ`, `Tự tinh chỉnh`.
+  - Predict dùng card nguồn `Ảnh hoặc video`, `Thư mục ảnh`, `Camera`; camera map nội bộ sang source phù hợp.
+  - Export dùng mục đích sử dụng thay cho danh sách format thô.
+  - Device dùng `Tự động`, `Ưu tiên GPU`, `Chạy CPU`.
+- Dataset wizard ẩn output `data.yaml` khỏi luồng chính; người dùng chỉ chọn thư mục dataset, thư mục ảnh và tên nhãn.
+- Xóa textarea `Extra args JSON` khỏi UI, chỉ còn hook ẩn trong DOM để backend contract không đổi.
+- `frontend/app.js` thêm mapping GUI preset sang tham số YOLO, validate lỗi bằng câu dễ hiểu, và format kết quả dataset/report thành text thân thiện thay vì JSON thô.
+- Verify tĩnh:
+  - `node --check frontend/app.js` pass.
+  - `python -m compileall -q yolo_gui` pass.
+- Browser QA trên `127.0.0.1:8766`:
+  - Desktop và mobile không có horizontal overflow.
+  - Console không có warning/error.
+  - Dataset wizard tạo cấu hình tự động và gán lại vào Train/Audit đúng.
+  - Predict camera card map thành source nội bộ đúng, không lộ yêu cầu nhập `0`.
+  - Kiểm tra text hiển thị không còn `Extra args JSON`, `data.yaml`, `YAML output`, `Device`, `Epochs`, `Batch`, `Conf`, `IoU` ở workflow chính.

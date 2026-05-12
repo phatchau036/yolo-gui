@@ -538,6 +538,101 @@ body {
   grid-column: span 2;
 }
 
+.form-note {
+  margin: -4px 0 16px;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 860px;
+}
+
+.choice-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #eef2f1;
+}
+
+.section-label {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.section-label span {
+  color: #24332f;
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.section-label small {
+  color: var(--muted);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.choice-grid.compact-choice {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.choice-card {
+  position: relative;
+  display: block;
+  min-height: 94px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 13px;
+  background: var(--panel-soft);
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.choice-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 118, 110, 0.32);
+  background: #fbfffd;
+}
+
+.choice-card:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 8px 18px rgba(15, 118, 110, 0.13);
+}
+
+.choice-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice-card strong,
+.choice-card span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.choice-card strong {
+  color: #17211f;
+  font-size: 0.92rem;
+}
+
+.choice-card span {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.source-panel {
+  margin-top: 12px;
+}
+
 .toggle-grid {
   margin-top: 16px;
   display: grid;
@@ -808,7 +903,9 @@ body {
   .settings-grid,
   .settings-grid.compact,
   .quick-switch,
-  .tool-grid {
+  .tool-grid,
+  .choice-grid,
+  .choice-grid.compact-choice {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -887,8 +984,19 @@ body {
   .settings-grid.compact,
   .settings-grid.two,
   .tool-grid,
+  .choice-grid,
+  .choice-grid.compact-choice,
   .toggle-grid {
     grid-template-columns: 1fr;
+  }
+
+  .section-label {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .section-label small {
+    text-align: left;
   }
 
   .quick-switch {
