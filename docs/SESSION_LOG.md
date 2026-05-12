@@ -198,3 +198,12 @@
   - Chụp từ app local `127.0.0.1:8767`.
   - Desktop `1440x900` cho train/dataset/automation.
   - Mobile `390x844` cho layout mobile.
+
+## 2026-05-12 - Ghi chú tác giả và phạm vi sử dụng
+
+- Nhận feedback: phần license cần ghi rõ tác giả GUI là Châu Nghiệp Phát và dự án có thể tải/fork/update thêm nhưng không dùng thương mại.
+- Cập nhật `README.md` mục `Ghi chú license`:
+  - Tác giả phần GUI: Châu Nghiệp Phát.
+  - Cho phép tải về, fork, học tập, thử nghiệm, chỉnh sửa hoặc đóng góp thêm.
+  - Không được bán lại, đóng gói thành sản phẩm/dịch vụ thu phí, hoặc dùng thương mại nếu chưa có sự đồng ý của tác giả GUI.
+  - Giữ ghi chú riêng về license Ultralytics YOLO AGPL-3.0/Enterprise để người dùng kiểm tra trước khi phân phối.

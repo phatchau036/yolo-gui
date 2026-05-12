@@ -109,7 +109,10 @@ names:
 
 ## Ghi chú license
 
-Ultralytics YOLO có lựa chọn AGPL-3.0 và Enterprise. Nếu dùng dự án này cho sản phẩm thương mại/closed-source, cần kiểm tra điều kiện license của Ultralytics trước khi phân phối.
+- Tác giả phần GUI: Châu Nghiệp Phát.
+- Bạn có thể tải về, fork, học tập, thử nghiệm, chỉnh sửa hoặc đóng góp thêm cho dự án.
+- Không được bán lại, đóng gói thành sản phẩm/dịch vụ thu phí, hoặc sử dụng dự án này cho mục đích thương mại nếu chưa có sự đồng ý của tác giả GUI.
+- Ultralytics YOLO có lựa chọn AGPL-3.0 và Enterprise. Nếu dùng dự án này cho sản phẩm thương mại/closed-source, cần kiểm tra điều kiện license của Ultralytics trước khi phân phối.
 
 ## Đọc tiếp
 

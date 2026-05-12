@@ -101,6 +101,9 @@
 - Demo GitHub:
   - Thêm ảnh demo vào `docs/assets/demo/`.
   - README hiển thị trực tiếp ảnh desktop, dataset wizard, automation và mobile.
+- License/GitHub README:
+  - Ghi rõ tác giả phần GUI là Châu Nghiệp Phát.
+  - Ghi rõ dự án có thể fork/tải về/update thêm nhưng không dùng thương mại nếu chưa có sự đồng ý của tác giả GUI.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q yolo_gui` pass.
