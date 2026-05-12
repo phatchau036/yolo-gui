@@ -427,6 +427,11 @@ function setActiveSection(section) {
   qsa(".quick-card").forEach((button) => button.classList.toggle("is-active", button.dataset.section === section));
   qsa(".page-section").forEach((panel) => panel.classList.toggle("is-active", panel.id === `section-${section}`));
   qs("#sectionTitle").textContent = sectionTitles[section] || "YOLO GUI";
+  document.activeElement?.blur?.();
+  const resetScroll = () => window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  resetScroll();
+  window.requestAnimationFrame(resetScroll);
+  window.setTimeout(resetScroll, 80);
   if (section === "jobs") {
     loadJobs().catch((error) => showToast(error.message));
     loadLog().catch(() => {});

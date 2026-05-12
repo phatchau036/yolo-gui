@@ -421,3 +421,18 @@
 - Path browser có thêm target annotator và panel có nút `Chọn` để mở nhanh bộ duyệt thư mục, giảm thao tác nhập path thủ công.
 - Frontend khóa các field/nút annotator khi đang mở folder hoặc lưu nhãn để tránh bấm chồng gây lệch state.
 - Cập nhật README, changelog và docs handoff cho dev tiếp theo.
+
+## 2026-05-12 - Redesign Pro AI Lab
+
+- Nhận yêu cầu: fix lại toàn bộ giao diện, nâng cấp UI lên một tầm khác và đẳng cấp hơn.
+- Chốt hướng `Pro AI Lab`: sidebar/header tối cao cấp, vùng thao tác sáng dễ đọc, cảm giác tool AI/GPU chuyên nghiệp.
+- Bump version lên `0.4.18`.
+- Thêm Google Fonts `Be Vietnam Pro` trong `frontend/index.html`, vẫn có fallback system font nếu mạng không tải được font.
+- Thêm lớp design system mới cuối `frontend/styles.css`: token màu, typography, shadow, button, focus state, card, form, quick workflow, dependency card, dataset wizard, annotator, automation, docs, version và jobs.
+- Không đổi backend API, schema, workflow runner hoặc format nhãn YOLO.
+- Sau QA desktop 1366px: chỉnh dependency card sang grid action wrap, quick workflow từ 7 cột sang 4 cột để không bẻ chữ, và bỏ `letter-spacing` âm/`vw` font-size theo rule UI.
+- Sau QA annotator: sửa toolbar `.annotation-current` để đường dẫn nhãn dài dùng ellipsis thay vì ép từng ký tự dọc; canvas/list ảnh/list box giữ nguyên API lưu YOLO `.txt`.
+- Sau QA tab switch: thêm reset scroll khi đổi tab và tắt global `scroll-behavior: smooth` để tab mới không giữ vị trí scroll sâu từ tab cũ.
+- Thêm cache-busting query `v=0.4.18-pro-ai-lab.2` cho CSS/JS để người dùng sau update không bị trình duyệt giữ frontend cũ.
+- Sau QA console: sửa `DependencyManager` để `importlib.invalidate_caches()` không làm endpoint dependency/logs trả 500 trên Windows khi cache có path `python311.zip` thiếu.
+- Browser QA cuối: desktop `1366x768`, mobile `390x844`, toàn bộ tab chính không horizontal overflow; dependency refresh khóa 4 nút action trong lúc kiểm tra; annotator load/lưu 2 box thành công; console sạch warning/error.

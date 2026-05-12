@@ -71,12 +71,20 @@ class DependencyManager:
             "installing": any(install.status == "running" for install in self._installs.values()),
         }
 
+    def _invalidate_import_caches(self) -> None:
+        try:
+            importlib.invalidate_caches()
+        except Exception:
+            # Some Windows Python installs keep a missing pythonXY.zip finder in the cache.
+            # Dependency checks must stay read-only and visible instead of crashing the GUI.
+            return
+
     def is_ultralytics_installed(self) -> bool:
-        importlib.invalidate_caches()
+        self._invalidate_import_caches()
         return importlib.util.find_spec("ultralytics") is not None
 
     def is_torch_installed(self) -> bool:
-        importlib.invalidate_caches()
+        self._invalidate_import_caches()
         return importlib.util.find_spec("torch") is not None
 
     def ultralytics_status(self) -> dict[str, Any]:

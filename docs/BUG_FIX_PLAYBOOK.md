@@ -69,6 +69,20 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 4. Browser QA bằng cách delay `/api/dependencies/status`, sau đó xác nhận 4 nút dependency đều `disabled=true`, `aria-disabled=true` và click không tạo request install.
 5. Khi endpoint lỗi, chỉ nút `Kiểm tra lại` được mở để người dùng thử lại; các nút cài vẫn khóa cho tới khi status đọc được môi trường.
 
+## Dependency/log endpoint trả 500 trên Windows
+
+1. Xem `server-<port>.err.log`; nếu traceback nằm ở `importlib.invalidate_caches()` với `KeyError: ...python311.zip`, không phải lỗi PyTorch/Ultralytics.
+2. `DependencyManager._invalidate_import_caches()` phải bắt lỗi cache import và không để status/log endpoint crash.
+3. Gọi lại `GET /api/dependencies/status` và `GET /api/dependencies/torch/logs?kind=cpu&tail=5000`.
+4. Browser QA lại nút `Kiểm tra lại`; console phải sạch warning/error và card vẫn khóa các nút trong lúc kiểm tra.
+
+## Annotator bị vỡ khi đường dẫn nhãn dài
+
+1. Kiểm tra `.annotation-current` trong toolbar stage; đường dẫn dài phải dùng `text-overflow: ellipsis`, không dùng `overflow-wrap:anywhere`.
+2. Giữ `.annotation-current` chiếm nguyên hàng đầu của toolbar, các nút prev/delete/clear/next và select class nằm hàng dưới.
+3. QA bằng path Windows dài như `C:\Users\...\runs\annotator-smoke\labels\train\sample-annotator.txt`.
+4. Canvas vẫn phải có width/height đúng, box list không đè stage, và lưu nhãn trả toast `Đã lưu ... box`.
+
 ## CUDA không sẵn sàng
 
 1. Kiểm tra card `NVIDIA/CUDA` trong GUI.

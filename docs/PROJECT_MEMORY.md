@@ -25,6 +25,9 @@
 - Tab `Phiên bản` là đường update GUI cho người không biết git. Update chỉ được chạy bằng `git pull --ff-only` khi repo sạch, không dùng reset/checkout để tránh mất chỉnh sửa.
 - Nếu repo có file đã sửa khi cập nhật, GUI dùng nút `Sao lưu rồi cập nhật` để chạy Git stash trước rồi pull; không bắt người dùng tự mở CLI.
 - Tab `Dự đoán` phải giữ người dùng tại chỗ, có progress và preview ảnh/video output; log đầy đủ vẫn nằm ở tab `Tiến trình`.
+- Hướng giao diện hiện tại là `Pro AI Lab`: shell/sidebar/header tối, workspace sáng dễ thao tác, dùng `Be Vietnam Pro` và giữ cảm giác tool AI/GPU chuyên nghiệp thay vì dashboard mặc định.
+- Bài học QA v0.4.18: đường dẫn dài trong annotator, dependency card nhiều nút và quick workflow nhiều card phải được thiết kế bằng grid/wrap/ellipsis ngay từ đầu; không dùng `overflow-wrap:anywhere` cho vùng chứa path quan trọng vì dễ bẻ chữ thành từng ký tự.
+- Dependency/status endpoint không được crash chỉ vì cache import của Python lỗi; mọi check môi trường phải trả trạng thái/log đọc được để console GUI luôn sạch.
 
 ## Quy tắc duy trì docs
 

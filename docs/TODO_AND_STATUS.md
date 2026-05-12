@@ -110,6 +110,12 @@
   - Thêm tooltip dấu hỏi cho nhãn, option card, checkbox và các cụm thuật ngữ chính.
   - Thêm tab `Hướng dẫn` ngay trong app.
   - Thêm `docs/USER_GUIDE.md` cho người dùng cuối đọc theo luồng thao tác.
+- Redesign Pro AI Lab:
+  - Giao diện dùng `Be Vietnam Pro`, shell/sidebar/header tối và workspace sáng.
+  - Làm mới design system cho button, form, card, focus state, dependency card, dataset wizard, annotator, automation, docs, version và jobs.
+  - Quick workflow desktop dùng 4 cột rộng, tab switch reset scroll về đầu tab, annotator toolbar không còn bẻ đường dẫn nhãn thành từng ký tự.
+  - CSS/JS có query version để tránh cache frontend cũ sau update.
+  - Không đổi backend API hoặc workflow runner.
 - Sửa lỗi layout sidebar:
   - Sidebar desktop có scroll nội bộ khi chiều cao màn hình thấp.
   - Thẻ `Máy hiện tại` không còn tràn khỏi nền sidebar.
@@ -157,6 +163,13 @@
   - Console browser không có warning/error.
   - Dataset wizard tạo cấu hình và tự gán vào form đúng.
   - Predict camera card map đúng sang source nội bộ.
+- Verify v0.4.18 Pro AI Lab pass:
+  - `node --check frontend/app.js`, `python -m compileall -q .`, `git diff --check` pass.
+  - Browser desktop `1366x768` và mobile `390x844` trên `127.0.0.1:8789` qua Train, Predict, Dataset/Annotator, Automation, Docs, Version, System, Jobs đều không horizontal overflow.
+  - Console browser sạch warning/error sau khi sửa dependency log endpoint Windows.
+  - Dependency refresh khóa 4 nút cài/kiểm tra trong lúc đang kiểm tra.
+  - Annotator load folder smoke, hiện 1 ảnh, đọc/lưu 2 box YOLO `.txt` thành công.
+  - Ảnh demo GitHub đã chụp lại trong `docs/assets/demo/`.
 
 ## Cần làm tiếp
 

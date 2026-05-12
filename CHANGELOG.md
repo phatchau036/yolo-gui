@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.4.18 - 2026-05-12
+
+- Redesign toàn bộ giao diện theo hướng `Pro AI Lab`: sidebar/header tối cao cấp, workspace sáng dễ đọc và cảm giác tool AI/GPU chuyên nghiệp hơn.
+- Thêm Google Fonts `Be Vietnam Pro` với fallback system font để tiếng Việt rõ và đồng bộ hơn.
+- Làm mới design system: màu, typography, shadow, button, focus state, card, form, quick workflow, dependency card, dataset wizard, annotator, automation, docs, version và jobs.
+- Tối ưu responsive desktop/mobile để các form dài, annotator và quick actions không tạo horizontal overflow.
+- Quick workflow trên desktop chuyển sang layout rộng hơn, không còn bẻ chữ giữa từ.
+- Tab switch tự đưa người dùng về đầu tab mới, tránh giữ scroll sâu từ tab trước.
+- Toolbar annotator cắt đường dẫn nhãn dài bằng ellipsis để không làm vỡ canvas/studio labeling.
+- CSS/JS asset có query version để trình duyệt không dùng cache giao diện cũ sau update.
+- Dependency log endpoint không còn trả 500 khi Windows Python có cache `python311.zip` thiếu, giúp console browser sạch warning/error.
+- Cập nhật lại ảnh demo GitHub theo giao diện mới.
+
 ## v0.4.17 - 2026-05-12
 
 - Thêm công cụ gán nhãn ảnh ngay trong tab `Dữ liệu`, thao tác tương tự LabelImg: chọn thư mục ảnh, xem danh sách ảnh, kéo chuột để vẽ bounding box, chọn class, xóa box và lưu nhãn YOLO `.txt`.
