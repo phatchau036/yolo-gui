@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.7 - 2026-05-12
+
+- Sửa UI/UX cụm `Đường dẫn` trong trình duyệt thư mục: nút mở/gán chỉ hiển thị icon, không còn vỡ chữ `Mở`/`Gán`.
+- Khóa kích thước icon button để hàng input đường dẫn không bị cao bất thường khi text cũ hoặc cache còn sót.
+
 ## v0.4.6 - 2026-05-12
 
 - Tab `Phiên bản` có nút `Sao lưu rồi cập nhật` khi GitHub có bản mới nhưng repo đang có file đã sửa; GUI tự cất tạm thay đổi bằng Git stash rồi cập nhật.

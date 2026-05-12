@@ -311,3 +311,14 @@
 - `TrainingManager.list_artifacts()` tìm ảnh/video trong `runs/predict/<name>*` và `job_dir`, sắp theo thời gian sửa mới nhất.
 - Tab `Dự đoán` thêm panel `Kết quả dự đoán`: đang chạy có progress bar, xong thì hiện preview ảnh/video, lỗi thì giữ người dùng tại tab đó và cho nút xem log đầy đủ.
 - Sửa `.yaml-route-preview` thành grid 2 hàng rõ ràng để icon, tiêu đề, tooltip và mô tả không chồng lên nhau.
+
+## 2026-05-12 - Sửa UI cụm đường dẫn path browser
+
+- Nhận feedback: cụm `Đường dẫn` bị vỡ chữ trong hai nút hành động, hiển thị thành `M ở` và `G án`.
+- Bump version lên `0.4.7`.
+- Harden CSS `.path-action-button`:
+  - Button chỉ còn vùng 42x40px.
+  - Ẩn mọi `span:not(.icon)` nếu markup/cache cũ còn text.
+  - Đặt `font-size: 0`, `line-height: 0`, `overflow: hidden`, `white-space: nowrap` để text node không thể làm vỡ layout.
+  - Icon SVG giữ 18x18px ổn định.
+- Cụm input đường dẫn dùng grid `input + 2 icon button`, không làm hàng cao bất thường.

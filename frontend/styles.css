@@ -997,9 +997,10 @@ body {
 
 .browser-path .field.has-addons {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 46px 46px;
+  grid-template-columns: minmax(0, 1fr) 42px 42px;
   align-items: stretch;
-  gap: 6px;
+  gap: 8px;
+  margin-bottom: 0;
 }
 
 .browser-path .field.has-addons .control {
@@ -1012,18 +1013,37 @@ body {
 }
 
 .path-action-button {
-  width: 46px;
-  min-width: 46px;
+  width: 42px;
+  min-width: 42px;
+  max-width: 42px;
   height: 40px;
+  min-height: 40px;
   padding: 0;
   border-radius: 8px !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 0;
+  line-height: 0;
 }
 
 .path-action-button .icon {
   margin: 0 !important;
+  width: 18px;
+  height: 18px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.path-action-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.path-action-button span:not(.icon) {
+  display: none !important;
 }
 
 .path-browser {

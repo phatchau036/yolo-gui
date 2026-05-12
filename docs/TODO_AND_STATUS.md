@@ -119,6 +119,7 @@
   - Khóa các nút cài/kiểm tra môi trường trong lúc GUI đang kiểm tra dependency.
   - Chặn lựa chọn Camera trên Google Colab vì Ultralytics không hỗ trợ webcam `source=0` trong notebook.
   - Cụm duyệt đường dẫn dùng icon button gọn để không còn vỡ chữ ở nút Mở/Gán.
+  - Harden path action button để cache/markup cũ có text cũng không thể làm vỡ cụm `Đường dẫn`.
   - Sidebar nhận diện Google Colab trong chính API dependency, đổi tiêu đề thành `Colab hiện tại` và hướng dẫn bật GPU runtime khi đang chạy CPU.
   - Mobile cũng hiển thị thẻ `Colab hiện tại` dạng gọn, không ẩn hướng dẫn CPU/GPU.
   - Tab `Dự đoán` giữ người dùng tại chỗ, hiển thị progress bar và preview ảnh/video output sau khi job xong.
