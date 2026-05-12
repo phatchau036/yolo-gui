@@ -381,3 +381,13 @@
 - Giảm nhẹ `side-panel` padding/gap, nav item height/padding, system card padding và font/line-height trong `system-lines`.
 - Rút gọn các dòng sidebar như `Train`, `GPU`, `Bật GPU` để card không bị quấn nhiều dòng; hướng dẫn dài vẫn giữ trong tab `Cài đặt`.
 - Mục tiêu: sidebar vẫn fixed theo viewport, nhưng toàn bộ nội dung chính của sidebar vừa trong chiều cao màn hình phổ biến, không sinh scrollbar nội bộ khó chịu.
+
+## 2026-05-12 - Fix triệt để tooltip route preview Dataset
+
+- Nhận feedback: panel `Tạo data.yaml` trong Dataset Wizard bị vỡ form, dấu `?` ở các dòng `Dataset`, `Classes`, `data.yaml` bị kéo thành pill dọc.
+- Bump version lên `0.4.14`.
+- Nguyên nhân: CSS `.yaml-route-preview span` và `.yaml-route-preview svg` bắt cả phần tử tooltip do `enhanceInlineHelp()` append vào `strong`, nên tooltip bị xem như một card/icon route.
+- Sửa markup route preview thành `yaml-route-card` + `yaml-route-copy` để phân tách vùng icon, chữ và tooltip.
+- CSS đổi sang selector trực tiếp `.yaml-route-preview > .yaml-route-card > svg`, chừa padding phải cho tooltip và neo `.help-term` bằng `position: absolute`.
+- Tooltip trong route preview canh phải, reset `grid-row/align-self` cho SVG bên trong để không bị rule icon route kế thừa.
+- Browser QA desktop phát hiện thêm `.wizard-step-strip span` cũng bắt nhầm `.help-term`; đã đổi các selector nguy cơ sang direct-child: `.wizard-step-strip > span`, `.choice-card > span`, `.check-tile > span`.

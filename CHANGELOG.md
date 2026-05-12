@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.14 - 2026-05-12
+
+- Sửa triệt để lỗi hiển thị ở panel `Tạo data.yaml`: các dấu `?` trong route preview không còn bị kéo thành pill dọc hoặc làm vỡ card.
+- Tách markup route preview thành `yaml-route-card` và `yaml-route-copy` để icon, tiêu đề, mô tả và tooltip có vùng riêng.
+- CSS dùng selector trực tiếp cho icon route, đồng thời neo tooltip ở mép phải card để không bị rule lưới áp nhầm vào icon trợ giúp.
+- Rà thêm các selector `span` trong Dataset Wizard, choice card và check tile để tooltip được chèn bằng JS không bị style như nội dung chính của card.
+
 ## v0.4.13 - 2026-05-12
 
 - Sửa sidebar desktop trên màn thấp bị hiện scrollbar nội bộ ở card `Colab hiện tại`/`Máy hiện tại`.

@@ -556,8 +556,8 @@ body {
   min-width: 0;
 }
 
-.check-tile strong,
-.check-tile span {
+.check-tile > strong,
+.check-tile > span {
   display: block;
 }
 
@@ -566,7 +566,7 @@ body {
   overflow-wrap: anywhere;
 }
 
-.check-tile span {
+.check-tile > span {
   color: var(--muted);
   font-size: 0.8rem;
   overflow-wrap: anywhere;
@@ -879,8 +879,8 @@ body {
   pointer-events: none;
 }
 
-.choice-card strong,
-.choice-card span {
+.choice-card > strong,
+.choice-card > span {
   display: block;
   overflow-wrap: anywhere;
 }
@@ -890,7 +890,7 @@ body {
   font-size: 0.92rem;
 }
 
-.choice-card span {
+.choice-card > span {
   margin-top: 5px;
   color: var(--muted);
   font-size: 0.8rem;
@@ -1766,7 +1766,7 @@ body {
   min-width: min(520px, 100%);
 }
 
-.wizard-step-strip span {
+.wizard-step-strip > span {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1886,28 +1886,32 @@ body {
 
 .yaml-route-preview {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
-.yaml-route-preview span {
+.yaml-route-preview > .yaml-route-card {
+  position: relative;
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  gap: 4px 10px;
-  align-items: start;
-  min-height: 92px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 70px;
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 8px;
-  padding: 14px 12px;
+  padding: 12px 42px 12px 14px;
   background: rgba(255, 255, 255, 0.07);
 }
 
-.yaml-route-preview svg {
-  grid-row: 1 / span 2;
-  align-self: center;
+.yaml-route-preview > .yaml-route-card > svg {
   width: 19px;
   height: 19px;
   color: #8de9dc;
+}
+
+.yaml-route-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
 }
 
 .yaml-route-preview strong,
@@ -1917,9 +1921,7 @@ body {
 }
 
 .yaml-route-preview strong {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: block;
   color: #fff;
   font-size: 0.9rem;
   line-height: 1.25;
@@ -1933,15 +1935,34 @@ body {
 }
 
 .yaml-route-preview .help-term {
-  width: 16px;
-  height: 16px;
-  margin-left: 0;
-  vertical-align: 0;
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  transform: translateY(-50%);
+  vertical-align: baseline;
 }
 
 .yaml-route-preview .help-term svg {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
+  grid-row: auto;
+  align-self: auto;
+  color: currentColor;
+}
+
+.yaml-route-preview .help-term::after {
+  left: auto;
+  right: 0;
+  transform: translateY(4px);
+}
+
+.yaml-route-preview .help-term:hover::after,
+.yaml-route-preview .help-term:focus-visible::after {
+  transform: translateY(0);
 }
 
 .yaml-assign-field {
@@ -2358,7 +2379,7 @@ body {
     min-width: 0;
   }
 
-  .wizard-step-strip span {
+  .wizard-step-strip > span {
     white-space: normal;
   }
 
