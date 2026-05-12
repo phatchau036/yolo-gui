@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.15 - 2026-05-12
+
+- Trên Google Colab, cập nhật phiên bản không còn bắt người dùng tự dừng cell và chạy lại ngay.
+- Sau khi `git pull`, GUI tạo yêu cầu handoff; cell `start_colab.py` mở server mới và Cloudflare Tunnel mới trước, ghi link `trycloudflare.com` mới vào GUI/cell, rồi mới dừng phiên cũ.
+- Tab `Phiên bản` phân biệt `Phiên bản hiện tại` đang chạy và `Source trong repo`, tránh lỗi source đã cập nhật nhưng GUI cũ vẫn báo `v0.4.8` là mới nhất.
+- Thêm panel `Colab tunnel` trong tab `Phiên bản` để báo trạng thái đang mở tunnel mới và hiển thị nút `Mở GUI mới` khi link mới sẵn sàng.
+
 ## v0.4.14 - 2026-05-12
 
 - Sửa triệt để lỗi hiển thị ở panel `Tạo data.yaml`: các dấu `?` trong route preview không còn bị kéo thành pill dọc hoặc làm vỡ card.

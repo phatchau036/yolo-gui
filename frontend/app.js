@@ -10,6 +10,7 @@ const state = {
   dependencyStatusRequestSeq: 0,
   dependencyActionsLocked: true,
   automationTimer: null,
+  colabRestartTimer: null,
 };
 
 const HEALTH_CHECK_INTERVAL_MS = 30000;
@@ -466,25 +467,126 @@ function setBrandUpdateBusy(busy) {
   button.querySelector("span:not(.icon)").textContent = busy ? "Updating..." : "Update now";
 }
 
+function versionLabel(value) {
+  return value ? `v${value}` : "-";
+}
+
+function renderColabRestartPanel(restartStatus = null, versionPayload = null) {
+  const panel = qs("#colabRestartPanel");
+  if (!panel) return;
+  const statePayload = restartStatus?.state || null;
+  const requestPayload = restartStatus?.request || null;
+  const shouldShow = Boolean(
+    statePayload?.status || requestPayload?.status || (versionPayload?.restart_required && isColabRuntime(versionPayload.runtime)),
+  );
+  panel.classList.toggle("is-hidden", !shouldShow);
+  if (!shouldShow) return;
+
+  const status = statePayload?.status || requestPayload?.status || "requested";
+  const titleMap = {
+    requested: "Đã yêu cầu mở phiên mới",
+    starting: "Đang mở server và tunnel mới",
+    ready: "Tunnel mới đã sẵn sàng",
+    switched: "Đã chuyển sang tunnel mới",
+    failed: "Không mở được tunnel mới",
+  };
+  const detailMap = {
+    requested: "Giữ tab này mở. Cell Colab sẽ nhận yêu cầu và khởi động phiên mới.",
+    starting: "Colab đang chạy server mới và lấy link trycloudflare mới.",
+    ready: "Bấm nút mở GUI mới. Phiên cũ sẽ tự tắt sau vài giây.",
+    switched: "Phiên cũ đã được dọn. Hãy dùng link mới bên dưới.",
+    failed: "Không thể tự mở phiên mới. Hãy xem log trong cell Colab hoặc chạy lại cell một lần.",
+  };
+  const url = statePayload?.tunnel_url || "";
+
+  qs("#colabRestartTitle").textContent = titleMap[status] || "Đang xử lý cập nhật Colab";
+  qs("#colabRestartDetail").textContent = statePayload?.message || detailMap[status] || detailMap.requested;
+  const link = qs("#colabRestartLink");
+  link.classList.toggle("is-hidden", !url);
+  if (url) {
+    link.href = url;
+  }
+  setIconRefresh();
+}
+
+function appendVersionLog(lines) {
+  const log = qs("#versionUpdateLog");
+  const text = Array.isArray(lines) ? lines.filter(Boolean).join("\n") : String(lines || "");
+  log.textContent = [log.textContent.trim(), text].filter(Boolean).join("\n");
+}
+
+function stopColabRestartWatch() {
+  if (state.colabRestartTimer) {
+    window.clearInterval(state.colabRestartTimer);
+    state.colabRestartTimer = null;
+  }
+}
+
+function startColabRestartWatch(restart) {
+  if (!restart || restart.mode !== "colab_handoff") return;
+  stopColabRestartWatch();
+  renderColabRestartPanel(
+    {
+      request: { request_id: restart.request_id, status: "requested" },
+      state: { request_id: restart.request_id, status: "requested", message: restart.message },
+    },
+    { runtime: "Google Colab", restart_required: true },
+  );
+
+  let attempts = 0;
+  const poll = async () => {
+    attempts += 1;
+    try {
+      const payload = await api(restart.status_url || "/api/version/restart-status");
+      renderColabRestartPanel(payload, { runtime: "Google Colab", restart_required: payload.restart_required });
+      const status = payload.state?.status;
+      const url = payload.state?.tunnel_url;
+      if ((status === "ready" || status === "switched") && url) {
+        stopColabRestartWatch();
+        appendVersionLog(["", `Tunnel mới đã sẵn sàng: ${url}`, "Hãy mở link mới để dùng bản vừa cập nhật."]);
+        showToast("Tunnel Colab mới đã sẵn sàng");
+      } else if (status === "failed") {
+        stopColabRestartWatch();
+        appendVersionLog(["", payload.state?.message || "Không mở được tunnel mới."]);
+      }
+    } catch (error) {
+      if (attempts >= 60) {
+        stopColabRestartWatch();
+        appendVersionLog(["", `Không đọc được trạng thái restart: ${error.message}`]);
+      }
+    }
+  };
+
+  poll();
+  state.colabRestartTimer = window.setInterval(poll, 2000);
+}
+
 function renderVersionStatus(payload) {
   const status = qs("#versionStatus");
   const updateButton = qs("#updateVersionButton");
   const saveAndUpdateButton = qs("#saveAndUpdateVersionButton");
-  const current = `v${payload.current_version || "?"}`;
-  const latest = payload.latest_version ? `v${payload.latest_version}` : "Chưa rõ";
+  const current = versionLabel(payload.current_version);
+  const source = versionLabel(payload.source_version || payload.current_version);
+  const latest = payload.latest_version ? versionLabel(payload.latest_version) : "Chưa rõ";
   const brandVersion = qs("#brandVersion");
   const brandUpdateButton = qs("#brandUpdateButton");
   const needsSaveBeforeUpdate = Boolean(payload.update_available && payload.can_save_and_update);
-  const versionBehind = compareVersionStrings(payload.current_version, payload.latest_version) < 0;
+  const restartRequired = Boolean(payload.restart_required);
+  const comparableVersion = payload.source_version || payload.current_version;
+  const versionBehind = compareVersionStrings(comparableVersion, payload.latest_version) < 0;
   const canRunSidebarUpdate = Boolean(payload.can_update || needsSaveBeforeUpdate);
 
   state.runtime = payload.runtime || null;
   if (brandVersion) {
-    brandVersion.textContent = current;
-    brandVersion.title = versionBehind ? `Bản mới nhất: ${latest}` : "Phiên bản GUI hiện tại";
+    brandVersion.textContent = restartRequired ? `${current} -> ${source}` : current;
+    brandVersion.title = restartRequired
+      ? `Source đã là ${source}, backend đang chạy ${current}`
+      : versionBehind
+        ? `Bản mới nhất: ${latest}`
+        : "Phiên bản GUI hiện tại";
   }
   if (brandUpdateButton) {
-    const showSidebarUpdate = Boolean(versionBehind || (payload.update_available && canRunSidebarUpdate));
+    const showSidebarUpdate = Boolean(!restartRequired && (versionBehind || (payload.update_available && canRunSidebarUpdate)));
     brandUpdateButton.classList.toggle("is-hidden", !showSidebarUpdate);
     brandUpdateButton.disabled = false;
     brandUpdateButton.dataset.updateMode = payload.can_update ? "direct" : needsSaveBeforeUpdate ? "save" : "version";
@@ -497,8 +599,9 @@ function renderVersionStatus(payload) {
         : "Bạn đang dùng phiên bản mới nhất.";
     brandUpdateButton.querySelector("span:not(.icon)").textContent = "Update now";
   }
-  qs("#versionCurrent").textContent = current;
+  qs("#versionCurrent").textContent = restartRequired ? `${current} đang chạy · source ${source}` : current;
   qs("#versionFactCurrent").textContent = current;
+  qs("#versionFactSource").textContent = source;
   qs("#versionFactLatest").textContent = latest;
   qs("#versionFactRuntime").textContent = shortValue(payload.runtime);
   qs("#versionFactBranch").textContent = shortValue(payload.local_branch);
@@ -507,7 +610,10 @@ function renderVersionStatus(payload) {
   qs("#versionFactRemoteUrl").textContent = shortValue(payload.remote_url);
 
   status.classList.remove("is-new", "is-current", "is-warning");
-  if (payload.update_available) {
+  if (restartRequired) {
+    status.classList.add("is-warning");
+    status.textContent = payload.status_message || `Source đã cập nhật lên ${source}, nhưng server vẫn đang chạy ${current}.`;
+  } else if (payload.update_available) {
     status.classList.add(payload.can_update ? "is-new" : "is-warning");
     status.textContent = payload.status_message || `Có phiên bản mới: ${latest}`;
   } else if (payload.remote_commit) {
@@ -518,9 +624,11 @@ function renderVersionStatus(payload) {
     status.textContent = payload.status_message || "Chưa kiểm tra được phiên bản mới trên GitHub.";
   }
 
-  updateButton.disabled = !payload.can_update;
+  updateButton.disabled = restartRequired || !payload.can_update;
   updateButton.querySelector("span:not(.icon)").textContent = payload.can_update
     ? "Cập nhật ngay"
+    : restartRequired
+      ? "Chờ nạp bản mới"
     : needsSaveBeforeUpdate
       ? "Cần sao lưu trước"
       : payload.update_available
@@ -528,6 +636,8 @@ function renderVersionStatus(payload) {
       : "Đã mới nhất";
   updateButton.title = payload.can_update
     ? "Tải bản mới từ GitHub"
+    : restartRequired
+      ? "Source đã cập nhật, cần nạp lại backend/tunnel mới trước khi cập nhật tiếp."
     : needsSaveBeforeUpdate
       ? "Repo đang có file đã sửa. Bấm Sao lưu rồi cập nhật để GUI cất tạm thay đổi trước."
       : payload.update_available
@@ -535,11 +645,12 @@ function renderVersionStatus(payload) {
       : "Chưa có bản mới để cập nhật";
 
   saveAndUpdateButton.classList.toggle("is-hidden", !needsSaveBeforeUpdate);
-  saveAndUpdateButton.disabled = !needsSaveBeforeUpdate;
+  saveAndUpdateButton.disabled = restartRequired || !needsSaveBeforeUpdate;
   saveAndUpdateButton.title = needsSaveBeforeUpdate
     ? "Cất tạm thay đổi local bằng Git stash rồi cập nhật source từ GitHub"
     : "Chỉ dùng khi có bản mới nhưng repo đang có file đã sửa";
   renderChangelog(payload.changelog || []);
+  renderColabRestartPanel(payload.restart_status, payload);
   updatePredictRuntimeGuards();
 }
 
@@ -586,6 +697,7 @@ async function updateVersion() {
       payload.log || "",
     ].filter(Boolean).join("\n");
     renderVersionStatus(payload.after);
+    startColabRestartWatch(payload.restart);
     showToast(payload.message || "Đã cập nhật phiên bản");
   } finally {
     setBrandUpdateBusy(false);
@@ -610,6 +722,7 @@ async function saveAndUpdateVersion() {
       payload.log || "",
     ].filter(Boolean).join("\n");
     renderVersionStatus(payload.after);
+    startColabRestartWatch(payload.restart);
     showToast(payload.message || "Đã sao lưu và cập nhật phiên bản");
   } finally {
     setBrandUpdateBusy(false);

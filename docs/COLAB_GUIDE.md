@@ -74,12 +74,14 @@ Khi có bản mới:
 
 1. Mở tab `Phiên bản`.
 2. Bấm `Cập nhật ngay`.
-3. Đợi GUI báo đã cập nhật source.
-4. Quay lại notebook Colab, dừng cell đang chạy YOLO GUI.
-5. Chạy lại cell `Chạy YOLO GUI`.
-6. Mở link `trycloudflare.com` mới.
+3. Giữ tab GUI và cell Colab đang chạy.
+4. Cell Colab sẽ tự mở server mới và Cloudflare Tunnel mới.
+5. Khi panel `Colab tunnel` hiện nút `Mở GUI mới`, bấm nút đó để chuyển sang link `trycloudflare.com` mới.
+6. Phiên cũ sẽ tự tắt sau vài giây sau khi link mới đã sẵn sàng.
 
-Lý do cần chạy lại cell: Cloudflare Tunnel và backend Python đang sống trong cell hiện tại. Sau khi source đổi, chạy lại cell giúp Colab nạp code backend/frontend mới nhất và tạo tunnel mới.
+Nếu bạn cập nhật từ một bản rất cũ chưa có cơ chế handoff, có thể phải dừng cell và chạy lại một lần để nạp cơ chế mới. Từ các bản có handoff trở đi, GUI sẽ tự chuyển sang tunnel mới.
+
+Lý do vẫn cần mở tunnel mới: backend Python cũ đã import code vào bộ nhớ. Sau khi source đổi, server mới cần được mở để nạp code backend/frontend mới nhất, nhưng GUI sẽ giữ phiên cũ tới khi link mới sẵn sàng.
 
 ## Ghi Chú Về Link Cloudflare
 
@@ -93,7 +95,9 @@ Lý do cần chạy lại cell: Cloudflare Tunnel và backend Python đang sốn
 Trong Colab, log nằm tại:
 
 - `logs/colab/uvicorn.log`: log server YOLO GUI.
-- `logs/colab/cloudflared.log`: log Cloudflare Tunnel.
+- `logs/colab/uvicorn-<port>.log`: log server YOLO GUI.
+- `logs/colab/cloudflared-<port>.log`: log Cloudflare Tunnel.
+- `logs/colab/restart-state.json`: trạng thái handoff khi cập nhật trên Colab.
 - `logs/workflow_jobs/`: log train/val/predict/export.
 - `logs/dependency_installs/`: log cài PyTorch hoặc Ultralytics từ GUI.
 - `logs/updates/`: log khi bấm cập nhật ở tab `Phiên bản`.
@@ -109,5 +113,5 @@ Nếu GUI mở được nhưng train lỗi, xem tab `Tiến trình` hoặc file 
 - Link `trycloudflare.com` không mở: chạy lại cell để lấy tunnel mới.
 - Dataset trong Google Drive không thấy: mount Drive trước, rồi chọn đường dẫn trong `/content/drive/MyDrive/...`.
 - Cài package lâu: lần đầu Colab phải cài dependency, các lần sau cùng runtime sẽ nhanh hơn.
-- Cập nhật xong nhưng giao diện chưa đổi: dừng cell YOLO GUI, chạy lại cell và mở link tunnel mới.
+- Cập nhật xong nhưng giao diện chưa đổi: xem panel `Colab tunnel` trong tab `Phiên bản`; nếu không có link mới sau khoảng 2 phút, dừng cell YOLO GUI, chạy lại cell và mở link tunnel mới.
 - Dự đoán bằng `Camera` lỗi `source=0 webcam not supported in Colab`: Colab không hỗ trợ webcam trực tiếp. Chọn ảnh/video/thư mục ảnh, hoặc chạy GUI trên Windows/local nếu cần camera.

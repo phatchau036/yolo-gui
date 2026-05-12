@@ -5,6 +5,7 @@ import os
 import platform
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import threading
@@ -14,13 +15,23 @@ from pathlib import Path
 from typing import Any
 from urllib.request import urlopen
 
+from yolo_gui.colab_runtime import (
+    COLAB_LOG_DIR,
+    RESTART_REQUEST_PATH,
+    RESTART_STATE_PATH,
+    read_json_file,
+    timestamp,
+    write_json_file,
+)
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-LOG_DIR = PROJECT_ROOT / "logs" / "colab"
+LOG_DIR = COLAB_LOG_DIR
 CLOUDFLARED_DIR = PROJECT_ROOT / ".colab"
 CLOUDFLARED_BIN = CLOUDFLARED_DIR / "cloudflared"
 CLOUDFLARED_LINUX_AMD64_URL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
 TUNNEL_URL_PATTERN = re.compile(r"https://[-a-zA-Z0-9.]+\.trycloudflare\.com")
+COLAB_HANDOFF_GRACE_SECONDS = 25
 
 
 def configure_console_output() -> None:
@@ -112,7 +123,7 @@ def wait_for_server(port: int, server: subprocess.Popen[bytes], log_path: Path) 
 
 def start_server(port: int) -> tuple[subprocess.Popen[bytes], Path]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    log_path = LOG_DIR / "uvicorn.log"
+    log_path = LOG_DIR / f"uvicorn-{port}.log"
     log_file = log_path.open("wb")
     command = [
         sys.executable,
@@ -132,7 +143,7 @@ def start_server(port: int) -> tuple[subprocess.Popen[bytes], Path]:
 
 def start_tunnel(cloudflared: Path, port: int, verbose: bool) -> tuple[subprocess.Popen[str], str, Path]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    log_path = LOG_DIR / "cloudflared.log"
+    log_path = LOG_DIR / f"cloudflared-{port}.log"
     log_file = log_path.open("w", encoding="utf-8", errors="replace")
     tunnel_url: dict[str, str] = {}
     ready = threading.Event()
@@ -177,9 +188,9 @@ def start_tunnel(cloudflared: Path, port: int, verbose: bool) -> tuple[subproces
     return tunnel, tunnel_url["url"], log_path
 
 
-def display_colab_link(url: str) -> None:
+def display_colab_link(url: str, title: str = "YOLO GUI đã sẵn sàng") -> None:
     print("\n" + "=" * 72)
-    print("YOLO GUI đã sẵn sàng.")
+    print(title)
     print(f"Mở link này để dùng GUI: {url}")
     print("Giữ cell này chạy. Khi dừng cell, link Cloudflare Tunnel cũng tắt.")
     print("Không chia sẻ link nếu notebook đang chứa dataset hoặc model riêng tư.")
@@ -194,7 +205,7 @@ def display_colab_link(url: str) -> None:
             HTML(
                 f"""
                 <div style="font-family:Arial,sans-serif;padding:16px;border:1px solid #9de7dc;border-radius:8px;background:#eefcf8">
-                  <h2 style="margin:0 0 8px">YOLO GUI đã sẵn sàng</h2>
+                  <h2 style="margin:0 0 8px">{title}</h2>
                   <p style="margin:0 0 12px">Bấm nút bên dưới để mở giao diện web qua Cloudflare Tunnel.</p>
                   <a href="{url}" target="_blank" style="display:inline-block;padding:10px 14px;border-radius:8px;background:#0f766e;color:white;text-decoration:none;font-weight:700">Mở YOLO GUI</a>
                   <p style="margin:12px 0 0;color:#475569">Giữ cell này chạy trong lúc sử dụng GUI.</p>
@@ -217,6 +228,121 @@ def stop_process(process: subprocess.Popen[Any] | None, name: str) -> None:
         process.kill()
 
 
+def find_free_port(start_port: int) -> int:
+    for port in range(start_port, start_port + 80):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                sock.bind(("127.0.0.1", port))
+            except OSError:
+                continue
+            return port
+    raise RuntimeError(f"Không tìm được port trống từ {start_port} tới {start_port + 79}.")
+
+
+def write_restart_state(request: dict[str, Any], status: str, **extra: Any) -> None:
+    payload = {
+        "request_id": request.get("request_id"),
+        "status": status,
+        "updated_at": timestamp(),
+        **extra,
+    }
+    write_json_file(RESTART_STATE_PATH, payload)
+
+
+def next_restart_request(handled_request_ids: set[str], script_started_epoch: float) -> dict[str, Any] | None:
+    request = read_json_file(RESTART_REQUEST_PATH)
+    if not request:
+        return None
+    request_id = str(request.get("request_id") or "")
+    if not request_id or request_id in handled_request_ids:
+        return None
+    created_epoch = float(request.get("created_epoch") or 0)
+    if created_epoch and created_epoch < script_started_epoch - 5:
+        handled_request_ids.add(request_id)
+        return None
+    state = read_json_file(RESTART_STATE_PATH) or {}
+    if state.get("request_id") == request_id and state.get("status") in {"ready", "switched", "failed"}:
+        handled_request_ids.add(request_id)
+        return None
+    return request
+
+
+def perform_update_handoff(
+    *,
+    request: dict[str, Any],
+    current_port: int,
+    current_server: subprocess.Popen[bytes],
+    current_tunnel: subprocess.Popen[str],
+    cloudflared: Path,
+    verbose_tunnel: bool,
+) -> tuple[subprocess.Popen[bytes], subprocess.Popen[str], int, Path, Path]:
+    request_id = request.get("request_id")
+    new_server: subprocess.Popen[bytes] | None = None
+    new_tunnel: subprocess.Popen[str] | None = None
+    new_server_log: Path | None = None
+    new_tunnel_log: Path | None = None
+    try:
+        new_port = find_free_port(current_port + 1)
+        print(f"[Colab] Nhận yêu cầu cập nhật {request_id}. Mở bản mới trên port {new_port}...")
+        write_restart_state(
+            request,
+            "starting",
+            message="Đang mở server YOLO GUI mới và chuẩn bị Cloudflare Tunnel mới.",
+            new_port=new_port,
+        )
+        new_server, new_server_log = start_server(new_port)
+        new_tunnel, new_url, new_tunnel_log = start_tunnel(cloudflared, new_port, verbose_tunnel)
+        write_restart_state(
+            request,
+            "ready",
+            message=(
+                "Tunnel mới đã sẵn sàng. Hãy mở link mới; phiên cũ sẽ tự tắt sau vài giây."
+            ),
+            tunnel_url=new_url,
+            new_port=new_port,
+            old_shutdown_seconds=COLAB_HANDOFF_GRACE_SECONDS,
+            server_log=str(new_server_log),
+            tunnel_log=str(new_tunnel_log),
+        )
+        display_colab_link(new_url, "YOLO GUI bản mới đã sẵn sàng")
+        print(
+            f"[Colab] Giữ phiên cũ thêm {COLAB_HANDOFF_GRACE_SECONDS} giây để GUI hiện link mới, "
+            "sau đó dừng tunnel/server cũ."
+        )
+        deadline = time.time() + COLAB_HANDOFF_GRACE_SECONDS
+        while time.time() < deadline:
+            if new_server.poll() is not None:
+                raise RuntimeError(f"Server mới đã dừng. Log gần nhất:\n{tail_file(new_server_log)}")
+            if new_tunnel.poll() is not None:
+                raise RuntimeError(f"Tunnel mới đã dừng. Log gần nhất:\n{tail_file(new_tunnel_log)}")
+            time.sleep(1)
+
+        stop_process(current_tunnel, "Cloudflare Tunnel cũ")
+        stop_process(current_server, "YOLO GUI server cũ")
+        write_restart_state(
+            request,
+            "switched",
+            message="Đã chuyển sang server và Cloudflare Tunnel mới.",
+            tunnel_url=new_url,
+            new_port=new_port,
+            server_log=str(new_server_log),
+            tunnel_log=str(new_tunnel_log),
+        )
+        return new_server, new_tunnel, new_port, new_server_log, new_tunnel_log
+    except Exception as exc:  # noqa: BLE001 - keep old session alive when handoff fails.
+        write_restart_state(
+            request,
+            "failed",
+            message=f"Không mở được phiên Colab mới: {exc}",
+            server_log=str(new_server_log) if new_server_log else None,
+            tunnel_log=str(new_tunnel_log) if new_tunnel_log else None,
+        )
+        stop_process(new_tunnel, "Cloudflare Tunnel mới lỗi")
+        stop_process(new_server, "YOLO GUI server mới lỗi")
+        raise
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Chạy YOLO GUI trên Google Colab bằng Cloudflare Tunnel.")
     parser.add_argument("--port", type=int, default=8765, help="Port nội bộ cho YOLO GUI server.")
@@ -228,6 +354,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     os.chdir(PROJECT_ROOT)
+    script_started_epoch = time.time()
 
     if not is_colab_runtime():
         print("[Colab] Không phát hiện Google Colab. Script vẫn có thể chạy trên Linux, nhưng Windows nên dùng start.ps1.")
@@ -236,11 +363,13 @@ def main() -> int:
     tunnel: subprocess.Popen[str] | None = None
     server_log: Path | None = None
     tunnel_log: Path | None = None
+    port = args.port
+    handled_request_ids: set[str] = set()
     try:
         install_requirements(args.skip_install)
         cloudflared = ensure_cloudflared()
-        server, server_log = start_server(args.port)
-        tunnel, tunnel_url, tunnel_log = start_tunnel(cloudflared, args.port, args.verbose_tunnel)
+        server, server_log = start_server(port)
+        tunnel, tunnel_url, tunnel_log = start_tunnel(cloudflared, port, args.verbose_tunnel)
         display_colab_link(tunnel_url)
         print(f"[Colab] Log server: {server_log}")
         print(f"[Colab] Log tunnel: {tunnel_log}")
@@ -252,6 +381,25 @@ def main() -> int:
             if tunnel.poll() is not None:
                 print(f"[Colab] Tunnel đã dừng. Log gần nhất:\n{tail_file(tunnel_log)}")
                 return int(tunnel.returncode or 1)
+            request = next_restart_request(handled_request_ids, script_started_epoch)
+            if request:
+                request_id = str(request.get("request_id"))
+                try:
+                    server, tunnel, port, server_log, tunnel_log = perform_update_handoff(
+                        request=request,
+                        current_port=port,
+                        current_server=server,
+                        current_tunnel=tunnel,
+                        cloudflared=cloudflared,
+                        verbose_tunnel=args.verbose_tunnel,
+                    )
+                    handled_request_ids.add(request_id)
+                    print(f"[Colab] Đang chạy bản mới trên port {port}.")
+                    print(f"[Colab] Log server: {server_log}")
+                    print(f"[Colab] Log tunnel: {tunnel_log}")
+                except Exception as exc:  # noqa: BLE001 - do not kill the current working session.
+                    handled_request_ids.add(request_id)
+                    print(f"[Colab] Không thể tự chuyển phiên sau cập nhật: {exc}")
             time.sleep(2)
     except KeyboardInterrupt:
         print("\n[Colab] Người dùng đã dừng cell.")

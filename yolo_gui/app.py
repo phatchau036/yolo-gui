@@ -144,6 +144,11 @@ def save_changes_and_update_version() -> dict[str, Any]:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
+@app.get("/api/version/restart-status")
+def version_restart_status() -> dict[str, Any]:
+    return version_manager.restart_status_payload()
+
+
 @app.get("/api/automations/templates")
 def automation_templates() -> dict[str, Any]:
     return {"templates": automation_manager.templates()}

@@ -1704,6 +1704,40 @@ body {
   overflow-wrap: anywhere;
 }
 
+.colab-restart-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  border-radius: 9px;
+  padding: 14px;
+  background: linear-gradient(180deg, #f1fffb, #ffffff);
+}
+
+.colab-restart-panel > div > strong,
+.colab-restart-panel > div > span {
+  display: block;
+}
+
+.colab-restart-panel > div > strong {
+  color: #10201d;
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.colab-restart-panel > div > span {
+  margin-top: 4px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.colab-restart-panel .button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .changelog-list {
   display: grid;
   gap: 12px;
@@ -2359,6 +2393,11 @@ body {
 
   .version-facts {
     grid-template-columns: 1fr;
+  }
+
+  .colab-restart-panel {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .automation-hero-metrics {

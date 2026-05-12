@@ -391,3 +391,13 @@
 - CSS đổi sang selector trực tiếp `.yaml-route-preview > .yaml-route-card > svg`, chừa padding phải cho tooltip và neo `.help-term` bằng `position: absolute`.
 - Tooltip trong route preview canh phải, reset `grid-row/align-self` cho SVG bên trong để không bị rule icon route kế thừa.
 - Browser QA desktop phát hiện thêm `.wizard-step-strip span` cũng bắt nhầm `.help-term`; đã đổi các selector nguy cơ sang direct-child: `.wizard-step-strip > span`, `.choice-card > span`, `.check-tile > span`.
+
+## 2026-05-12 - Colab update handoff không cần tự restart ngay
+
+- Nhận feedback: khi cập nhật trên Google Colab, người dùng không muốn phải tự tắt cell rồi chạy lại; cần giữ phiên cũ tới khi có link Cloudflare mới.
+- Bump version lên `0.4.15`.
+- Thêm `yolo_gui/colab_runtime.py` để chia sẻ file điều khiển `logs/colab/restart-request.json` và `logs/colab/restart-state.json` giữa backend và `start_colab.py`.
+- Sau khi update source thành công, `VersionManager` tạo restart request nếu runtime là Google Colab.
+- `start_colab.py` theo dõi request này, mở server mới trên port trống kế tiếp, mở Cloudflare Tunnel mới, ghi link mới vào restart state, hiển thị link trong cell, chờ thêm 25 giây rồi mới dừng tunnel/server cũ.
+- Tab `Phiên bản` thêm fact `Source trong repo` và panel `Colab tunnel`; frontend poll `/api/version/restart-status` để hiện nút `Mở GUI mới` khi link mới đã sẵn sàng.
+- Sửa logic version để không còn báo nhầm bản đang chạy là mới nhất khi source trên ổ đã được `git pull` lên bản mới nhưng backend chưa nạp lại.

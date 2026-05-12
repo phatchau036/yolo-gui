@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import urllib.request
-import os
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from . import __version__
+from .colab_runtime import RESTART_REQUEST_PATH, RESTART_STATE_PATH, create_restart_request, read_json_file
 from .config import PROJECT_ROOT, UPDATE_LOG_DIR
 
 
@@ -36,21 +37,40 @@ class VersionManager:
 
     def version_info(self) -> dict[str, Any]:
         git = self.git_status()
+        source_version = self.source_version() or __version__
         update_available = bool(git["remote_commit"] and git["local_commit"] and git["remote_commit"] != git["local_commit"])
         latest_version = self.remote_version(git["remote_url"], git["remote_branch"]) if update_available else None
-        latest_version = latest_version or __version__
-        can_save_and_update = bool(update_available and git["is_git_repo"] and git["dirty"])
+        latest_version = latest_version or source_version or __version__
+        restart_required = bool(source_version and source_version != __version__)
+        can_save_and_update = bool(update_available and git["is_git_repo"] and git["dirty"] and not restart_required)
+        status_message = git["status_message"]
+        if restart_required:
+            if self.is_colab_runtime():
+                status_message = (
+                    f"Source đã cập nhật lên v{source_version}, nhưng server hiện tại vẫn đang chạy v{__version__}. "
+                    "Hãy giữ tab này mở; Colab sẽ mở tunnel mới rồi báo link mới."
+                )
+            else:
+                status_message = (
+                    f"Source đã cập nhật lên v{source_version}, nhưng backend hiện tại vẫn đang chạy v{__version__}. "
+                    "Hãy restart app để nạp backend mới."
+                )
         return {
+            **git,
             "app_name": "YOLO GUI",
             "runtime": "Google Colab" if self.is_colab_runtime() else "Local",
             "current_version": __version__,
+            "running_version": __version__,
+            "source_version": source_version,
             "latest_version": latest_version,
             "update_available": update_available,
-            "can_update": bool(update_available and git["is_git_repo"] and not git["dirty"]),
+            "restart_required": restart_required,
+            "can_update": bool(update_available and git["is_git_repo"] and not git["dirty"] and not restart_required),
             "can_save_and_update": can_save_and_update,
             "checked_at": datetime.now().isoformat(timespec="seconds"),
             "changelog": self.changelog_sections(),
-            **git,
+            "restart_status": self.restart_status_payload(include_version=False),
+            "status_message": status_message,
         }
 
     def git_status(self) -> dict[str, Any]:
@@ -118,6 +138,7 @@ class VersionManager:
         if not result.ok:
             raise RuntimeError(f"Cập nhật từ GitHub lỗi. Xem log: {log_path}")
         after = self.version_info()
+        restart = self.schedule_restart_after_update(before, after, saved_changes=False)
         return {
             "ok": result.ok,
             "returncode": result.returncode,
@@ -125,8 +146,9 @@ class VersionManager:
             "log_path": str(log_path),
             "before": before,
             "after": after,
+            "restart": restart,
             "restart_recommended": True,
-            "message": self.update_message(),
+            "message": self.update_message(restart=restart),
         }
 
     def save_changes_and_update(self) -> dict[str, Any]:
@@ -159,6 +181,7 @@ class VersionManager:
         if not pull_result.ok:
             raise RuntimeError(f"Đã sao lưu thay đổi local nhưng cập nhật từ GitHub lỗi. Xem log: {log_path}")
         after = self.version_info()
+        restart = self.schedule_restart_after_update(before, after, saved_changes=True)
         return {
             "ok": pull_result.ok,
             "returncode": pull_result.returncode,
@@ -168,9 +191,17 @@ class VersionManager:
             "after": after,
             "saved_changes": True,
             "stash_message": stash_message,
+            "restart": restart,
             "restart_recommended": True,
-            "message": self.update_message(saved_changes=True),
+            "message": self.update_message(saved_changes=True, restart=restart),
         }
+
+    def source_version(self) -> str | None:
+        init_path = self.project_root / "yolo_gui" / "__init__.py"
+        if not init_path.exists():
+            return None
+        match = VERSION_PATTERN.search(init_path.read_text(encoding="utf-8", errors="replace"))
+        return match.group(1) if match else None
 
     def git(self, args: list[str], timeout: int = 15) -> GitResult:
         try:
@@ -246,12 +277,54 @@ class VersionManager:
         path.write_text(text, encoding="utf-8")
         return path
 
-    def update_message(self, saved_changes: bool = False) -> str:
-        saved_note = " GUI đã cất tạm thay đổi local trước khi cập nhật." if saved_changes else ""
+    def schedule_restart_after_update(
+        self,
+        before: dict[str, Any],
+        after: dict[str, Any],
+        *,
+        saved_changes: bool,
+    ) -> dict[str, Any]:
         if self.is_colab_runtime():
+            request = create_restart_request(
+                "save-and-update" if saved_changes else "update",
+                before,
+                after,
+            )
+            return {
+                "required": True,
+                "mode": "colab_handoff",
+                "request_id": request["request_id"],
+                "status_url": "/api/version/restart-status",
+                "message": (
+                    "Colab sẽ mở server và Cloudflare Tunnel mới trước, báo link mới trong GUI/cell, "
+                    "rồi mới dừng phiên cũ."
+                ),
+            }
+        return {
+            "required": True,
+            "mode": "manual_restart",
+            "message": "Hãy restart app để backend nạp source mới.",
+        }
+
+    def restart_status_payload(self, include_version: bool = True) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "supported": self.is_colab_runtime(),
+            "request": read_json_file(RESTART_REQUEST_PATH),
+            "state": read_json_file(RESTART_STATE_PATH),
+        }
+        if include_version:
+            payload["running_version"] = __version__
+            payload["source_version"] = self.source_version() or __version__
+            payload["restart_required"] = payload["source_version"] != __version__
+        return payload
+
+    def update_message(self, saved_changes: bool = False, restart: dict[str, Any] | None = None) -> str:
+        saved_note = " GUI đã cất tạm thay đổi local trước khi cập nhật." if saved_changes else ""
+        if restart and restart.get("mode") == "colab_handoff":
             return (
-                "Đã cập nhật source." + saved_note + " Trên Google Colab, hãy dừng cell YOLO GUI, chạy lại cell "
-                "`Chạy YOLO GUI`, rồi mở link tunnel mới để dùng bản vừa cập nhật."
+                "Đã cập nhật source."
+                + saved_note
+                + " Colab đang mở server/tunnel mới. Giữ tab này mở; khi link mới hiện ra hãy bấm mở GUI mới."
             )
         return "Đã cập nhật." + saved_note + " Hãy tải lại trang; nếu backend thay đổi, hãy restart app."
 
