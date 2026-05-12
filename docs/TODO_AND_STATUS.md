@@ -104,6 +104,10 @@
 - License/GitHub README:
   - Ghi rõ tác giả phần GUI là Châu Nghiệp Phát.
   - Ghi rõ dự án có thể fork/tải về/update thêm nhưng không dùng thương mại nếu chưa có sự đồng ý của tác giả GUI.
+- Google Colab:
+  - Thêm `start_colab.py` tự cài requirements, tải `cloudflared`, chạy server và mở Cloudflare Tunnel.
+  - Thêm `YOLO_GUI_Colab.ipynb` để người dùng Colab bấm chạy một cell.
+  - Thêm `docs/COLAB_GUIDE.md` và cập nhật README với Open in Colab.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q yolo_gui` pass.
@@ -126,6 +130,7 @@
 - Tiếp tục rà soát các nhãn nâng cao để giảm thuật ngữ kỹ thuật hơn nữa, nhưng không được làm mất khả năng tùy chỉnh của dev.
 - Tách thêm các form nâng cao khác theo pattern wizard nếu người dùng tiếp tục thấy bố cục quá dày.
 - Bổ sung ảnh minh họa trong tab `Hướng dẫn` khi đã có sample dataset/model thật.
+- Bổ sung smoke test thật trên Google Colab khi có runtime GPU mở sẵn; hiện đã có launcher/notebook và kiểm tra tĩnh local.
 
 ## Rủi ro hiện tại
 
@@ -134,3 +139,4 @@
 - Browser không có quyền mở file picker native, nên app dùng backend path browser thay thế.
 - TensorRT/OpenVINO/CoreML export phụ thuộc package và môi trường máy; GUI tạo job/log, còn backend chưa tự cài riêng các runtime export này.
 - Một số thuật ngữ trong phần nâng cao vẫn là khái niệm YOLO; workflow chính đã chạy được mà không cần mở phần đó.
+- Cloudflare Quick Tunnel trong Colab là link public tạm thời; không dùng để chia sẻ dữ liệu/model riêng tư nếu chưa có kiểm soát truy cập riêng.

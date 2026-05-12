@@ -10,6 +10,9 @@
 - System report:
   - `logs/system_reports/system-report-*.md`
   - `logs/system_reports/system-report-*.json`
+- Colab launcher:
+  - `logs/colab/uvicorn.log`
+  - `logs/colab/cloudflared.log`
 - Job config: `runs/gui_jobs/<job_id>/<job_type>_config.json`
 - Output mặc định:
   - Train: `runs/train/<name>/`
@@ -63,6 +66,8 @@ Invoke-RestMethod http://127.0.0.1:8765/api/datasets/audit -Method Post -Content
 - `Cannot inspect/audit dataset`: YAML sai format, path split sai hoặc app không có quyền đọc folder.
 - Runner exit code `1`: mở job log để xem traceback đầy đủ.
 - Export TensorRT fail: thường do thiếu CUDA/TensorRT hoặc format không hợp với máy hiện tại; xem log workflow.
+- Colab không hiện link `trycloudflare.com`: đọc `logs/colab/cloudflared.log`, chạy lại cell nếu tunnel đã hết hạn hoặc Colab sleep.
+- Colab mở link nhưng GUI không tải: đọc `logs/colab/uvicorn.log` và kiểm tra cell `start_colab.py` còn đang chạy không.
 
 ## Nguyên tắc debug
 

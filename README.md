@@ -2,6 +2,8 @@
 
 Web GUI local để chạy Ultralytics YOLO mà người dùng không cần nhớ CLI, không cần tự viết `data.yaml`, không cần hiểu tham số YOLO thô. Dự án hướng tới trải nghiệm 100% thao tác bằng giao diện: chọn dữ liệu, chọn mục tiêu, chọn mức huấn luyện, bấm chạy và xem tiến trình ngay trong trình duyệt.
 
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/phatchau036/yolo-gui/blob/main/YOLO_GUI_Colab.ipynb)
+
 ## Demo giao diện
 
 Ảnh demo được chụp từ bản web GUI hiện tại, gồm màn hình huấn luyện, tạo dataset bằng GUI, automation và layout mobile.
@@ -55,6 +57,22 @@ Sau đó mở:
 http://127.0.0.1:8765
 ```
 
+## Chạy trên Google Colab
+
+Cách dễ nhất là mở notebook [YOLO_GUI_Colab.ipynb](YOLO_GUI_Colab.ipynb), bấm chạy cell `Chạy YOLO GUI`, đợi link `trycloudflare.com`, rồi mở link đó để dùng GUI.
+
+Nếu đang ở notebook trắng, chạy một cell:
+
+```python
+!git clone https://github.com/phatchau036/yolo-gui.git
+%cd yolo-gui
+!python start_colab.py
+```
+
+`start_colab.py` sẽ tự cài requirements, tải `cloudflared`, chạy server local trong Colab và mở Cloudflare Tunnel tạm thời. Giữ cell chạy trong lúc dùng GUI; khi dừng cell hoặc Colab ngắt runtime, link tunnel sẽ tắt.
+
+Hướng dẫn chi tiết: [docs/COLAB_GUIDE.md](docs/COLAB_GUIDE.md).
+
 ## Dành cho dev khi cần chạy thủ công
 
 ```powershell
@@ -75,8 +93,12 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8765
 - `yolo_gui/dependency_manager.py`: kiểm tra/cài Ultralytics, PyTorch CUDA/CPU qua GUI.
 - `yolo_gui/schemas.py`: request/response schema.
 - `frontend/`: giao diện web static.
+- `start.ps1`: launcher Windows.
+- `start_colab.py`: launcher Google Colab, tự chạy server và Cloudflare Tunnel.
+- `YOLO_GUI_Colab.ipynb`: notebook Colab để clone/chạy GUI bằng một cell.
 - `logs/workflow_jobs/`: log stdout/stderr theo job.
 - `logs/dependency_installs/`: log cài Ultralytics, PyTorch CUDA/CPU.
+- `logs/colab/`: log uvicorn và Cloudflare Tunnel khi chạy Colab.
 - `logs/system_reports/`: report môi trường.
 - `runs/gui_jobs/`: config JSON theo job.
 - `runs/train`, `runs/val`, `runs/predict`: output mặc định.

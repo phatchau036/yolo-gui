@@ -207,3 +207,18 @@
   - Cho phép tải về, fork, học tập, thử nghiệm, chỉnh sửa hoặc đóng góp thêm.
   - Không được bán lại, đóng gói thành sản phẩm/dịch vụ thu phí, hoặc dùng thương mại nếu chưa có sự đồng ý của tác giả GUI.
   - Giữ ghi chú riêng về license Ultralytics YOLO AGPL-3.0/Enterprise để người dùng kiểm tra trước khi phân phối.
+
+## 2026-05-12 - Hỗ trợ chạy YOLO GUI trên Google Colab
+
+- Nhận feedback: dự án phải dùng được cả Windows và Google Colab; người dùng Colab không cần tự hiểu CLI, chỉ clone/chạy cell rồi mở GUI qua tunnel.
+- Thêm `start_colab.py`:
+  - Cài `requirements.txt`.
+  - Tải `cloudflared` cho Linux x86_64 vào `.colab/` nếu chưa có.
+  - Chạy `uvicorn yolo_gui.app:app` tại `127.0.0.1:8765`.
+  - Mở Cloudflare Quick Tunnel tới GUI và parse link `trycloudflare.com`.
+  - Hiển thị link/nút mở GUI trong notebook.
+  - Ghi log vào `logs/colab/uvicorn.log` và `logs/colab/cloudflared.log`.
+- Thêm `YOLO_GUI_Colab.ipynb` để người dùng Colab bấm chạy một cell.
+- Thêm `docs/COLAB_GUIDE.md` hướng dẫn dùng Colab, cảnh báo link tunnel là tạm thời và public.
+- Cập nhật `README.md` với nút Open in Colab, lệnh clone nhanh và link hướng dẫn.
+- Cập nhật docs handoff: `INDEX`, `PROJECT_LOGIC`, `LOGGING_AND_DEBUGGING`, `USER_GUIDE`, `REPO_MAP`, `TODO_AND_STATUS`.

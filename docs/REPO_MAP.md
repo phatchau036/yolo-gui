@@ -6,8 +6,11 @@
 - `AGENTS.md`: quy tắc làm việc cho agent/dev.
 - `requirements.txt`: dependency runtime Python.
 - `start.ps1`: entrypoint Windows, tạo `.venv`, cài dependency và chạy server.
+- `start_colab.py`: entrypoint Google Colab/Linux, cài requirements, chạy uvicorn và mở Cloudflare Tunnel tạm thời.
+- `YOLO_GUI_Colab.ipynb`: notebook Colab cho người dùng bấm chạy một cell để clone/chạy GUI.
 - `.gitignore`: bỏ qua virtualenv, cache, log, output train, weight/model artifact.
 - `docs/USER_GUIDE.md`: hướng dẫn người dùng cuối bằng tiếng Việt, không yêu cầu biết CLI.
+- `docs/COLAB_GUIDE.md`: hướng dẫn chạy GUI trên Colab, tunnel và log khi lỗi.
 
 ## Backend: `yolo_gui/`
 
@@ -39,6 +42,9 @@
   - `torch-cpu-install.log`
 - `logs/system_reports/`: `system-report-*.md` và `system-report-*.json`.
 - `logs/automations/`: log timeline cho từng automation.
+- `logs/colab/`:
+  - `uvicorn.log`: log server khi chạy bằng `start_colab.py`.
+  - `cloudflared.log`: log Cloudflare Tunnel và link `trycloudflare.com`.
 - `runs/gui_jobs/`: config JSON theo job, ví dụ `train_config.json`, `predict_config.json`.
 - `runs/train/`: output train mặc định.
 - `runs/val/`: output validate mặc định.

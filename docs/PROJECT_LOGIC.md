@@ -42,6 +42,20 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
    - `GET /api/jobs/{job_id}/logs`
 9. Nếu cần dừng, frontend gọi `POST /api/jobs/{job_id}/stop`.
 
+## Luồng Google Colab
+
+Colab dùng cùng backend/frontend với Windows, chỉ khác cách mở URL:
+
+1. Người dùng mở `YOLO_GUI_Colab.ipynb` hoặc clone repo trong Colab.
+2. Cell chạy `python start_colab.py`.
+3. `start_colab.py` cài `requirements.txt`, tải `cloudflared` vào `.colab/` nếu máy chưa có, rồi chạy:
+   - `python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8765`
+   - `cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8765`
+4. Script parse link `trycloudflare.com` từ output của Cloudflare Tunnel và hiển thị nút mở GUI trong notebook.
+5. Người dùng thao tác trong GUI giống Windows. Cell Colab phải tiếp tục chạy để server và tunnel còn sống.
+
+Không thêm API riêng cho Colab. Mục tiêu là giữ một codepath GUI, còn `start_colab.py` chỉ là launcher/tunnel wrapper.
+
 ## Automation GUI
 
 Automation dùng `AutomationManager` để chạy các kịch bản nhiều bước từ cấu hình GUI hiện tại:
@@ -112,3 +126,4 @@ Workflow YOLO có thể chạy lâu, chiếm GPU và in log liên tục. Subproc
 - `dependency_manager.py`: log cài đặt và trạng thái CUDA phải hiện trên GUI.
 - `frontend/app.js`: workflow mới phải có endpoint, form id, number field, handler start và mapping GUI -> tham số YOLO. Không thêm ô JSON/CLI thô vào workflow chính.
 - `frontend/index.html` + `frontend/styles.css`: wizard hoặc form dài phải chia theo cụm thao tác, có cột hành động rõ, không rải field ngang toàn màn hình.
+- `start_colab.py`: chỉ quản lý cài dependency, uvicorn và Cloudflare Tunnel; không nhân đôi logic train/dataset của backend.
