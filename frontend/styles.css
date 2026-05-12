@@ -384,15 +384,23 @@ body {
 
 .dependency-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
+  grid-template-columns: minmax(280px, 1fr) auto;
+  gap: 16px;
   align-items: center;
   margin-bottom: 14px;
-  padding: 15px;
+  padding: 18px;
   border: 1px solid #f4d19a;
   border-radius: 10px;
-  background: var(--amber-soft);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 248, 232, 0.78)),
+    var(--amber-soft);
   box-shadow: 0 8px 20px rgba(89, 65, 28, 0.05);
+}
+
+.dependency-card.is-checking {
+  border-color: #c9d8ff;
+  background:
+    linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(255, 255, 255, 0.82));
 }
 
 .dependency-card.is-ready {
@@ -422,7 +430,8 @@ body {
 }
 
 .dependency-copy h3 {
-  font-size: 1rem;
+  font-size: 1.04rem;
+  line-height: 1.25;
 }
 
 .dependency-copy p {
@@ -431,15 +440,23 @@ body {
 }
 
 .dependency-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(4, max-content);
+  gap: 10px;
+  justify-content: end;
   min-width: 0;
 }
 
 .dependency-actions .button {
-  min-height: 38px;
+  min-height: 42px;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.dependency-actions .button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
 }
 
 .dependency-checklist {
@@ -757,6 +774,18 @@ body {
   background: #fbfffd;
 }
 
+.choice-card.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  background: #f3f6f5;
+}
+
+.choice-card.is-disabled:hover {
+  transform: none;
+  border-color: var(--line);
+  background: #f3f6f5;
+}
+
 .choice-card:has(input:checked) {
   border-color: var(--accent);
   background: linear-gradient(180deg, #effffb, var(--accent-soft));
@@ -785,6 +814,17 @@ body {
   color: var(--muted);
   font-size: 0.8rem;
   line-height: 1.4;
+}
+
+.runtime-note {
+  margin: 10px 0 0;
+  border: 1px solid #f4d19a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--amber-soft);
+  color: #6f4a0d;
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .source-panel {
@@ -837,6 +877,37 @@ body {
 
 .browser-path {
   flex: 0 0 44%;
+}
+
+.browser-path .field.has-addons {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px 46px;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.browser-path .field.has-addons .control {
+  display: flex;
+  min-width: 0;
+}
+
+.browser-path .field.has-addons .input {
+  border-radius: 8px;
+}
+
+.path-action-button {
+  width: 46px;
+  min-width: 46px;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.path-action-button .icon {
+  margin: 0 !important;
 }
 
 .path-browser {
@@ -1768,6 +1839,19 @@ body {
 
   .system-card {
     margin-top: 0;
+  }
+
+  .dependency-card {
+    grid-template-columns: 1fr;
+  }
+
+  .dependency-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .dependency-actions .button {
+    width: 100%;
   }
 
   .settings-grid,

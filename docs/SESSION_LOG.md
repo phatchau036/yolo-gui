@@ -272,3 +272,14 @@
 - Thêm `startHealthCheckCron()` trong `frontend/app.js`: gọi `/api/health` ngay khi mở app và lặp lại bằng `window.setInterval(..., 30000)`.
 - Thêm badge `healthStatus` trong sidebar card `Máy hiện tại`; badge hiển thị `Online`, `Mất kết nối` hoặc `Đang kiểm tra`.
 - Health check lỗi không hiện toast liên tục để tránh làm phiền người dùng.
+
+## 2026-05-12 - Path picker, dependency lock và Colab camera guard
+
+- Nhận feedback: cụm `Đường dẫn` bị xấu, chữ `Mở`/`Gán` bị vỡ dòng.
+- Nhận feedback: khi GUI đang kiểm tra môi trường thì phải khóa nút để tránh người dùng bấm lung tung.
+- Nhận log Colab: predict camera lỗi `NotImplementedError: 'source=0' webcam not supported in Colab and Kaggle notebooks`.
+- Bump version lên `0.4.4`.
+- Đổi nút `Mở`/`Gán` trong path picker thành icon button có `title` và `aria-label`.
+- `loadDependencyStatus()` render trạng thái checking trước khi gọi API, đặt `aria-busy=true` và disable các nút cài/kiểm tra lại.
+- Frontend khóa lựa chọn `Camera` khi runtime từ `/api/version` là `Google Colab`.
+- Backend `POST /api/predict/start` chặn source dạng số trên Colab và trả lỗi tiếng Việt trước khi tạo job.

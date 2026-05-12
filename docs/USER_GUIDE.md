@@ -36,6 +36,8 @@ Dùng để đo chất lượng model trên bộ ảnh kiểm tra. Nên đánh g
 
 Dùng để chạy model trên ảnh, video, thư mục ảnh hoặc camera. Kết quả có thể lưu thành ảnh/video đã vẽ khung và file nhãn.
 
+Trên Google Colab, không dùng được webcam trực tiếp. Hãy chọn ảnh, video hoặc thư mục ảnh đã upload; nếu cần camera thật, chạy GUI trên Windows/local.
+
 ### Đóng gói
 
 Dùng để xuất model sang định dạng phù hợp với app/web/mobile/thiết bị khác. Nếu bật nén mạnh, nên kiểm tra lại chất lượng sau khi xuất.

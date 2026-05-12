@@ -116,6 +116,9 @@
   - Bản Google Colab cũng dùng tab này; sau update cần chạy lại cell để nạp source và tunnel mới.
   - Sidebar header hiển thị version hiện tại ngay dưới `YOLO GUI`.
   - Frontend JS health check `/api/health` mỗi 30 giây và hiển thị badge Online/Mất kết nối trong sidebar.
+  - Khóa các nút cài/kiểm tra môi trường trong lúc GUI đang kiểm tra dependency.
+  - Chặn lựa chọn Camera trên Google Colab vì Ultralytics không hỗ trợ webcam `source=0` trong notebook.
+  - Cụm duyệt đường dẫn dùng icon button gọn để không còn vỡ chữ ở nút Mở/Gán.
   - Mobile không dùng thanh cuộn ngang cho nav/quick action để tránh cảm giác vỡ form.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.

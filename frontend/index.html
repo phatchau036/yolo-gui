@@ -92,7 +92,7 @@
           </button>
         </section>
 
-        <section id="dependencyNotice" class="dependency-card" aria-live="polite">
+        <section id="dependencyNotice" class="dependency-card is-checking" aria-live="polite" aria-busy="true">
           <div class="dependency-copy">
             <span id="dependencyBadge" class="status-pill status-starting">Đang kiểm tra</span>
             <div>
@@ -101,19 +101,19 @@
             </div>
           </div>
           <div class="dependency-actions">
-            <button id="installTorchCudaButton" class="button is-link" type="button">
+            <button id="installTorchCudaButton" class="button is-link" type="button" disabled>
               <span class="icon"><i data-lucide="cpu"></i></span>
               <span>Cài PyTorch CUDA</span>
             </button>
-            <button id="installTorchCpuButton" class="button is-light" type="button">
+            <button id="installTorchCpuButton" class="button is-light" type="button" disabled>
               <span class="icon"><i data-lucide="cpu"></i></span>
               <span>Cài PyTorch CPU</span>
             </button>
-            <button id="installUltralyticsButton" class="button is-warning" type="button">
+            <button id="installUltralyticsButton" class="button is-warning" type="button" disabled>
               <span class="icon"><i data-lucide="download"></i></span>
               <span>Cài Ultralytics</span>
             </button>
-            <button id="refreshDependencyButton" class="button is-light" type="button">
+            <button id="refreshDependencyButton" class="button is-light" type="button" disabled>
               <span class="icon"><i data-lucide="refresh-cw"></i></span>
               <span>Kiểm tra lại</span>
             </button>
@@ -160,15 +160,13 @@
                   <input id="folderPath" class="input" type="text" placeholder="C:\datasets" />
                 </div>
                 <div class="control">
-                  <button id="browseButton" class="button is-light" type="button">
+                  <button id="browseButton" class="button is-light path-action-button" type="button" title="Mở đường dẫn" aria-label="Mở đường dẫn">
                     <span class="icon"><i data-lucide="folder-search"></i></span>
-                    <span>Mở</span>
                   </button>
                 </div>
                 <div class="control">
-                  <button id="useCurrentPathButton" class="button is-light" type="button">
+                  <button id="useCurrentPathButton" class="button is-primary path-action-button" type="button" title="Gán đường dẫn vào mục đang chọn" aria-label="Gán đường dẫn vào mục đang chọn">
                     <span class="icon"><i data-lucide="corner-down-left"></i></span>
-                    <span>Gán</span>
                   </button>
                 </div>
               </div>
@@ -343,8 +341,9 @@
               <div class="choice-grid">
                 <label class="choice-card"><input type="radio" name="ui_predict_source_mode" value="file" checked /><strong>Ảnh hoặc video</strong><span>Chọn file từ máy.</span></label>
                 <label class="choice-card"><input type="radio" name="ui_predict_source_mode" value="folder" /><strong>Thư mục ảnh</strong><span>Chạy hàng loạt.</span></label>
-                <label class="choice-card"><input type="radio" name="ui_predict_source_mode" value="camera" /><strong>Camera</strong><span>Dùng webcam đang cắm.</span></label>
+                <label id="predictCameraChoice" class="choice-card"><input type="radio" name="ui_predict_source_mode" value="camera" /><strong>Camera</strong><span id="predictCameraChoiceText">Dùng webcam đang cắm.</span></label>
               </div>
+              <p id="predictColabCameraNote" class="runtime-note is-hidden">Google Colab không hỗ trợ webcam trực tiếp. Hãy chọn ảnh, video hoặc thư mục ảnh; nếu cần camera, chạy GUI trên Windows/local.</p>
               <div class="source-panel" id="predictFilePanel">
                 <label class="field">
                   <span class="label">File hoặc thư mục</span>

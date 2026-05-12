@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.4 - 2026-05-12
+
+- Làm lại cụm duyệt đường dẫn để nút mở/gán là icon button gọn, không còn vỡ chữ.
+- Khi GUI đang kiểm tra môi trường YOLO, toàn bộ nút cài/kiểm tra lại được khóa để tránh bấm lung tung.
+- Trên Google Colab, GUI tự ẩn/chặn lựa chọn Camera vì Ultralytics không hỗ trợ webcam `source=0` trong notebook.
+- Backend cũng chặn predict webcam trên Colab và trả lỗi tiếng Việt dễ hiểu trước khi tạo job.
+
 ## v0.4.3 - 2026-05-12
 
 - Thêm JS health check gọi `/api/health` ngay khi mở GUI và tự lặp lại mỗi 30 giây.

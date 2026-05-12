@@ -26,6 +26,7 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
    - `Cài PyTorch CUDA`: `python -m pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121`
    - `Cài PyTorch CPU`: `python -m pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu`
 4. `DependencyManager` spawn pip install và ghi log vào `logs/dependency_installs/`.
+   - Khi frontend đang gọi `/api/dependencies/status`, card môi trường đặt `aria-busy=true` và khóa các nút cài/kiểm tra lại để tránh người dùng bấm nhiều lần trong lúc dữ liệu chưa rõ.
 5. Người dùng chọn workflow: Huấn luyện, Đánh giá, Dự đoán hoặc Đóng gói.
 6. Frontend gom form thành payload nội bộ và gọi endpoint tương ứng:
    - `POST /api/train/start`
@@ -110,6 +111,8 @@ Không chạy automation trong request thread. Manager spawn background thread, 
 - `export`: `YOLO(model).export(**args)`
 
 `workflow_runner.py` normalize `device` dạng `"0,1"` thành list GPU và normalize `source="0"` thành camera index `0`.
+
+Riêng Google Colab không hỗ trợ webcam trực tiếp qua `source=0`. Frontend dùng runtime từ `/api/version` để khóa lựa chọn `Camera`; backend `POST /api/predict/start` cũng chặn source dạng số khi `VersionManager.is_colab_runtime()` trả true và trả lỗi tiếng Việt trước khi tạo job.
 
 ## Dataset tools
 

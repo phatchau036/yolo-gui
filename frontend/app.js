@@ -1,6 +1,7 @@
 const state = {
   selectedJobId: null,
   selectedAutomationId: null,
+  runtime: null,
   logTimer: null,
   healthTimer: null,
   dependencyTimer: null,
@@ -436,6 +437,7 @@ function renderVersionStatus(payload) {
   const latest = payload.latest_version ? `v${payload.latest_version}` : "Chưa rõ";
   const brandVersion = qs("#brandVersion");
 
+  state.runtime = payload.runtime || null;
   if (brandVersion) {
     brandVersion.textContent = current;
   }
@@ -472,6 +474,7 @@ function renderVersionStatus(payload) {
       ? "Repo đang có file đã sửa hoặc chưa đủ điều kiện cập nhật tự động"
       : "Chưa có bản mới để cập nhật";
   renderChangelog(payload.changelog || []);
+  updatePredictRuntimeGuards();
 }
 
 function renderChangelog(sections) {
@@ -549,8 +552,65 @@ async function loadSystem() {
   ].join("\n");
 }
 
-async function loadDependencyStatus() {
-  const payload = await api("/api/dependencies/status");
+function dependencyActionButtons() {
+  return [
+    qs("#installUltralyticsButton"),
+    qs("#installTorchCudaButton"),
+    qs("#installTorchCpuButton"),
+    qs("#refreshDependencyButton"),
+  ].filter(Boolean);
+}
+
+function setDependencyActionsDisabled(disabled) {
+  dependencyActionButtons().forEach((button) => {
+    button.disabled = disabled;
+  });
+}
+
+function renderDependencyCheckingState() {
+  const card = qs("#dependencyNotice");
+  const badge = qs("#dependencyBadge");
+  const title = qs("#dependencyTitle");
+  const detail = qs("#dependencyDetail");
+
+  card.classList.remove("is-ready", "is-running", "has-log");
+  card.classList.add("is-checking");
+  card.setAttribute("aria-busy", "true");
+  badge.className = "status-pill status-starting";
+  badge.textContent = "Đang kiểm tra";
+  title.textContent = "Đang kiểm tra môi trường YOLO";
+  detail.textContent = "GUI đang kiểm tra Python, pip, NVIDIA/CUDA, PyTorch và Ultralytics.";
+  setDependencyActionsDisabled(true);
+}
+
+function renderDependencyErrorState(error) {
+  const card = qs("#dependencyNotice");
+  const badge = qs("#dependencyBadge");
+  const title = qs("#dependencyTitle");
+  const detail = qs("#dependencyDetail");
+
+  card.classList.remove("is-ready", "is-running", "is-checking");
+  card.classList.add("has-log");
+  card.setAttribute("aria-busy", "false");
+  badge.className = "status-pill status-failed";
+  badge.textContent = "Lỗi";
+  title.textContent = "Không kiểm tra được môi trường";
+  detail.textContent = error.message || "Không gọi được API kiểm tra môi trường. Có thể backend chưa chạy.";
+  setDependencyActionsDisabled(true);
+  qs("#refreshDependencyButton").disabled = false;
+}
+
+async function loadDependencyStatus(options = {}) {
+  if (!options.silent) {
+    renderDependencyCheckingState();
+  }
+  let payload;
+  try {
+    payload = await api("/api/dependencies/status");
+  } catch (error) {
+    renderDependencyErrorState(error);
+    throw error;
+  }
   renderDependencyStatus(payload);
   if (payload.installing) {
     startDependencyPolling();
@@ -566,12 +626,10 @@ function renderDependencyStatus(payload) {
   const badge = qs("#dependencyBadge");
   const title = qs("#dependencyTitle");
   const detail = qs("#dependencyDetail");
-  const buttons = [qs("#installUltralyticsButton"), qs("#installTorchCudaButton"), qs("#installTorchCpuButton")];
 
-  card.classList.remove("is-ready", "is-running", "has-log");
-  buttons.forEach((button) => {
-    button.disabled = false;
-  });
+  card.classList.remove("is-ready", "is-running", "is-checking", "has-log");
+  card.setAttribute("aria-busy", "false");
+  setDependencyActionsDisabled(false);
   qs("#installUltralyticsButton").querySelector("span:last-child").textContent =
     payload.ultralytics.installed ? "Cài lại Ultralytics" : "Cài Ultralytics";
   qs("#installTorchCudaButton").querySelector("span:last-child").textContent =
@@ -584,9 +642,8 @@ function renderDependencyStatus(payload) {
     badge.textContent = "Đang cài";
     title.textContent = "Đang cài môi trường YOLO";
     detail.textContent = `Python: ${payload.python}`;
-    buttons.forEach((button) => {
-      button.disabled = true;
-    });
+    card.setAttribute("aria-busy", "true");
+    setDependencyActionsDisabled(true);
     return;
   }
 
@@ -689,7 +746,7 @@ async function loadDependencyLog() {
 function startDependencyPolling() {
   if (state.dependencyTimer) return;
   state.dependencyTimer = window.setInterval(() => {
-    loadDependencyStatus().catch(() => {});
+    loadDependencyStatus({ silent: true }).catch(() => {});
     loadDependencyLog().catch(() => {});
   }, 2500);
 }
@@ -893,6 +950,9 @@ function validateGuiPayload(kind, payload) {
   }
   if (kind === "predict" && !payload.source) {
     throw new Error("Hãy chọn ảnh, video, thư mục hoặc camera trước khi chạy.");
+  }
+  if (kind === "predict" && state.runtime === "Google Colab" && /^[0-9]+$/.test(String(payload.source).trim())) {
+    throw new Error("Google Colab không hỗ trợ webcam trực tiếp. Hãy chọn ảnh, video hoặc thư mục ảnh; nếu cần camera, chạy GUI trên Windows/local.");
   }
   if (kind === "export" && !payload.model) {
     throw new Error("Hãy chọn file model cần đóng gói.");
@@ -1287,6 +1347,30 @@ function updatePredictSourceMode() {
   qs("#predictCameraPanel").classList.toggle("is-hidden", mode !== "camera");
 }
 
+function updatePredictRuntimeGuards() {
+  const isColab = state.runtime === "Google Colab";
+  const cameraChoice = qs("#predictCameraChoice");
+  const cameraInput = cameraChoice?.querySelector('input[name="ui_predict_source_mode"]');
+  const cameraText = qs("#predictCameraChoiceText");
+  const note = qs("#predictColabCameraNote");
+  if (!cameraChoice || !cameraInput || !cameraText || !note) return;
+
+  cameraInput.disabled = isColab;
+  cameraChoice.classList.toggle("is-disabled", isColab);
+  note.classList.toggle("is-hidden", !isColab);
+  cameraText.textContent = isColab
+    ? "Không dùng được trên Google Colab."
+    : "Dùng webcam đang cắm.";
+
+  if (isColab && cameraInput.checked) {
+    const fileInput = qs('input[name="ui_predict_source_mode"][value="file"]');
+    if (fileInput) {
+      fileInput.checked = true;
+    }
+  }
+  updatePredictSourceMode();
+}
+
 async function convertVoc() {
   const payload = await api("/api/datasets/voc-to-yolo", {
     method: "POST",
@@ -1418,6 +1502,7 @@ async function boot() {
   await Promise.all([loadModels(), loadSystem(), loadDependencyStatus(), loadJobs(), loadAutomations()]);
   loadVersion().catch(() => {});
   updatePredictSourceMode();
+  updatePredictRuntimeGuards();
   updateDatasetDisplays();
   setYamlOutputPath(qs("#yamlOutputPath").value);
   enhanceInlineHelp();

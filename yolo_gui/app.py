@@ -186,6 +186,10 @@ def ensure_yolo_runtime() -> None:
         )
 
 
+def is_camera_source(source: object) -> bool:
+    return str(source).strip().isdigit()
+
+
 @app.get("/api/dependencies/status")
 def dependency_status() -> dict[str, Any]:
     return dependency_manager.environment_status()
@@ -348,6 +352,14 @@ def start_predict(request: PredictRequest) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail="Model is required")
     if not request.source.strip():
         raise HTTPException(status_code=400, detail="Source path/camera/url is required")
+    if version_manager.is_colab_runtime() and is_camera_source(request.source):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Google Colab không hỗ trợ webcam trực tiếp (`source=0`). "
+                "Hãy chọn ảnh, video hoặc thư mục ảnh trong GUI; nếu cần camera, hãy chạy GUI trên Windows/local."
+            ),
+        )
     job = manager.start_job(request, job_type="predict")
     return {"job": job.public_dict()}
 

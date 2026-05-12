@@ -40,6 +40,17 @@ Script sẽ tự làm các bước sau:
 
 Dataset có thể nằm trong `/content`, Google Drive đã mount, hoặc thư mục bạn upload lên Colab.
 
+## Dự Đoán Trên Colab
+
+Colab không hỗ trợ webcam trực tiếp kiểu `source=0` của Ultralytics. Trong GUI, lựa chọn `Camera` sẽ bị khóa khi app phát hiện đang chạy trên Google Colab.
+
+Trên Colab, hãy dùng tab `Dự đoán` với:
+
+- Ảnh hoặc video đã upload lên `/content`.
+- Thư mục ảnh trong `/content` hoặc Google Drive đã mount.
+
+Nếu cần nhận diện bằng webcam thật, hãy chạy YOLO GUI trên Windows/local.
+
 ## Cập Nhật Phiên Bản Trên Colab
 
 Tab `Phiên bản` cũng có trong bản chạy Google Colab vì Colab dùng cùng web GUI với Windows.
@@ -84,3 +95,4 @@ Nếu GUI mở được nhưng train lỗi, xem tab `Tiến trình` hoặc file 
 - Dataset trong Google Drive không thấy: mount Drive trước, rồi chọn đường dẫn trong `/content/drive/MyDrive/...`.
 - Cài package lâu: lần đầu Colab phải cài dependency, các lần sau cùng runtime sẽ nhanh hơn.
 - Cập nhật xong nhưng giao diện chưa đổi: dừng cell YOLO GUI, chạy lại cell và mở link tunnel mới.
+- Dự đoán bằng `Camera` lỗi `source=0 webcam not supported in Colab`: Colab không hỗ trợ webcam trực tiếp. Chọn ảnh/video/thư mục ảnh, hoặc chạy GUI trên Windows/local nếu cần camera.
