@@ -189,10 +189,48 @@ body {
   flex: 0 0 auto;
 }
 
+.system-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .system-title {
   color: #fff;
   font-weight: 800;
-  margin: 0 0 8px;
+  margin: 0;
+}
+
+.health-pill {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 4px 7px;
+  color: #dbe8e5;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.health-pill.is-online {
+  border-color: rgba(45, 212, 191, 0.42);
+  background: rgba(45, 212, 191, 0.12);
+  color: #a8fff2;
+}
+
+.health-pill.is-offline {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(248, 113, 113, 0.12);
+  color: #fecaca;
+}
+
+.health-pill.is-checking {
+  border-color: rgba(251, 191, 36, 0.38);
+  background: rgba(251, 191, 36, 0.11);
+  color: #fde68a;
 }
 
 .system-lines {

@@ -42,6 +42,13 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
    - `GET /api/jobs/{job_id}/logs`
 9. Nếu cần dừng, frontend gọi `POST /api/jobs/{job_id}/stop`.
 
+## Health check frontend
+
+- Khi app khởi động, `frontend/app.js` gọi `startHealthCheckCron()`.
+- Hàm này gọi `/api/health` ngay lập tức, sau đó dùng `window.setInterval(..., 30000)` để kiểm tra lại mỗi 30 giây.
+- Kết quả không hiện toast liên tục; chỉ cập nhật badge `healthStatus` trong sidebar card `Máy hiện tại`.
+- Nếu backend trả `ok: true`, badge là `Online`. Nếu request lỗi, timeout hoặc backend trả lỗi, badge chuyển sang `Mất kết nối`.
+
 ## Phiên bản và cập nhật
 
 Tab `Phiên bản` dùng `VersionManager` để gom thông tin:

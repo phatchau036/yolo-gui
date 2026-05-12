@@ -264,3 +264,11 @@
 - Bump version lên `0.4.2`.
 - Thêm `brandVersion` trong sidebar header và cập nhật bằng dữ liệu `/api/version` khi app load.
 - Áp dụng cho cả Windows local và Google Colab vì cùng dùng frontend/backend version API.
+
+## 2026-05-12 - JS health check 30 giây
+
+- Nhận feedback: cần JS health check theo cron 30 giây một lần.
+- Bump version lên `0.4.3`.
+- Thêm `startHealthCheckCron()` trong `frontend/app.js`: gọi `/api/health` ngay khi mở app và lặp lại bằng `window.setInterval(..., 30000)`.
+- Thêm badge `healthStatus` trong sidebar card `Máy hiện tại`; badge hiển thị `Online`, `Mất kết nối` hoặc `Đang kiểm tra`.
+- Health check lỗi không hiện toast liên tục để tránh làm phiền người dùng.

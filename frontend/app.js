@@ -2,9 +2,12 @@ const state = {
   selectedJobId: null,
   selectedAutomationId: null,
   logTimer: null,
+  healthTimer: null,
   dependencyTimer: null,
   automationTimer: null,
 };
+
+const HEALTH_CHECK_INTERVAL_MS = 30000;
 
 const workflowForms = {
   train: { form: "#trainForm", endpoint: "/api/train/start", label: "train" },
@@ -240,6 +243,68 @@ async function api(path, options = {}) {
     throw new Error(payload.detail || `Request failed: ${response.status}`);
   }
   return payload;
+}
+
+function renderHealthStatus(status, detail = "") {
+  const badge = qs("#healthStatus");
+  if (!badge) return;
+
+  const checkedAt = new Date().toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  badge.classList.remove("is-online", "is-offline", "is-checking");
+
+  if (status === "online") {
+    badge.classList.add("is-online");
+    badge.textContent = "Online";
+    badge.title = `Backend đang hoạt động. Kiểm tra lúc ${checkedAt}.`;
+    return;
+  }
+
+  if (status === "offline") {
+    badge.classList.add("is-offline");
+    badge.textContent = "Mất kết nối";
+    badge.title = `Không gọi được /api/health lúc ${checkedAt}.${detail ? ` ${detail}` : ""}`;
+    return;
+  }
+
+  badge.classList.add("is-checking");
+  badge.textContent = "Đang kiểm tra";
+  badge.title = "GUI đang kiểm tra kết nối backend.";
+}
+
+async function loadHealthStatus() {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const response = await fetch("/api/health", {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload.ok !== true) {
+      throw new Error(payload.detail || `HTTP ${response.status}`);
+    }
+    renderHealthStatus("online");
+    return payload;
+  } catch (error) {
+    renderHealthStatus("offline", error.message || "Health check lỗi.");
+    return null;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+function startHealthCheckCron() {
+  if (state.healthTimer) return;
+  renderHealthStatus("checking");
+  loadHealthStatus().catch(() => {});
+  state.healthTimer = window.setInterval(() => {
+    loadHealthStatus().catch(() => {});
+  }, HEALTH_CHECK_INTERVAL_MS);
 }
 
 function setIconRefresh() {
@@ -1349,6 +1414,7 @@ function bindEvents() {
 async function boot() {
   setIconRefresh();
   bindEvents();
+  startHealthCheckCron();
   await Promise.all([loadModels(), loadSystem(), loadDependencyStatus(), loadJobs(), loadAutomations()]);
   loadVersion().catch(() => {});
   updatePredictSourceMode();

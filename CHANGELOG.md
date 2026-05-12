@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.3 - 2026-05-12
+
+- Thêm JS health check gọi `/api/health` ngay khi mở GUI và tự lặp lại mỗi 30 giây.
+- Sidebar card `Máy hiện tại` có badge `Online` hoặc `Mất kết nối` để người dùng biết backend còn sống.
+
 ## v0.4.2 - 2026-05-12
 
 - Hiển thị phiên bản hiện tại ngay dưới header `YOLO GUI` trong sidebar.

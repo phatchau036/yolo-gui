@@ -115,6 +115,7 @@
   - Ghi log update vào `logs/updates/`.
   - Bản Google Colab cũng dùng tab này; sau update cần chạy lại cell để nạp source và tunnel mới.
   - Sidebar header hiển thị version hiện tại ngay dưới `YOLO GUI`.
+  - Frontend JS health check `/api/health` mỗi 30 giây và hiển thị badge Online/Mất kết nối trong sidebar.
   - Mobile không dùng thanh cuộn ngang cho nav/quick action để tránh cảm giác vỡ form.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
