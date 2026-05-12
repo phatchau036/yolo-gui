@@ -40,6 +40,23 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
    - `GET /api/jobs/{job_id}/logs`
 9. Nếu cần dừng, frontend gọi `POST /api/jobs/{job_id}/stop`.
 
+## Automation GUI
+
+Automation dùng `AutomationManager` để chạy các kịch bản nhiều bước từ cấu hình GUI hiện tại:
+
+- `prepare_dataset`: tạo/gán dataset config và audit dữ liệu.
+- `train_ready`: chuẩn bị dataset nếu có thông tin wizard, audit, rồi chạy train.
+- `evaluate_export`: validate model đang chọn rồi export.
+- `full_pipeline`: dataset -> audit -> train -> validate -> export.
+
+Frontend gọi:
+
+- `GET /api/automations` để nạp danh sách automation.
+- `POST /api/automations/start` để tạo automation mới.
+- `GET /api/automations/{automation_id}/logs` để đọc timeline/log.
+
+Không chạy automation trong request thread. Manager spawn background thread, ghi log vào `logs/automations/` và cập nhật trạng thái từng step để GUI hiển thị timeline.
+
 ## Mapping workflow
 
 - `train`: `YOLO(model, task=task).train(**args)`
@@ -92,3 +109,4 @@ Workflow YOLO có thể chạy lâu, chiếm GPU và in log liên tục. Subproc
 - `dataset_tools.py`: không xóa hoặc sửa dataset gốc trừ endpoint tạo YAML/convert được người dùng bấm rõ ràng.
 - `dependency_manager.py`: log cài đặt và trạng thái CUDA phải hiện trên GUI.
 - `frontend/app.js`: workflow mới phải có endpoint, form id, number field, handler start và mapping GUI -> tham số YOLO. Không thêm ô JSON/CLI thô vào workflow chính.
+- `frontend/index.html` + `frontend/styles.css`: wizard hoặc form dài phải chia theo cụm thao tác, có cột hành động rõ, không rải field ngang toàn màn hình.

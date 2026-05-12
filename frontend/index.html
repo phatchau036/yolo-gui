@@ -26,6 +26,7 @@
           <button class="nav-item" data-section="predict" type="button"><i data-lucide="scan-search"></i><span>Dự đoán</span></button>
           <button class="nav-item" data-section="export" type="button"><i data-lucide="package-open"></i><span>Đóng gói</span></button>
           <button class="nav-item" data-section="dataset" type="button"><i data-lucide="folder-check"></i><span>Dữ liệu</span></button>
+          <button class="nav-item" data-section="automation" type="button"><i data-lucide="workflow"></i><span>Automation</span></button>
           <button class="nav-item" data-section="system" type="button"><i data-lucide="monitor-cog"></i><span>Cài đặt</span></button>
           <button class="nav-item" data-section="jobs" type="button"><i data-lucide="terminal-square"></i><span>Tiến trình</span></button>
         </nav>
@@ -70,6 +71,10 @@
           <button class="quick-card" data-section="dataset" type="button">
             <i data-lucide="folder-check"></i>
             <span><strong>Dữ liệu</strong><small>Chuẩn bị và kiểm tra</small></span>
+          </button>
+          <button class="quick-card" data-section="automation" type="button">
+            <i data-lucide="workflow"></i>
+            <span><strong>Automation</strong><small>Chạy theo kịch bản</small></span>
           </button>
         </section>
 
@@ -435,23 +440,90 @@
         <section id="section-dataset" class="page-section">
           <div class="tool-grid">
             <section class="work-panel dataset-wizard-panel">
-              <div class="panel-heading-row">
-                <div><p class="eyebrow">Chuẩn bị dữ liệu</p><h3>Tạo bộ dữ liệu train bằng GUI</h3></div>
-                <div class="panel-actions">
-                  <button id="useYoloLayoutButton" class="button is-light" type="button"><span class="icon"><i data-lucide="sparkles"></i></span><span>Tự điền thư mục chuẩn</span></button>
-                  <button id="createYamlButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="file-plus-2"></i></span><span>Tạo và dùng ngay</span></button>
+              <div class="panel-heading-row dataset-heading-row">
+                <div>
+                  <p class="eyebrow">Chuẩn bị dữ liệu</p>
+                  <h3>Tạo bộ dữ liệu train bằng GUI</h3>
+                </div>
+                <div class="wizard-step-strip" aria-label="Luồng tạo bộ dữ liệu">
+                  <span><strong>1</strong>Chọn thư mục</span>
+                  <span><strong>2</strong>Kiểm tra cấu trúc</span>
+                  <span><strong>3</strong>Tạo data.yaml</span>
                 </div>
               </div>
-              <p class="form-note">Chỉ cần chọn thư mục dataset và nhập tên nhãn. File cấu hình cần cho YOLO sẽ được tạo tự động, không phải tự viết.</p>
-              <div class="settings-grid">
-                <label class="field wide-field"><span class="label">Thư mục dataset</span><input id="yamlRoot" class="input" type="text" placeholder="Chọn thư mục gốc chứa images và labels" /></label>
-                <input id="yamlOutputPath" type="hidden" />
-                <label class="field"><span class="label">Ảnh dùng để học</span><input id="yamlTrain" class="input" type="text" value="images/train" /></label>
-                <label class="field"><span class="label">Ảnh dùng để kiểm tra</span><input id="yamlVal" class="input" type="text" value="images/val" /></label>
-                <label class="field"><span class="label">Ảnh test thêm</span><input id="yamlTest" class="input" type="text" placeholder="Có thể để trống" /></label>
-                <div class="field yaml-assign-field"><span class="label">Sau khi tạo</span><label class="checkbox yaml-assign-toggle"><input id="yamlAssignTargets" type="checkbox" checked /> Dùng ngay cho huấn luyện, đánh giá và kiểm tra</label></div>
+
+              <div class="dataset-wizard-layout">
+                <div class="dataset-main-flow">
+                  <section class="dataset-block">
+                    <div class="dataset-block-header">
+                      <span class="dataset-step-number">1</span>
+                      <div>
+                        <p class="eyebrow">Nguồn dữ liệu</p>
+                        <h4>Thư mục gốc của dataset</h4>
+                      </div>
+                    </div>
+                    <label class="field">
+                      <span class="label">Thư mục dataset</span>
+                      <input id="yamlRoot" class="input" type="text" placeholder="Chọn thư mục gốc chứa images và labels" />
+                    </label>
+                    <input id="yamlOutputPath" type="hidden" />
+                    <label class="field">
+                      <span class="label">File sẽ được tạo</span>
+                      <input id="yamlOutputPreview" class="input" type="text" readonly placeholder="GUI sẽ tự tạo data.yaml trong thư mục dataset" />
+                    </label>
+                  </section>
+
+                  <section class="dataset-block">
+                    <div class="dataset-block-header">
+                      <span class="dataset-step-number">2</span>
+                      <div>
+                        <p class="eyebrow">Cấu trúc ảnh</p>
+                        <h4>Vị trí ảnh train, val và test</h4>
+                      </div>
+                    </div>
+                    <div class="dataset-path-grid">
+                      <label class="field"><span class="label">Ảnh dùng để học</span><input id="yamlTrain" class="input" type="text" value="images/train" /></label>
+                      <label class="field"><span class="label">Ảnh dùng để kiểm tra</span><input id="yamlVal" class="input" type="text" value="images/val" /></label>
+                      <label class="field"><span class="label">Ảnh test thêm</span><input id="yamlTest" class="input" type="text" placeholder="Có thể để trống" /></label>
+                    </div>
+                  </section>
+
+                  <section class="dataset-block dataset-classes-block">
+                    <div class="dataset-block-header">
+                      <span class="dataset-step-number">3</span>
+                      <div>
+                        <p class="eyebrow">Nhãn nhận diện</p>
+                        <h4>Danh sách class của dataset</h4>
+                      </div>
+                    </div>
+                    <label class="field">
+                      <span class="label">Tên nhãn, mỗi dòng một nhãn</span>
+                      <textarea id="yamlNames" class="textarea" rows="7" placeholder="nguoi&#10;xe_may&#10;mu_bao_hiem"></textarea>
+                    </label>
+                  </section>
+                </div>
+
+                <aside class="dataset-action-panel" aria-label="Hành động tạo data.yaml">
+                  <div>
+                    <p class="eyebrow">Xuất cấu hình</p>
+                    <h4>Tạo data.yaml</h4>
+                    <p>GUI tự ghi file cấu hình và gán ngay sang các bước train, validate, audit.</p>
+                  </div>
+                  <div class="yaml-route-preview">
+                    <span><i data-lucide="folder-input"></i><strong>Dataset</strong><small>Chọn thư mục gốc</small></span>
+                    <span><i data-lucide="list-checks"></i><strong>Classes</strong><small>Mỗi dòng một nhãn</small></span>
+                    <span><i data-lucide="file-check-2"></i><strong>data.yaml</strong><small>Tạo và gán tự động</small></span>
+                  </div>
+                  <div class="field yaml-assign-field">
+                    <span class="label">Sau khi tạo</span>
+                    <label class="checkbox yaml-assign-toggle"><input id="yamlAssignTargets" type="checkbox" checked /> Dùng ngay cho huấn luyện, đánh giá và kiểm tra</label>
+                  </div>
+                  <div class="dataset-action-stack">
+                    <button id="useYoloLayoutButton" class="button is-light" type="button"><span class="icon"><i data-lucide="sparkles"></i></span><span>Tự điền thư mục chuẩn</span></button>
+                    <button id="createYamlButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="file-plus-2"></i></span><span>Tạo và dùng ngay</span></button>
+                  </div>
+                </aside>
               </div>
-              <label class="field"><span class="label">Tên nhãn, mỗi dòng một nhãn</span><textarea id="yamlNames" class="textarea" rows="5" placeholder="nguoi&#10;xe_may&#10;mu_bao_hiem"></textarea></label>
             </section>
             <section class="work-panel">
               <div class="panel-heading-row"><div><p class="eyebrow">Kiểm tra</p><h3>Quét lỗi bộ dữ liệu</h3></div><button id="auditDatasetButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="search-check"></i></span><span>Kiểm tra</span></button></div>
@@ -475,6 +547,69 @@
               </div>
             </section>
           </div>
+        </section>
+
+        <section id="section-automation" class="page-section">
+          <section class="automation-hero">
+            <div>
+              <p class="eyebrow">Automation</p>
+              <h3>Chạy YOLO theo kịch bản một nút bấm</h3>
+              <p>Automation lấy cấu hình đang chọn trong các tab hiện tại, tự chạy từng bước và lưu timeline riêng để không phải canh thủ công.</p>
+            </div>
+            <div class="automation-hero-metrics">
+              <span><strong id="automationTotalCount">0</strong><small>Tổng kịch bản</small></span>
+              <span><strong id="automationRunningCount">0</strong><small>Đang chạy</small></span>
+              <span><strong id="automationDoneCount">0</strong><small>Hoàn tất</small></span>
+            </div>
+          </section>
+
+          <section class="automation-grid">
+            <article class="automation-card">
+              <div class="automation-card-icon"><i data-lucide="folder-check"></i></div>
+              <div>
+                <p class="eyebrow">Dữ liệu</p>
+                <h3>Chuẩn bị dataset</h3>
+                <p>Tạo cấu hình dataset rồi quét lỗi ảnh, nhãn, class id.</p>
+              </div>
+              <button class="button is-primary" data-start-automation="prepare_dataset" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Chạy kịch bản</span></button>
+            </article>
+            <article class="automation-card">
+              <div class="automation-card-icon"><i data-lucide="dumbbell"></i></div>
+              <div>
+                <p class="eyebrow">Train</p>
+                <h3>Chuẩn bị rồi huấn luyện</h3>
+                <p>Tạo dataset nếu cần, kiểm tra dữ liệu, sau đó bắt đầu train.</p>
+              </div>
+              <button class="button is-primary" data-start-automation="train_ready" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Chạy kịch bản</span></button>
+            </article>
+            <article class="automation-card">
+              <div class="automation-card-icon"><i data-lucide="package-check"></i></div>
+              <div>
+                <p class="eyebrow">Đóng gói</p>
+                <h3>Đánh giá rồi đóng gói</h3>
+                <p>Đánh giá model đang chọn, sau đó export theo mục đích sử dụng.</p>
+              </div>
+              <button class="button is-primary" data-start-automation="evaluate_export" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Chạy kịch bản</span></button>
+            </article>
+            <article class="automation-card is-featured">
+              <div class="automation-card-icon"><i data-lucide="route"></i></div>
+              <div>
+                <p class="eyebrow">Full pipeline</p>
+                <h3>Dataset -> Train -> Đánh giá -> Đóng gói</h3>
+                <p>Luồng đầy đủ cho người muốn chọn dữ liệu rồi để GUI tự chạy từ đầu đến cuối.</p>
+              </div>
+              <button class="button is-primary" data-start-automation="full_pipeline" type="button"><span class="icon"><i data-lucide="play"></i></span><span>Chạy toàn bộ</span></button>
+            </article>
+          </section>
+
+          <section class="work-panel automation-panel">
+            <div class="panel-heading-row">
+              <div><p class="eyebrow">Timeline</p><h3>Automation đang chạy</h3></div>
+              <button id="refreshAutomationsButton" class="button is-light" type="button"><span class="icon"><i data-lucide="refresh-cw"></i></span><span>Làm mới</span></button>
+            </div>
+            <div id="automationList" class="automation-list">Chưa có automation nào.</div>
+            <pre id="automationLogOutput" class="log-output automation-log-output">Chưa có nhật ký automation.</pre>
+          </section>
         </section>
 
         <section id="section-system" class="page-section">

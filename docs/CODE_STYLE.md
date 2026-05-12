@@ -29,6 +29,8 @@
 - Workflow dài chạy trong subprocess, không chạy trực tiếp trong request thread.
 - Lỗi runtime phải đi vào log đầy đủ, không rút gọn còn một dòng.
 - UI phải có trạng thái rõ: chưa kiểm tra, running, completed, failed, stopped.
+- UI dạng workflow dài phải chia theo cụm thao tác và thứ tự người dùng làm thật. Không để một `settings-grid` quá rộng khiến field bị rải ngang toàn màn hình.
+- Với wizard chính, dùng pattern cột trái nhập liệu + cột phải hành động/tóm tắt. CTA chính nằm ở cột hành động để người dùng thấy bước cuối rõ ràng.
 - Setting mới nên đi theo thứ tự:
   1. Thêm field vào schema tương ứng trong `schemas.py`.
   2. Thêm input có `name` trùng field vào frontend.

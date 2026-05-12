@@ -131,3 +131,28 @@
   - Dataset wizard tạo cấu hình tự động và gán lại vào Train/Audit đúng.
   - Predict camera card map thành source nội bộ đúng, không lộ yêu cầu nhập `0`.
   - Kiểm tra text hiển thị không còn `Extra args JSON`, `data.yaml`, `YAML output`, `Device`, `Epochs`, `Batch`, `Conf`, `IoU` ở workflow chính.
+
+## 2026-05-12 - Automation và sửa bố cục Dataset Wizard
+
+- Thêm `AutomationManager` và tab Automation:
+  - `prepare_dataset`
+  - `train_ready`
+  - `evaluate_export`
+  - `full_pipeline`
+- Thêm API automation:
+  - `GET /api/automations`
+  - `GET /api/automations/templates`
+  - `POST /api/automations/start`
+  - `GET /api/automations/{automation_id}`
+  - `GET /api/automations/{automation_id}/logs`
+- Nhận feedback layout Dataset Wizard còn xấu vì form bị rải ngang.
+- Sửa lại Dataset Wizard:
+  - Header có 3 bước.
+  - Cột trái là các cụm nhập liệu: nguồn dữ liệu, cấu trúc ảnh, nhãn nhận diện.
+  - Cột phải là hành động tạo/gán `data.yaml` và tóm tắt luồng.
+  - Preview output path đồng bộ theo thư mục dataset.
+- Verify:
+  - `python -m compileall -q .` pass.
+  - Browser desktop `1920x900` không horizontal overflow, layout dataset cân bằng hơn.
+  - Browser mobile `390x844` không horizontal overflow, wizard/action panel stack đúng.
+  - Console browser không có warning/error.

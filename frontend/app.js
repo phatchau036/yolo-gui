@@ -1,7 +1,9 @@
 const state = {
   selectedJobId: null,
+  selectedAutomationId: null,
   logTimer: null,
   dependencyTimer: null,
+  automationTimer: null,
 };
 
 const workflowForms = {
@@ -17,6 +19,7 @@ const sectionTitles = {
   predict: "Dự đoán dữ liệu",
   export: "Đóng gói model",
   dataset: "Chuẩn bị dữ liệu",
+  automation: "Automation YOLO",
   system: "Cài đặt môi trường",
   jobs: "Tiến trình và nhật ký",
 };
@@ -135,6 +138,10 @@ function setActiveSection(section) {
   if (section === "jobs") {
     loadJobs().catch((error) => showToast(error.message));
     loadLog().catch(() => {});
+  }
+  if (section === "automation") {
+    loadAutomations().catch((error) => showToast(error.message));
+    loadAutomationLog().catch(() => {});
   }
 }
 
@@ -374,7 +381,7 @@ function setPathTarget(path) {
   if (target) {
     target.value = path;
     if (targetId === "yamlRoot") {
-      qs("#yamlOutputPath").value = `${path.replace(/[\\/]$/, "")}\\data.yaml`;
+      setYamlOutputPath(`${path.replace(/[\\/]$/, "")}\\data.yaml`);
     }
     updateDatasetDisplays();
   }
@@ -405,6 +412,15 @@ function friendlyPath(path) {
   const value = String(path || "").trim();
   if (!value) return "";
   return value.replace(/\\data\.ya?ml$/i, "").replace(/\/data\.ya?ml$/i, "") || value;
+}
+
+function setYamlOutputPath(path) {
+  const value = String(path || "").trim();
+  qs("#yamlOutputPath").value = value;
+  const preview = qs("#yamlOutputPreview");
+  if (preview) {
+    preview.value = value;
+  }
 }
 
 function parseValue(name, value) {
@@ -522,6 +538,70 @@ function validateGuiPayload(kind, payload) {
   }
 }
 
+function datasetAutomationPayload() {
+  const root = qs("#yamlRoot").value.trim();
+  const names = splitList(qs("#yamlNames").value);
+  if (!root || !names.length) return null;
+  const outputPath = qs("#yamlOutputPath").value.trim() || `${root.replace(/[\\/]$/, "")}\\data.yaml`;
+  return {
+    output_path: outputPath,
+    root,
+    train: qs("#yamlTrain").value.trim() || "images/train",
+    val: qs("#yamlVal").value.trim() || "images/val",
+    test: qs("#yamlTest").value.trim() || null,
+    names,
+  };
+}
+
+function collectAutomationPayload(automationType) {
+  const dataset = datasetAutomationPayload();
+  const train = collectForm("#trainForm");
+  const validate = collectForm("#valForm");
+  const exportPayload = collectForm("#exportForm");
+  const datasetPath = train.data || validate.data || qs("#auditPath").value.trim() || dataset?.output_path || "";
+
+  if (datasetPath) {
+    train.data = train.data || datasetPath;
+    validate.data = validate.data || datasetPath;
+    exportPayload.data = exportPayload.data || datasetPath;
+  }
+  if (!exportPayload.model && validate.model) {
+    exportPayload.model = validate.model;
+  }
+
+  if (automationType === "prepare_dataset" && !dataset && !datasetPath) {
+    throw new Error("Hãy chọn hoặc tạo thông tin dataset trước khi chạy automation.");
+  }
+  if (["train_ready", "full_pipeline"].includes(automationType) && !train.data && !dataset) {
+    throw new Error("Hãy chọn dataset hoặc nhập thông tin tạo dataset trước khi tự động train.");
+  }
+  if (automationType === "evaluate_export" && !validate.model) {
+    throw new Error("Hãy chọn model cần đánh giá trước.");
+  }
+
+  return {
+    dataset,
+    audit_path: datasetPath || null,
+    train,
+    validate,
+    export: exportPayload,
+  };
+}
+
+async function startAutomation(automationType) {
+  if (automationType !== "prepare_dataset" && !(await ensureDependencyReady())) return;
+  const payload = collectAutomationPayload(automationType);
+  const response = await api("/api/automations/start", {
+    method: "POST",
+    body: JSON.stringify({ automation_type: automationType, payload }),
+  });
+  state.selectedAutomationId = response.automation.id;
+  showToast(`Đã tạo automation ${response.automation.id}`);
+  await loadAutomations();
+  startAutomationPolling();
+  setActiveSection("automation");
+}
+
 async function loadJobs() {
   const payload = await api("/api/jobs");
   const list = qs("#jobList");
@@ -580,6 +660,99 @@ function friendlyJobStatus(status) {
     completed: "Hoàn tất",
     failed: "Có lỗi",
   }[status] || status;
+}
+
+function friendlyAutomationStatus(status) {
+  return {
+    starting: "Đang chuẩn bị",
+    running: "Đang chạy",
+    completed: "Hoàn tất",
+    failed: "Có lỗi",
+    pending: "Chờ chạy",
+    skipped: "Bỏ qua",
+  }[status] || status;
+}
+
+async function loadAutomations() {
+  const payload = await api("/api/automations");
+  const list = qs("#automationList");
+  list.innerHTML = "";
+  const automations = payload.automations || [];
+  qs("#automationTotalCount").textContent = String(automations.length);
+  qs("#automationRunningCount").textContent = String(automations.filter((item) => ["starting", "running"].includes(item.status)).length);
+  qs("#automationDoneCount").textContent = String(automations.filter((item) => item.status === "completed").length);
+
+  if (!automations.length) {
+    list.textContent = "Chưa có automation nào.";
+    qs("#automationLogOutput").textContent = "Chưa có nhật ký automation.";
+    state.selectedAutomationId = null;
+    return;
+  }
+  if (!state.selectedAutomationId || !automations.some((item) => item.id === state.selectedAutomationId)) {
+    state.selectedAutomationId = automations[0].id;
+  }
+  for (const automation of automations) {
+    list.appendChild(automationCard(automation));
+  }
+  setIconRefresh();
+  loadAutomationLog().catch(() => {});
+}
+
+function automationCard(automation) {
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = `automation-run-card ${automation.id === state.selectedAutomationId ? "is-selected" : ""}`;
+  const steps = (automation.steps || [])
+    .map(
+      (step) => `
+        <span class="automation-step is-${step.status}">
+          <i data-lucide="${automationStepIcon(step.status)}"></i>
+          <span>${step.label}</span>
+        </span>
+      `,
+    )
+    .join("");
+  card.innerHTML = `
+    <span class="automation-run-head">
+      <strong>${automation.name}</strong>
+      <small>${automation.id}</small>
+      <span class="status-pill status-${automation.status}">${friendlyAutomationStatus(automation.status)}</span>
+    </span>
+    <span class="automation-steps">${steps}</span>
+  `;
+  card.addEventListener("click", () => {
+    state.selectedAutomationId = automation.id;
+    loadAutomations().catch((error) => showToast(error.message));
+    loadAutomationLog().catch((error) => showToast(error.message));
+  });
+  return card;
+}
+
+function automationStepIcon(status) {
+  return {
+    completed: "check",
+    running: "loader-2",
+    failed: "triangle-alert",
+    skipped: "minus",
+  }[status] || "circle";
+}
+
+async function loadAutomationLog() {
+  if (!state.selectedAutomationId) return;
+  const payload = await api(`/api/automations/${state.selectedAutomationId}/logs?tail=30000`);
+  const output = qs("#automationLogOutput");
+  output.textContent = payload.log || "Automation chưa có nhật ký.";
+  output.scrollTop = output.scrollHeight;
+}
+
+function startAutomationPolling() {
+  if (state.automationTimer) {
+    window.clearInterval(state.automationTimer);
+  }
+  state.automationTimer = window.setInterval(() => {
+    loadAutomations().catch(() => {});
+    loadAutomationLog().catch(() => {});
+  }, 2500);
 }
 
 function updateStopButton(jobs) {
@@ -696,6 +869,7 @@ async function createYaml() {
   const root = qs("#yamlRoot").value.trim();
   if (!root) throw new Error("Hãy chọn thư mục dataset trước.");
   const outputPath = qs("#yamlOutputPath").value.trim() || (root ? `${root.replace(/[\\/]$/, "")}\\data.yaml` : "");
+  setYamlOutputPath(outputPath);
   const payload = await api("/api/datasets/create-yaml", {
     method: "POST",
     body: JSON.stringify({
@@ -707,7 +881,7 @@ async function createYaml() {
       names: splitList(qs("#yamlNames").value),
     }),
   });
-  qs("#yamlOutputPath").value = payload.path;
+  setYamlOutputPath(payload.path);
   if (qs("#yamlAssignTargets").checked) {
     assignDatasetYaml(payload.path);
   }
@@ -728,7 +902,7 @@ function useYoloLayoutDefaults() {
   if (root) {
     const normalizedRoot = root.replace(/[\\/]$/, "");
     qs("#yamlRoot").value = normalizedRoot;
-    qs("#yamlOutputPath").value = `${normalizedRoot}\\data.yaml`;
+    setYamlOutputPath(`${normalizedRoot}\\data.yaml`);
   }
   qs("#yamlTrain").value = "images/train";
   qs("#yamlVal").value = "images/val";
@@ -804,6 +978,11 @@ function bindEvents() {
       startWorkflow(button.dataset.startWorkflow).catch((error) => showToast(error.message));
     });
   });
+  qsa("[data-start-automation]").forEach((button) => {
+    button.addEventListener("click", () => {
+      startAutomation(button.dataset.startAutomation).catch((error) => showToast(error.message));
+    });
+  });
   qsa('input[name="ui_predict_source_mode"]').forEach((input) => {
     input.addEventListener("change", updatePredictSourceMode);
   });
@@ -816,6 +995,10 @@ function bindEvents() {
     loadLog().catch(() => {});
   });
   qs("#openJobsButton").addEventListener("click", () => setActiveSection("jobs"));
+  qs("#refreshAutomationsButton").addEventListener("click", () => {
+    loadAutomations().catch((error) => showToast(error.message));
+    loadAutomationLog().catch(() => {});
+  });
   qs("#openDatasetWizardButton").addEventListener("click", openDatasetWizard);
   qs("#stopJobButton").addEventListener("click", () => {
     stopSelectedJob().catch((error) => showToast(error.message));
@@ -841,6 +1024,10 @@ function bindEvents() {
     createYaml().catch((error) => showToast(error.message));
   });
   qs("#useYoloLayoutButton").addEventListener("click", useYoloLayoutDefaults);
+  qs("#yamlRoot").addEventListener("input", () => {
+    const root = qs("#yamlRoot").value.trim();
+    setYamlOutputPath(root ? `${root.replace(/[\\/]$/, "")}\\data.yaml` : "");
+  });
   qs("#convertVocButton").addEventListener("click", () => {
     convertVoc().catch((error) => showToast(error.message));
   });
@@ -855,9 +1042,10 @@ function bindEvents() {
 async function boot() {
   setIconRefresh();
   bindEvents();
-  await Promise.all([loadModels(), loadSystem(), loadDependencyStatus(), loadJobs()]);
+  await Promise.all([loadModels(), loadSystem(), loadDependencyStatus(), loadJobs(), loadAutomations()]);
   updatePredictSourceMode();
   updateDatasetDisplays();
+  setYamlOutputPath(qs("#yamlOutputPath").value);
   browsePath("").catch(() => {});
 }
 

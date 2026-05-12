@@ -8,11 +8,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from .automation_manager import AutomationManager
 from .config import FRONTEND_DIR, PROJECT_ROOT, ensure_runtime_dirs
 from .dataset_tools import audit_dataset as audit_dataset_file
 from .dataset_tools import calculate_yolo_metrics, convert_voc_to_yolo, create_dataset_yaml, inspect_dataset as inspect_dataset_file
 from .dependency_manager import DependencyManager
 from .schemas import (
+    AutomationStartRequest,
     DatasetAuditRequest,
     DatasetInspectRequest,
     DatasetYamlCreateRequest,
@@ -33,6 +35,7 @@ ensure_runtime_dirs()
 
 app = FastAPI(title="YOLO GUI", version="0.2.0")
 manager = TrainingManager()
+automation_manager = AutomationManager(manager)
 dependency_manager = DependencyManager()
 
 if FRONTEND_DIR.exists():
@@ -115,6 +118,43 @@ def system_report() -> dict[str, Any]:
 @app.get("/api/models")
 def models() -> dict[str, Any]:
     return {"models": MODEL_PRESETS}
+
+
+@app.get("/api/automations/templates")
+def automation_templates() -> dict[str, Any]:
+    return {"templates": automation_manager.templates()}
+
+
+@app.get("/api/automations")
+def list_automations() -> dict[str, Any]:
+    return {"automations": automation_manager.list_runs()}
+
+
+@app.post("/api/automations/start")
+def start_automation(request: AutomationStartRequest) -> dict[str, Any]:
+    if request.automation_type != "prepare_dataset":
+        ensure_yolo_runtime()
+    try:
+        run = automation_manager.start_run(request.automation_type, request.payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"automation": run.public_dict()}
+
+
+@app.get("/api/automations/{run_id}")
+def get_automation(run_id: str) -> dict[str, Any]:
+    run = automation_manager.get_run(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="Automation not found")
+    return {"automation": run.public_dict()}
+
+
+@app.get("/api/automations/{run_id}/logs")
+def get_automation_logs(run_id: str, tail: int = 12000) -> dict[str, Any]:
+    log = automation_manager.read_log(run_id, tail=tail)
+    if log is None:
+        raise HTTPException(status_code=404, detail="Automation log not found")
+    return {"automation_id": run_id, "log": log}
 
 
 def ensure_yolo_runtime() -> None:

@@ -80,6 +80,16 @@
   - Export đổi format thô thành mục đích sử dụng như app/web, NVIDIA GPU, CPU Intel, mobile.
   - Ẩn `extra_args JSON` khỏi UI người dùng, chỉ giữ hook nội bộ trong JS.
   - Output dataset/report đổi từ JSON thô sang tóm tắt dễ đọc.
+- Automation GUI:
+  - Thêm tab Automation.
+  - Thêm kịch bản `prepare_dataset`, `train_ready`, `evaluate_export`, `full_pipeline`.
+  - Thêm timeline/log riêng cho automation.
+  - `prepare_dataset` không bắt cài Ultralytics; các kịch bản train/validate/export vẫn kiểm tra dependency trước.
+- Sửa bố cục Dataset Wizard:
+  - Tách form lớn thành 3 bước rõ ràng.
+  - Cột trái nhập thư mục/cấu trúc ảnh/class.
+  - Cột phải tạo/gán `data.yaml` và tóm tắt luồng.
+  - Mobile stack lại theo thứ tự thao tác, không bị horizontal overflow.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q yolo_gui` pass.
@@ -100,6 +110,7 @@
 - Thêm auth/local password nếu app mở ra LAN.
 - Thêm test tự động cho API và JS form mapping.
 - Tiếp tục rà soát các nhãn nâng cao để giảm thuật ngữ kỹ thuật hơn nữa, nhưng không được làm mất khả năng tùy chỉnh của dev.
+- Tách thêm các form nâng cao khác theo pattern wizard nếu người dùng tiếp tục thấy bố cục quá dày.
 
 ## Rủi ro hiện tại
 

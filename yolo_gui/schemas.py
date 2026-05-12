@@ -210,3 +210,8 @@ class ExportRequest(BaseModel):
 
 class StopJobRequest(BaseModel):
     force: bool = False
+
+
+class AutomationStartRequest(BaseModel):
+    automation_type: Literal["prepare_dataset", "train_ready", "evaluate_export", "full_pipeline"]
+    payload: dict[str, Any] = Field(default_factory=dict)
