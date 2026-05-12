@@ -7,6 +7,8 @@ const state = {
   predictTimer: null,
   healthTimer: null,
   dependencyTimer: null,
+  dependencyStatusRequestSeq: 0,
+  dependencyActionsLocked: true,
   automationTimer: null,
 };
 
@@ -639,9 +641,22 @@ function dependencyActionButtons() {
 }
 
 function setDependencyActionsDisabled(disabled) {
+  state.dependencyActionsLocked = disabled;
+  qs("#dependencyNotice")?.classList.toggle("is-action-locked", disabled);
   dependencyActionButtons().forEach((button) => {
     button.disabled = disabled;
+    button.setAttribute("aria-disabled", disabled ? "true" : "false");
   });
+}
+
+function isDependencyActionLocked(button = null) {
+  return state.dependencyActionsLocked || Boolean(button?.disabled);
+}
+
+function guardDependencyAction(button = null) {
+  if (!isDependencyActionLocked(button)) return false;
+  showToast("GUI đang kiểm tra môi trường. Hãy chờ xong rồi bấm tiếp.");
+  return true;
 }
 
 function renderDependencyCheckingState() {
@@ -674,10 +689,15 @@ function renderDependencyErrorState(error) {
   title.textContent = "Không kiểm tra được môi trường";
   detail.textContent = error.message || "Không gọi được API kiểm tra môi trường. Có thể backend chưa chạy.";
   setDependencyActionsDisabled(true);
+  state.dependencyActionsLocked = false;
+  card.classList.remove("is-action-locked");
   qs("#refreshDependencyButton").disabled = false;
+  qs("#refreshDependencyButton").setAttribute("aria-disabled", "false");
 }
 
 async function loadDependencyStatus(options = {}) {
+  const requestSeq = ++state.dependencyStatusRequestSeq;
+  setDependencyActionsDisabled(true);
   if (!options.silent) {
     renderDependencyCheckingState();
   }
@@ -685,8 +705,13 @@ async function loadDependencyStatus(options = {}) {
   try {
     payload = await api("/api/dependencies/status");
   } catch (error) {
-    renderDependencyErrorState(error);
+    if (requestSeq === state.dependencyStatusRequestSeq) {
+      renderDependencyErrorState(error);
+    }
     throw error;
+  }
+  if (requestSeq !== state.dependencyStatusRequestSeq) {
+    return payload;
   }
   renderSystemStatus(payload);
   renderDependencyStatus(payload);
@@ -707,7 +732,6 @@ function renderDependencyStatus(payload) {
 
   card.classList.remove("is-ready", "is-running", "is-checking", "has-log");
   card.setAttribute("aria-busy", "false");
-  setDependencyActionsDisabled(false);
   qs("#installUltralyticsButton").querySelector("span:last-child").textContent =
     payload.ultralytics.installed ? "Cài lại Ultralytics" : "Cài Ultralytics";
   qs("#installTorchCudaButton").querySelector("span:last-child").textContent =
@@ -724,6 +748,8 @@ function renderDependencyStatus(payload) {
     setDependencyActionsDisabled(true);
     return;
   }
+
+  setDependencyActionsDisabled(false);
 
   if (payload.ultralytics.installed && payload.torch.installed && payload.torch.cuda_available) {
     card.classList.add("is-ready");
@@ -785,25 +811,48 @@ function renderDependencyChecklist(payload) {
   enhanceInlineHelp();
 }
 
+async function performDependencyInstall(endpoint, message, button) {
+  if (guardDependencyAction(button)) return;
+  setDependencyActionsDisabled(true);
+  try {
+    await api(endpoint, { method: "POST" });
+    await loadDependencyStatus();
+    showToast(message);
+    startDependencyPolling();
+  } catch (error) {
+    renderDependencyErrorState(error);
+    throw error;
+  }
+}
+
 async function installUltralytics() {
-  await api("/api/dependencies/ultralytics/install", { method: "POST" });
-  await loadDependencyStatus();
-  showToast("Đã bắt đầu cài Ultralytics");
-  startDependencyPolling();
+  await performDependencyInstall(
+    "/api/dependencies/ultralytics/install",
+    "Đã bắt đầu cài Ultralytics",
+    qs("#installUltralyticsButton"),
+  );
 }
 
 async function installTorchCuda() {
-  await api("/api/dependencies/torch/install-cuda", { method: "POST" });
-  await loadDependencyStatus();
-  showToast("Đã bắt đầu cài PyTorch CUDA");
-  startDependencyPolling();
+  await performDependencyInstall(
+    "/api/dependencies/torch/install-cuda",
+    "Đã bắt đầu cài PyTorch CUDA",
+    qs("#installTorchCudaButton"),
+  );
 }
 
 async function installTorchCpu() {
-  await api("/api/dependencies/torch/install-cpu", { method: "POST" });
+  await performDependencyInstall(
+    "/api/dependencies/torch/install-cpu",
+    "Đã bắt đầu cài PyTorch CPU",
+    qs("#installTorchCpuButton"),
+  );
+}
+
+async function refreshDependencyStatus() {
+  const button = qs("#refreshDependencyButton");
+  if (guardDependencyAction(button)) return;
   await loadDependencyStatus();
-  showToast("Đã bắt đầu cài PyTorch CPU");
-  startDependencyPolling();
 }
 
 async function loadDependencyLog() {
@@ -1677,7 +1726,7 @@ function bindEvents() {
     installTorchCpu().catch((error) => showToast(error.message));
   });
   qs("#refreshDependencyButton").addEventListener("click", () => {
-    loadDependencyStatus().catch((error) => showToast(error.message));
+    refreshDependencyStatus().catch((error) => showToast(error.message));
     loadDependencyLog().catch(() => {});
   });
   qs("#auditDatasetButton").addEventListener("click", () => {

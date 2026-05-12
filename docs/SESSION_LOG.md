@@ -332,3 +332,12 @@
   - `.term-grid .help-term` được neo cố định ở góc phải trên của từng card thay vì dùng `float`.
   - Rule mô tả đổi từ `.term-grid span` sang `.term-grid > div > span` để không áp style mô tả nhầm vào icon tooltip.
 - Tooltip trong term card được canh phải để không tràn khỏi mép card khi hover/focus.
+
+## 2026-05-12 - Khóa nút dependency khi đang kiểm tra
+
+- Nhận feedback: khi card `Môi trường YOLO` đang ở trạng thái `Đang kiểm tra`, các nút `Cài PyTorch CUDA`, `Cài PyTorch CPU`, `Cài Ultralytics`, `Kiểm tra lại` vẫn nhìn như bấm được.
+- Bump version lên `0.4.9`.
+- Thêm `dependencyStatusRequestSeq` để tránh race condition: response cũ của `/api/dependencies/status` không được render/mở khóa nếu đã có request mới hơn.
+- Thêm `dependencyActionsLocked` và guard click cho các hành động cài dependency, tránh gửi nhiều lệnh cài trùng khi người dùng bấm nhanh.
+- CSS thêm trạng thái `.dependency-card.is-action-locked` để khóa pointer event của cụm nút và làm nút mờ rõ ràng trong lúc `is-checking` hoặc `is-running`.
+- Trạng thái lỗi vẫn chỉ mở lại nút `Kiểm tra lại`, còn các nút cài tiếp tục khóa cho tới khi kiểm tra môi trường thành công.

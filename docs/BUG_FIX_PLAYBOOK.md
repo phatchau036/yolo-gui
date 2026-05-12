@@ -61,6 +61,14 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 4. Kiểm tra Python server đang dùng trong field `python` của API status.
 5. Nếu pip lỗi network/quyền ghi, hiển thị nguyên lỗi đó trên GUI, không rút gọn.
 
+## Nút dependency bấm được khi đang kiểm tra
+
+1. Kiểm tra `renderDependencyCheckingState()` có gọi `setDependencyActionsDisabled(true)` trước khi gọi API chưa.
+2. Kiểm tra `loadDependencyStatus()` có tăng `dependencyStatusRequestSeq` và bỏ qua response cũ không; response cũ không được mở khóa card khi request mới hơn đang pending.
+3. Kiểm tra card `#dependencyNotice` có class `is-action-locked` trong lúc `is-checking` hoặc `is-running`.
+4. Browser QA bằng cách delay `/api/dependencies/status`, sau đó xác nhận 4 nút dependency đều `disabled=true`, `aria-disabled=true` và click không tạo request install.
+5. Khi endpoint lỗi, chỉ nút `Kiểm tra lại` được mở để người dùng thử lại; các nút cài vẫn khóa cho tới khi status đọc được môi trường.
+
 ## CUDA không sẵn sàng
 
 1. Kiểm tra card `NVIDIA/CUDA` trong GUI.

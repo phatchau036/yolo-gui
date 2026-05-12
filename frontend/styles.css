@@ -420,6 +420,20 @@ body {
   background: #f2f7ff;
 }
 
+.dependency-card.is-action-locked .dependency-actions {
+  pointer-events: none;
+}
+
+.dependency-card.is-action-locked .dependency-actions .button,
+.dependency-card.is-checking .dependency-actions .button,
+.dependency-card.is-running .dependency-actions .button {
+  cursor: not-allowed;
+  opacity: 0.42;
+  filter: grayscale(0.18);
+  transform: none;
+  box-shadow: none;
+}
+
 .dependency-copy {
   display: flex;
   gap: 12px;

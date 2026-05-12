@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.9 - 2026-05-12
+
+- Khóa toàn bộ nút cài/kiểm tra dependency trong lúc GUI đang kiểm tra môi trường YOLO để tránh người dùng bấm nhiều lần gây job cài trùng.
+- Thêm guard JS chống race condition cho `/api/dependencies/status`: response cũ không được mở khóa nếu request mới hơn đang chạy.
+- Thêm lớp CSS `is-action-locked` cho card dependency để nút bị mờ, không nhận pointer event khi trạng thái là `Đang kiểm tra` hoặc `Đang cài`.
+
 ## v0.4.8 - 2026-05-12
 
 - Sửa UI/UX dấu `?` trong mục `Hướng dẫn > Các khái niệm hay gặp`: icon trợ giúp được neo cố định ở góc phải từng card, không còn lệch theo dòng chữ.
