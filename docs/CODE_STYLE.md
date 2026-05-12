@@ -31,6 +31,7 @@
 - UI phải có trạng thái rõ: chưa kiểm tra, running, completed, failed, stopped.
 - UI dạng workflow dài phải chia theo cụm thao tác và thứ tự người dùng làm thật. Không để một `settings-grid` quá rộng khiến field bị rải ngang toàn màn hình.
 - Với wizard chính, dùng pattern cột trái nhập liệu + cột phải hành động/tóm tắt. CTA chính nằm ở cột hành động để người dùng thấy bước cuối rõ ràng.
+- Sidebar desktop cố định theo viewport phải có scroll nội bộ (`overflow-y: auto`) nếu có thêm nav/card mới. Không để phần tử con tràn ra ngoài nền sidebar; với màn hình thấp cần breakpoint riêng để giảm padding/gap thay vì để card bị cắt hoặc tràn khỏi layout.
 - Tooltip giải thích dùng `helpCatalog` trong `frontend/app.js`. Khi thêm label/option mới, thêm mô tả vào catalog hoặc bảo đảm fallback vẫn dễ hiểu.
 - Không viết đoạn giải thích dài trực tiếp trong form. Dùng tooltip cho giải thích ngắn và tab `Hướng dẫn`/`docs/USER_GUIDE.md` cho hướng dẫn dài.
 - Setting mới nên đi theo thứ tự:

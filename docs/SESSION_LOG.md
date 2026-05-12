@@ -169,3 +169,18 @@
   - `enhanceInlineHelp()` tự gắn dấu hỏi cạnh các mục UI.
   - Các nút/tab có `title` để hover vẫn có mô tả mà không làm rối bố cục.
 - Thêm `docs/USER_GUIDE.md` cho người dùng cuối.
+
+## 2026-05-12 - Sửa sidebar bị vỡ form trên màn hình thấp
+
+- Nhận feedback: form bị vỡ sau khi thêm nhiều mục điều hướng và thẻ `Máy hiện tại`.
+- Nguyên nhân: desktop sidebar đang `height: 100vh`; khi nội dung cao hơn viewport, thẻ hệ thống bị tràn xuống dưới nền sidebar.
+- Sửa trong `frontend/styles.css`:
+  - `.side-panel` dùng `height: 100dvh`, `overflow-y: auto`, `overflow-x: hidden`.
+  - `.system-card` không co giãn theo flex để tránh méo nội dung.
+  - Thêm breakpoint desktop thấp `min-width: 1181px` và `max-height: 760px` để giảm padding, gap, kích thước nav và card.
+  - Mobile/tablet giữ `position: static`, `height: auto`, `overflow: visible` để không tạo sidebar cuộn lồng không cần thiết.
+- Browser QA trên `127.0.0.1:8767`:
+  - Desktop thấp `1280x360`: sidebar có scroll nội bộ, nền sidebar phủ đủ chiều cao, không còn tràn visual ra ngoài.
+  - Desktop thường `1920x900`: thẻ hệ thống nằm gọn trong sidebar, không có horizontal overflow.
+  - Mobile `390x844`: sidebar trở lại layout thường, `system-card` ẩn như thiết kế cũ, không có horizontal overflow toàn trang.
+  - Console browser không có warning/error.

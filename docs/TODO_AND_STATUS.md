@@ -94,6 +94,10 @@
   - Thêm tooltip dấu hỏi cho nhãn, option card, checkbox và các cụm thuật ngữ chính.
   - Thêm tab `Hướng dẫn` ngay trong app.
   - Thêm `docs/USER_GUIDE.md` cho người dùng cuối đọc theo luồng thao tác.
+- Sửa lỗi layout sidebar:
+  - Sidebar desktop có scroll nội bộ khi chiều cao màn hình thấp.
+  - Thẻ `Máy hiện tại` không còn tràn khỏi nền sidebar.
+  - Mobile/tablet vẫn dùng layout thường, không tạo cuộn lồng trong sidebar.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q yolo_gui` pass.
