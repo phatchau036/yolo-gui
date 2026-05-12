@@ -322,3 +322,13 @@
   - Đặt `font-size: 0`, `line-height: 0`, `overflow: hidden`, `white-space: nowrap` để text node không thể làm vỡ layout.
   - Icon SVG giữ 18x18px ổn định.
 - Cụm input đường dẫn dùng grid `input + 2 icon button`, không làm hàng cao bất thường.
+
+## 2026-05-12 - Căn lại dấu hỏi trong mục khái niệm
+
+- Nhận feedback: các dấu `?` trong mục `Hướng dẫn > Các khái niệm hay gặp` chưa khớp nhau, nhìn lệch so với card.
+- Bump version lên `0.4.8`.
+- Sửa CSS `term-grid`:
+  - Card khái niệm dùng `position: relative` và chừa sẵn vùng bên phải cho icon.
+  - `.term-grid .help-term` được neo cố định ở góc phải trên của từng card thay vì dùng `float`.
+  - Rule mô tả đổi từ `.term-grid span` sang `.term-grid > div > span` để không áp style mô tả nhầm vào icon tooltip.
+- Tooltip trong term card được canh phải để không tràn khỏi mép card khi hover/focus.

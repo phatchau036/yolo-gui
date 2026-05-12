@@ -70,6 +70,13 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 5. Sau khi cài xong, restart server nếu Python vẫn giữ module cũ.
 6. Kiểm tra lại `GET /api/dependencies/status`; payload phải có field `runtime` để frontend render đúng câu hướng dẫn.
 
+## Tooltip dấu hỏi bị lệch trong card
+
+1. Kiểm tra selector nào đang gắn tooltip trong `enhanceInlineHelp()` của `frontend/app.js`.
+2. Nếu icon được append vào `strong`, `h3` hoặc `h4`, tránh style cha kiểu `.block span` áp nhầm vào `.help-term`.
+3. Với card dạng lưới như `.term-grid`, đặt card `position: relative`, chừa padding bên phải và neo `.help-term` bằng `position: absolute` thay vì dùng `float`.
+4. QA bằng desktop và mobile viewport, kiểm tra tất cả dấu `?` cùng kích thước, cùng mép phải, không chồng chữ và tooltip không tràn khỏi card.
+
 ## Stop job không dừng
 
 1. Kiểm tra status job trong `GET /api/jobs`.

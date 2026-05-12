@@ -704,8 +704,7 @@ body {
 .choice-card .help-term,
 .checkbox .help-term,
 .automation-card .help-term,
-.docs-card .help-term,
-.term-grid .help-term {
+.docs-card .help-term {
   float: right;
   margin-top: 0;
 }
@@ -1402,27 +1401,51 @@ body {
 }
 
 .term-grid div {
+  position: relative;
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px;
+  min-height: 92px;
+  padding: 14px 48px 14px 14px;
   background: var(--panel-soft);
 }
 
 .term-grid strong,
-.term-grid span {
+.term-grid > div > span {
   display: block;
 }
 
 .term-grid strong {
   color: #17211f;
   font-weight: 900;
+  line-height: 1.25;
 }
 
-.term-grid span {
+.term-grid > div > span {
   color: var(--muted);
   line-height: 1.45;
   margin-top: 4px;
+}
+
+.term-grid .help-term {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-grid;
+  float: none;
+  margin: 0;
+  vertical-align: 0;
+}
+
+.term-grid .help-term::after {
+  left: auto;
+  right: 0;
+  transform: translateY(4px);
+}
+
+.term-grid .help-term:hover::after,
+.term-grid .help-term:focus-visible::after {
+  transform: translateY(0);
 }
 
 .recommendation-list {

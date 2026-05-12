@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.8 - 2026-05-12
+
+- Sửa UI/UX dấu `?` trong mục `Hướng dẫn > Các khái niệm hay gặp`: icon trợ giúp được neo cố định ở góc phải từng card, không còn lệch theo dòng chữ.
+- Tách CSS mô tả của `term-grid` để rule của nội dung không áp nhầm vào icon tooltip, giúp các dấu hỏi có cùng kích thước và cùng hàng trên desktop/mobile.
+
 ## v0.4.7 - 2026-05-12
 
 - Sửa UI/UX cụm `Đường dẫn` trong trình duyệt thư mục: nút mở/gán chỉ hiển thị icon, không còn vỡ chữ `Mở`/`Gán`.

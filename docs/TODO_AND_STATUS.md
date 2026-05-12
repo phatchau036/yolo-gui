@@ -125,6 +125,7 @@
   - Tab `Dự đoán` giữ người dùng tại chỗ, hiển thị progress bar và preview ảnh/video output sau khi job xong.
   - Tab `Phiên bản` có nút `Sao lưu rồi cập nhật` khi repo có file đã sửa.
   - Sửa lỗi panel `Tạo data.yaml` bị chồng icon tooltip lên chữ.
+  - Căn lại dấu `?` trong `Hướng dẫn > Các khái niệm hay gặp` để mọi card dùng cùng vị trí icon, không lệch theo dòng chữ.
   - Mobile không dùng thanh cuộn ngang cho nav/quick action để tránh cảm giác vỡ form.
 - Verify 100% GUI pass:
   - `node --check frontend/app.js` pass.
