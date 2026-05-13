@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-05-13 - v0.4.19 Cloud workspace Google Drive
+
+- Mục tiêu: thêm tính năng Cloud để người dùng bật chuẩn dữ liệu dùng chung, nhập Google API key, kết nối Google Drive folder và dùng cùng contract dữ liệu trên Windows/local/Colab.
+- Backend:
+  - Thêm `yolo_gui/cloud_manager.py`.
+  - Thêm schema `CloudSettingsRequest`.
+  - Thêm API `GET /api/cloud/status`, `POST /api/cloud/settings`, `POST /api/cloud/google-drive/connect`.
+  - Thêm runtime path `logs/cloud/` và `runs/cloud/`.
+- Frontend:
+  - Thêm panel Cloud trong tab `Cài đặt`.
+  - Thêm JS load/save/connect Cloud, render folder standard và khóa control trong lúc xử lý.
+  - Thêm CSS Cloud theo phong cách `Pro AI Lab`, responsive mobile không horizontal overflow.
+- Quyết định bảo mật: Google API key không commit lên GitHub; chỉ lưu local trong `logs/cloud/cloud-settings.local.json` hoặc đọc từ env `YOLO_GUI_GOOGLE_API_KEY`.
+- Giới hạn đã ghi rõ: API key chỉ đọc folder public/shared. Private Drive, upload và sync hai chiều cần OAuth/service account ở phase sau.
+
 ## 2026-05-12
 
 - Nhận mục tiêu dự án: làm web GUI local để train YOLO thay cho CLI/code.

@@ -40,6 +40,22 @@ Script sẽ tự làm các bước sau:
 
 Dataset có thể nằm trong `/content`, Google Drive đã mount, hoặc thư mục bạn upload lên Colab.
 
+## Cloud Workspace Trên Colab
+
+Từ v0.4.19, tab `Cài đặt` có phần Cloud workspace để Colab và Windows/local dùng cùng một chuẩn Google Drive folder.
+
+Cách dùng:
+
+1. Mở tab `Cài đặt`.
+2. Bật `Cloud mode`.
+3. Nhập Google API key hoặc đặt env `YOLO_GUI_GOOGLE_API_KEY` trước khi chạy server.
+4. Dán Google Drive folder ID/link.
+5. Bấm `Connect Google Drive`.
+
+GUI sẽ tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/` với các folder chuẩn `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`. Khi chạy ở Colab khác hoặc máy khác, dùng cùng Drive folder và cùng `Tên workspace chuẩn` để thấy cùng contract dữ liệu.
+
+Lưu ý: API key chỉ đọc folder public/shared. Nếu muốn truy cập Drive private của tài khoản Colab, vẫn cần mount Drive hoặc OAuth/service account ở bước sau.
+
 ## Nếu GUI Báo Colab Đang Chạy CPU
 
 Nếu thẻ `Colab hiện tại` ghi `Chế độ train: CPU, vẫn chạy được nhưng chậm`, nghĩa là notebook chưa được bật GPU hoặc PyTorch chưa thấy GPU.
@@ -101,6 +117,8 @@ Trong Colab, log nằm tại:
 - `logs/workflow_jobs/`: log train/val/predict/export.
 - `logs/dependency_installs/`: log cài PyTorch hoặc Ultralytics từ GUI.
 - `logs/updates/`: log khi bấm cập nhật ở tab `Phiên bản`.
+- `logs/cloud/`: Cloud setting local. Không chia sẻ log này nếu có lưu API key.
+- `runs/cloud/`: mirror local và `cloud-manifest.json` của Cloud workspace.
 
 Nếu link tunnel không hiện, xem `logs/colab/cloudflared-<port>.log`.
 

@@ -9,6 +9,8 @@ const state = {
   dependencyTimer: null,
   dependencyStatusRequestSeq: 0,
   dependencyActionsLocked: true,
+  cloud: null,
+  cloudBusy: false,
   automationTimer: null,
   colabRestartTimer: null,
   annotator: {
@@ -242,6 +244,14 @@ const helpCatalog = {
   "Kiểm tra lại": "Kiểm tra lại commit mới trên GitHub và trạng thái cập nhật.",
   "Trạng thái cập nhật": "Cho biết GUI đang là bản mới nhất hay có bản mới có thể cập nhật.",
   "Có gì mới": "Changelog các thay đổi chính theo từng phiên bản.",
+  "Google Drive dùng chung cho mọi máy": "Kết nối một folder Google Drive public/shared để GUI tạo chuẩn thư mục chung cho Windows, máy khác và Colab.",
+  "Bật Cloud mode": "Bật chế độ dùng workspace Drive chung. Khi tắt, GUI vẫn chạy local như bình thường.",
+  "Google API key": "Key dùng để đọc metadata folder Drive public/shared. Key chỉ lưu local hoặc lấy từ biến môi trường, không ghi vào GitHub.",
+  "Google Drive folder ID hoặc link": "Dán link folder Google Drive hoặc ID folder. Folder cần public/shared nếu chỉ dùng API key.",
+  "Tên workspace chuẩn": "Tên thư mục chuẩn trong mirror local. Dùng cùng tên trên máy khác để dữ liệu được map giống nhau.",
+  "Lưu cài đặt Cloud": "Lưu trạng thái bật Cloud, folder Drive và API key vào file local bị git ignore.",
+  "Connect Google Drive": "Kiểm tra key, đọc folder Google Drive và tạo manifest/mirror theo chuẩn dữ liệu của GUI.",
+  "Quy chuẩn dữ liệu khi bật Cloud": "Các folder mà GUI dùng thống nhất: datasets, models, runs, annotations, configs, exports và logs.",
   "Báo cáo máy đang chạy": "Tạo báo cáo môi trường để biết Python, PyTorch, CUDA, GPU và Ultralytics đang như thế nào.",
   "Trạng thái và nhật ký": "Theo dõi tiến trình và đọc log đầy đủ khi có lỗi.",
 };
@@ -416,6 +426,7 @@ function enhanceInlineHelp() {
     ".check-tile strong",
     ".docs-card h4",
     ".term-grid strong",
+    ".cloud-folder-card strong",
   ].forEach((selector) => qsa(selector).forEach((element) => attachHelpTerm(element)));
 
   qsa("button span:not(.icon), .quick-card small, .nav-item span").forEach((element) => applyHelpTitle(element));
@@ -445,6 +456,9 @@ function setActiveSection(section) {
   }
   if (section === "dataset") {
     window.setTimeout(syncAnnotatorCanvas, 80);
+  }
+  if (section === "system") {
+    loadCloudStatus().catch((error) => showToast(error.message));
   }
 }
 
@@ -2309,6 +2323,209 @@ async function calculateMetrics() {
   writeOutput("#datasetToolOutput", payload);
 }
 
+function cloudControls() {
+  return [
+    qs("#cloudEnabled"),
+    qs("#cloudGoogleApiKey"),
+    qs("#cloudGoogleDriveFolder"),
+    qs("#cloudRootName"),
+    qs("#saveCloudSettingsButton"),
+    qs("#connectGoogleDriveButton"),
+  ].filter(Boolean);
+}
+
+function setCloudBusy(busy, action = "check") {
+  state.cloudBusy = busy;
+  const panel = qs(".cloud-panel");
+  panel?.classList.toggle("is-busy", busy);
+  panel?.setAttribute("aria-busy", busy ? "true" : "false");
+
+  cloudControls().forEach((control) => {
+    control.disabled = busy;
+    control.setAttribute("aria-disabled", busy ? "true" : "false");
+  });
+
+  const saveLabel = qs("#saveCloudSettingsButton span:last-child");
+  const connectLabel = qs("#connectGoogleDriveButton span:last-child");
+  if (!saveLabel || !connectLabel) return;
+
+  if (!busy) {
+    saveLabel.textContent = "Lưu cài đặt Cloud";
+    connectLabel.textContent = "Connect Google Drive";
+    return;
+  }
+
+  saveLabel.textContent = action === "save" ? "Đang lưu..." : "Đang khóa...";
+  connectLabel.textContent = action === "connect" ? "Đang kết nối..." : "Đang kiểm tra...";
+}
+
+function formatCloudTime(value) {
+  if (!value) return "Chưa kết nối";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function cloudPayloadFromForm() {
+  return {
+    enabled: qs("#cloudEnabled").checked,
+    provider: "google_drive",
+    google_api_key: qs("#cloudGoogleApiKey").value.trim() || null,
+    google_drive_folder: qs("#cloudGoogleDriveFolder").value.trim() || null,
+    root_name: qs("#cloudRootName").value.trim() || "YOLO-GUI-Cloud",
+    clear_api_key: false,
+  };
+}
+
+function renderCloudFolders(folders = []) {
+  const container = qs("#cloudStandardFolders");
+  if (!container) return;
+  container.innerHTML = folders.length
+    ? folders.map((folder) => {
+      const driveLabel = folder.drive_ready ? "Có trên Drive" : "Chưa thấy trên Drive";
+      const driveClass = folder.drive_ready ? "is-ready" : "is-local";
+      const driveName = folder.drive_folder?.name || folder.key;
+      return `
+        <article class="cloud-folder-card ${driveClass}">
+          <div class="cloud-folder-icon"><i data-lucide="${folder.drive_ready ? "cloud-check" : "folder"}"></i></div>
+          <div>
+            <strong>${escapeHtml(folder.label || folder.key)}</strong>
+            <span>${escapeHtml(folder.description || "")}</span>
+            <small>${escapeHtml(driveLabel)} · ${escapeHtml(driveName)}</small>
+            <code>${escapeHtml(folder.local_path || "")}</code>
+          </div>
+        </article>
+      `;
+    }).join("")
+    : '<article class="cloud-folder-card is-local"><div class="cloud-folder-icon"><i data-lucide="folder"></i></div><div><strong>Chưa có dữ liệu</strong><span>Bấm lưu cài đặt hoặc kết nối Google Drive để tạo chuẩn thư mục.</span></div></article>';
+}
+
+function renderCloudStatus(payload) {
+  state.cloud = payload;
+  const enabled = Boolean(payload?.enabled);
+  const connected = Boolean(payload?.connected);
+  qs(".cloud-panel")?.classList.toggle("is-cloud-enabled", enabled);
+  qs(".cloud-panel")?.classList.toggle("is-cloud-connected", connected);
+  const badge = qs("#cloudStatusBadge");
+  if (badge) {
+    badge.className = "status-pill";
+    if (connected) {
+      badge.classList.add("status-completed");
+      badge.textContent = "Đã kết nối";
+    } else if (enabled && payload?.has_api_key) {
+      badge.classList.add("status-starting");
+      badge.textContent = "Đã bật";
+    } else if (enabled) {
+      badge.classList.add("status-failed");
+      badge.textContent = "Thiếu key";
+    } else {
+      badge.classList.add("status-idle");
+      badge.textContent = "Chưa bật";
+    }
+  }
+
+  qs("#cloudEnabled").checked = enabled;
+  qs("#cloudGoogleDriveFolder").value = payload?.google_drive_folder || "";
+  qs("#cloudRootName").value = payload?.root_name || "YOLO-GUI-Cloud";
+  const keyInput = qs("#cloudGoogleApiKey");
+  keyInput.value = "";
+  keyInput.placeholder = payload?.has_api_key
+    ? `Đã lưu key ${payload.api_key_masked || "***"} (${payload.api_key_source || "local"})`
+    : "Dán API key để kết nối Drive public/shared";
+
+  qs("#cloudKeyStatus").textContent = payload?.has_api_key
+    ? `${payload.api_key_masked || "***"} · ${payload.api_key_source || "local"}`
+    : "Chưa có";
+  qs("#cloudDriveFolderId").textContent = payload?.google_drive_folder_id || "Chưa chọn";
+  qs("#cloudLocalRoot").textContent = payload?.local_root || "-";
+  qs("#cloudLastConnected").textContent = formatCloudTime(payload?.last_connected_at);
+  renderCloudFolders(payload?.standard_folders || []);
+
+  const lines = [
+    connected ? "Cloud đã kết nối Google Drive." : enabled ? "Cloud đã bật, cần connect Drive để đọc metadata." : "Cloud đang tắt.",
+    payload?.root_drive?.name ? `Drive root: ${payload.root_drive.name}` : null,
+    payload?.google_drive_folder_id ? `Drive folder ID: ${payload.google_drive_folder_id}` : null,
+    payload?.local_root ? `Local mirror: ${payload.local_root}` : null,
+    payload?.manifest_path ? `Manifest: ${payload.manifest_path}` : null,
+    payload?.last_error ? `Lỗi gần nhất: ${payload.last_error}` : null,
+    "",
+    "Lưu ý: API key chỉ đọc folder Google Drive public/shared. Private Drive hoặc upload/sync 2 chiều cần OAuth ở bước sau.",
+  ].filter((line) => line !== null);
+  qs("#cloudOutput").textContent = lines.join("\n");
+  enhanceInlineHelp();
+  setIconRefresh();
+}
+
+async function loadCloudStatus(options = {}) {
+  if (!options.silent) {
+    setCloudBusy(true, "check");
+  }
+  try {
+    const payload = await api("/api/cloud/status");
+    renderCloudStatus(payload);
+    return payload;
+  } finally {
+    if (!options.silent) {
+      setCloudBusy(false);
+    }
+  }
+}
+
+async function saveCloudSettings() {
+  if (state.cloudBusy) {
+    showToast("Cloud đang xử lý. Hãy chờ xong rồi bấm tiếp.");
+    return null;
+  }
+  setCloudBusy(true, "save");
+  try {
+    const payload = await api("/api/cloud/settings", {
+      method: "POST",
+      body: JSON.stringify(cloudPayloadFromForm()),
+    });
+    renderCloudStatus(payload);
+    showToast("Đã lưu cài đặt Cloud");
+    return payload;
+  } finally {
+    setCloudBusy(false);
+  }
+}
+
+async function connectGoogleDrive() {
+  if (state.cloudBusy) {
+    showToast("Cloud đang xử lý. Hãy chờ xong rồi bấm tiếp.");
+    return null;
+  }
+  setCloudBusy(true, "connect");
+  try {
+    await api("/api/cloud/settings", {
+      method: "POST",
+      body: JSON.stringify(cloudPayloadFromForm()),
+    });
+    const payload = await api("/api/cloud/google-drive/connect", { method: "POST" });
+    renderCloudStatus(payload);
+    showToast("Đã kết nối Google Drive");
+    return payload;
+  } catch (error) {
+    const status = await api("/api/cloud/status").catch(() => null);
+    if (status) renderCloudStatus(status);
+    qs("#cloudOutput").textContent = [
+      "Không kết nối được Google Drive.",
+      error.message,
+      "",
+      "Kiểm tra lại API key, folder ID/link và quyền public/shared của folder.",
+    ].join("\n");
+    throw error;
+  } finally {
+    setCloudBusy(false);
+  }
+}
+
 async function createReport() {
   const payload = await api("/api/system/report", { method: "POST" });
   writeOutput(
@@ -2441,6 +2658,15 @@ function bindEvents() {
   qs("#metricsButton").addEventListener("click", () => {
     calculateMetrics().catch((error) => showToast(error.message));
   });
+  qs("#saveCloudSettingsButton").addEventListener("click", () => {
+    saveCloudSettings().catch((error) => showToast(error.message));
+  });
+  qs("#connectGoogleDriveButton").addEventListener("click", () => {
+    connectGoogleDrive().catch((error) => showToast(error.message));
+  });
+  qs("#cloudEnabled").addEventListener("change", () => {
+    qs(".cloud-panel")?.classList.toggle("is-cloud-enabled", qs("#cloudEnabled").checked);
+  });
   qs("#createReportButton").addEventListener("click", () => {
     createReport().catch((error) => showToast(error.message));
   });
@@ -2450,7 +2676,7 @@ async function boot() {
   setIconRefresh();
   bindEvents();
   startHealthCheckCron();
-  await Promise.all([loadModels(), loadDependencyStatus(), loadVersion().catch(() => null), loadJobs(), loadAutomations()]);
+  await Promise.all([loadModels(), loadDependencyStatus(), loadCloudStatus(), loadVersion().catch(() => null), loadJobs(), loadAutomations()]);
   updatePredictSourceMode();
   updatePredictRuntimeGuards();
   updateDatasetDisplays();

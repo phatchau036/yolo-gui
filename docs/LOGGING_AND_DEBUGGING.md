@@ -15,6 +15,9 @@
   - `logs/colab/cloudflared.log`
 - Version update:
   - `logs/updates/update-*.log`
+- Cloud workspace:
+  - `logs/cloud/cloud-settings.local.json`
+  - `runs/cloud/google-drive/<folder-id>/<root_name>/cloud-manifest.json`
 - Job config: `runs/gui_jobs/<job_id>/<job_type>_config.json`
 - Output mặc định:
   - Train: `runs/train/<name>/`
@@ -50,6 +53,7 @@ Invoke-RestMethod http://127.0.0.1:8765/api/dependencies/status
 Invoke-RestMethod http://127.0.0.1:8765/api/models
 Invoke-RestMethod http://127.0.0.1:8765/api/jobs
 Invoke-RestMethod http://127.0.0.1:8765/api/jobs/<job_id>/artifacts
+Invoke-RestMethod http://127.0.0.1:8765/api/cloud/status
 ```
 
 Dataset/report:
@@ -74,6 +78,7 @@ Invoke-RestMethod http://127.0.0.1:8765/api/datasets/audit -Method Post -Content
 - Tab Phiên bản báo cần lưu thay đổi: bấm `Sao lưu rồi cập nhật`. GUI sẽ ghi log trong `logs/updates/` và cất tạm thay đổi bằng Git stash trước khi pull.
 - Update xong nhưng GUI chưa đổi: tải lại trang. Nếu thay đổi nằm ở backend Python, restart `start.ps1` hoặc chạy lại cell Colab.
 - Predict xong nhưng không thấy ảnh preview: kiểm tra có bật `Lưu ảnh/video kết quả` không, rồi xem `GET /api/jobs/<job_id>/artifacts` và thư mục `runs/predict/<name>/`.
+- Cloud báo thiếu key/folder: kiểm tra `GET /api/cloud/status`, nhưng không in raw key ra log hoặc chat. Folder private sẽ lỗi với API key, cần public/shared hoặc OAuth ở phase sau.
 
 ## Nguyên tắc debug
 

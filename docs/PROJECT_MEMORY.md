@@ -28,6 +28,10 @@
 - Hướng giao diện hiện tại là `Pro AI Lab`: shell/sidebar/header tối, workspace sáng dễ thao tác, dùng `Be Vietnam Pro` và giữ cảm giác tool AI/GPU chuyên nghiệp thay vì dashboard mặc định.
 - Bài học QA v0.4.18: đường dẫn dài trong annotator, dependency card nhiều nút và quick workflow nhiều card phải được thiết kế bằng grid/wrap/ellipsis ngay từ đầu; không dùng `overflow-wrap:anywhere` cho vùng chứa path quan trọng vì dễ bẻ chữ thành từng ký tự.
 - Dependency/status endpoint không được crash chỉ vì cache import của Python lỗi; mọi check môi trường phải trả trạng thái/log đọc được để console GUI luôn sạch.
+- Cloud workspace là cầu nối dữ liệu chung giữa Windows/local và Google Colab, nhưng không biến dự án thành SaaS. Giai đoạn hiện tại dùng Google Drive folder public/shared + API key để đọc metadata và tạo mirror/manifest local.
+- Google API key do người dùng nhập chỉ được lưu local trong `logs/cloud/cloud-settings.local.json` hoặc lấy từ env `YOLO_GUI_GOOGLE_API_KEY`. Không commit key, không ghi key vào manifest, không render raw key trong UI hoặc response.
+- Chuẩn folder Cloud đã chốt: `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`. Máy khác hoặc Colab kết nối cùng Drive folder và cùng `root_name` sẽ thấy cùng contract folder/mirror.
+- Private Google Drive, upload, sync hai chiều và mount Drive theo tài khoản cá nhân cần OAuth/service account ở phase sau; API key không đủ quyền cho các hành vi đó.
 
 ## Quy tắc duy trì docs
 

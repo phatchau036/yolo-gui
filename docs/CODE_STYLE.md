@@ -38,6 +38,13 @@
 - CSS không dùng `letter-spacing` âm hoặc font-size scale theo `vw`; dùng size cố định kết hợp media query để chữ tiếng Việt không vỡ nhịp trên mobile/desktop.
 - Asset frontend trong `index.html` nên có query version khi đổi CSS/JS lớn để người dùng không bị cache giao diện cũ sau update.
 - Với công cụ canvas như annotator, giữ state trong `state.<feature>` của `frontend/app.js`, khóa control khi đang gọi API, và lưu dữ liệu theo format backend chuẩn thay vì đọc DOM rời rạc ở nhiều nơi.
+- Với tính năng Cloud hoặc secret:
+  - Không hardcode API key/token vào repo.
+  - File local chứa secret phải nằm trong thư mục bị `.gitignore`, hiện tại là `logs/cloud/`.
+  - Response/API/UI chỉ trả key dạng mask như `******...abcd`, không render raw secret ngược về frontend.
+  - Nên đọc env trước file local để Colab/server có thể cấu hình key mà không ghi ra đĩa.
+  - Khi gọi API bên ngoài bằng key người dùng nhập, thông báo rõ giới hạn quyền đọc/ghi thay vì giả vờ đã sync đầy đủ.
+- Với Cloud frontend, giữ state trong `state.cloud`, khóa input/button khi đang kiểm tra/lưu/kết nối, và render folder chuẩn từ payload backend thay vì hardcode trạng thái giả.
 - Setting mới nên đi theo thứ tự:
   1. Thêm field vào schema tương ứng trong `schemas.py`.
   2. Thêm input có `name` trùng field vào frontend.

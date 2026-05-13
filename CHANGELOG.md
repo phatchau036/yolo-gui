@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.19 - 2026-05-13
+
+- Thêm Cloud workspace trong tab `Cài đặt`: bật Cloud mode, nhập Google API key, nhập Google Drive folder ID/link và bấm `Connect Google Drive` ngay trên GUI.
+- Thêm chuẩn thư mục Cloud dùng chung giữa Windows/local và Google Colab: `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`.
+- Backend có `CloudManager` và API `/api/cloud/status`, `/api/cloud/settings`, `/api/cloud/google-drive/connect` để lưu setting local, đọc metadata Google Drive và tạo mirror/manifest.
+- API key không được ghi vào GitHub; GUI chỉ lưu local trong `logs/cloud/cloud-settings.local.json` hoặc đọc từ env `YOLO_GUI_GOOGLE_API_KEY`.
+- UI Cloud khóa toàn bộ control khi đang kiểm tra/lưu/kết nối để tránh bấm chồng, hiển thị key dạng mask và không render raw key ngược lên frontend.
+- Giao diện Cloud có summary card, trạng thái Drive folder, local mirror và danh sách folder standard đồng bộ style `Pro AI Lab`.
+
 ## v0.4.18 - 2026-05-12
 
 - Redesign toàn bộ giao diện theo hướng `Pro AI Lab`: sidebar/header tối cao cấp, workspace sáng dễ đọc và cảm giác tool AI/GPU chuyên nghiệp hơn.

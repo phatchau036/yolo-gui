@@ -110,6 +110,16 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 5. Với text trong card, ưu tiên `.choice-card > span`, `.check-tile > span`, `.wizard-step-strip > span`; không dùng selector rộng nếu trong card có tooltip được JS append.
 6. QA bằng desktop và mobile viewport, kiểm tra tất cả dấu `?` cùng kích thước, cùng mép phải, không chồng chữ và tooltip không tràn khỏi card.
 
+## Cloud không kết nối được Google Drive
+
+1. Gọi `GET /api/cloud/status` để xem `enabled`, `has_api_key`, `google_drive_folder_id`, `last_error` và `local_root`.
+2. Nếu `has_api_key=false`, nhập key trên GUI hoặc đặt env `YOLO_GUI_GOOGLE_API_KEY`.
+3. Nếu thiếu folder, dán link dạng `https://drive.google.com/drive/folders/<id>` hoặc ID folder vào ô Google Drive folder.
+4. Nếu Google trả `401/403`, kiểm tra folder đã public/shared chưa. API key không đọc được folder private của tài khoản cá nhân.
+5. Kiểm tra `logs/cloud/cloud-settings.local.json` chỉ nằm local và không được stage. Không đưa key vào docs, README, changelog hoặc commit.
+6. Kiểm tra `runs/cloud/google-drive/<folder-id>/<root_name>/cloud-manifest.json` sau khi connect thành công. Manifest chỉ được chứa metadata, không chứa API key.
+7. Frontend phải khóa `Bật Cloud mode`, input key/folder/root và hai nút Cloud trong lúc đang lưu/kết nối; nếu vẫn bấm được, kiểm tra `setCloudBusy()` và class `.cloud-panel.is-busy`.
+
 ## Stop job không dừng
 
 1. Kiểm tra status job trong `GET /api/jobs`.

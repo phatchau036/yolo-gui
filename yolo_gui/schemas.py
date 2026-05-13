@@ -242,3 +242,12 @@ class StopJobRequest(BaseModel):
 class AutomationStartRequest(BaseModel):
     automation_type: Literal["prepare_dataset", "train_ready", "evaluate_export", "full_pipeline"]
     payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class CloudSettingsRequest(BaseModel):
+    enabled: bool = False
+    provider: Literal["google_drive"] = "google_drive"
+    google_api_key: str | None = None
+    google_drive_folder: str | None = None
+    root_name: str = Field(default="YOLO-GUI-Cloud", min_length=1, max_length=80)
+    clear_api_key: bool = False

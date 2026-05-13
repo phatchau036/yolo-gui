@@ -14,6 +14,7 @@ from .annotation_tools import list_images as list_annotation_images
 from .annotation_tools import read_labels as read_annotation_labels
 from .annotation_tools import save_labels as save_annotation_labels
 from .automation_manager import AutomationManager
+from .cloud_manager import CloudManager
 from .config import FRONTEND_DIR, PROJECT_ROOT, ensure_runtime_dirs
 from .dataset_tools import audit_dataset as audit_dataset_file
 from .dataset_tools import calculate_yolo_metrics, convert_voc_to_yolo, create_dataset_yaml, inspect_dataset as inspect_dataset_file
@@ -26,6 +27,7 @@ from .schemas import (
     DatasetAuditRequest,
     DatasetInspectRequest,
     DatasetYamlCreateRequest,
+    CloudSettingsRequest,
     ExportRequest,
     MetricsRequest,
     PathListRequest,
@@ -47,6 +49,7 @@ manager = TrainingManager()
 automation_manager = AutomationManager(manager)
 dependency_manager = DependencyManager()
 version_manager = VersionManager()
+cloud_manager = CloudManager()
 
 if FRONTEND_DIR.exists():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR)), name="assets")
@@ -123,6 +126,24 @@ def system_info() -> dict[str, Any]:
 @app.post("/api/system/report")
 def system_report() -> dict[str, Any]:
     return create_system_report(dependency_manager.environment_status())
+
+
+@app.get("/api/cloud/status")
+def cloud_status() -> dict[str, Any]:
+    return cloud_manager.status()
+
+
+@app.post("/api/cloud/settings")
+def cloud_settings(request: CloudSettingsRequest) -> dict[str, Any]:
+    return cloud_manager.configure(request)
+
+
+@app.post("/api/cloud/google-drive/connect")
+def cloud_google_drive_connect() -> dict[str, Any]:
+    try:
+        return cloud_manager.connect_google_drive()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/api/models")

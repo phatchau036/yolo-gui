@@ -47,6 +47,21 @@
 
 ## Đã verify trong phiên này
 
+- Verify v0.4.19 Cloud workspace:
+  - `node --check frontend/app.js` pass.
+  - `python -m compileall -q .` pass.
+  - `git diff --check` pass.
+  - API smoke trên `127.0.0.1:8790` pass:
+    - `POST /api/cloud/settings` lưu Cloud setting local, giữ key cũ khi không nhập lại key.
+    - `GET /api/cloud/status` trả 7 folder standard, không leak raw API key trong response.
+    - `POST /api/cloud/google-drive/connect` khi thiếu folder trả lỗi rõ `Google Drive folder`.
+    - `logs/cloud/cloud-settings.local.json` tồn tại local và bị `.gitignore`.
+  - Browser QA desktop `1366x768` và mobile `390x844` pass:
+    - Tab `Cài đặt` hiển thị panel Cloud, 7 folder standard và badge `Đã bật`.
+    - DOM không chứa raw API key.
+    - Không có horizontal overflow.
+    - Console browser không có warning/error.
+
 - `python -m compileall -q .` pass sau khi thêm annotator.
 - `node --check frontend/app.js` pass.
 - `git diff --check` pass.
@@ -130,6 +145,12 @@
   - Thêm `start_colab.py` tự cài requirements, tải `cloudflared`, chạy server và mở Cloudflare Tunnel.
   - Thêm `YOLO_GUI_Colab.ipynb` để người dùng Colab bấm chạy một cell.
   - Thêm `docs/COLAB_GUIDE.md` và cập nhật README với Open in Colab.
+- Cloud workspace:
+  - Thêm tab Cloud trong `Cài đặt` để bật Cloud mode, lưu Google API key local/env và kết nối Google Drive folder public/shared.
+  - Thêm API `/api/cloud/status`, `/api/cloud/settings`, `/api/cloud/google-drive/connect`.
+  - Thêm chuẩn thư mục chung `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`.
+  - Tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/` và manifest metadata không chứa API key.
+  - Frontend khóa control Cloud khi đang kiểm tra/lưu/kết nối và chỉ hiển thị key dạng mask.
 - Phiên bản/changelog/update:
   - Thêm tab `Phiên bản` trong GUI.
   - Thêm `CHANGELOG.md`.
@@ -178,6 +199,7 @@
 - Thêm gợi ý batch/imgsz theo VRAM.
 - Thêm biểu đồ metric từ `results.csv`.
 - Thêm ONNX Runtime smoke check riêng sau export ONNX.
+- Cloud phase sau: thêm OAuth/service account để đọc Drive private, upload/sync hai chiều và tải dataset/model lớn có tiến trình rõ ràng trong GUI.
 - Thêm downloader/checker cho pretrained weight nếu model chưa có local.
 - Mở rộng annotator lên resize/move box trực tiếp bằng tay nắm nếu người dùng cần chỉnh box cũ nhanh hơn.
 - Thêm auth/local password nếu app mở ra LAN.

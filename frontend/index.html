@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/styles.css?v=0.4.18-pro-ai-lab.2" />
+    <link rel="stylesheet" href="/assets/styles.css?v=0.4.19-cloud.1" />
   </head>
   <body>
     <main class="app-shell">
@@ -802,6 +802,62 @@
         </section>
 
         <section id="section-system" class="page-section">
+          <section class="work-panel cloud-panel">
+            <div class="panel-heading-row">
+              <div>
+                <p class="eyebrow">Cloud workspace</p>
+                <h3>Google Drive dùng chung cho mọi máy</h3>
+                <p class="form-note">Bật Cloud để GUI dùng một chuẩn thư mục chung. Khi local hoặc Colab kết nối cùng Google Drive folder, dữ liệu sẽ được map về cùng cấu trúc.</p>
+              </div>
+              <span id="cloudStatusBadge" class="status-pill status-idle">Chưa bật</span>
+            </div>
+
+            <div class="cloud-layout">
+              <div class="cloud-settings-card">
+                <label class="checkbox cloud-toggle-row">
+                  <input id="cloudEnabled" type="checkbox" />
+                  <span><strong>Bật Cloud mode</strong><small>Dùng Google Drive làm nguồn dữ liệu chung.</small></span>
+                </label>
+                <div class="settings-grid two">
+                  <label class="field">
+                    <span class="label">Google API key</span>
+                    <input id="cloudGoogleApiKey" class="input" type="password" autocomplete="off" placeholder="Dán API key để kết nối Drive public/shared" />
+                  </label>
+                  <label class="field">
+                    <span class="label">Google Drive folder ID hoặc link</span>
+                    <input id="cloudGoogleDriveFolder" class="input" type="text" placeholder="https://drive.google.com/drive/folders/..." />
+                  </label>
+                  <label class="field">
+                    <span class="label">Tên workspace chuẩn</span>
+                    <input id="cloudRootName" class="input" type="text" value="YOLO-GUI-Cloud" />
+                  </label>
+                  <div class="cloud-actions">
+                    <button id="saveCloudSettingsButton" class="button is-light" type="button"><span class="icon"><i data-lucide="save"></i></span><span>Lưu cài đặt Cloud</span></button>
+                    <button id="connectGoogleDriveButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="cloud"></i></span><span>Connect Google Drive</span></button>
+                  </div>
+                </div>
+                <p class="form-note">API key chỉ lưu local trong `logs/cloud/` hoặc lấy từ env `YOLO_GUI_GOOGLE_API_KEY`; không được commit lên GitHub.</p>
+              </div>
+
+              <aside class="cloud-summary-card">
+                <div><span>Key</span><strong id="cloudKeyStatus">Chưa có</strong></div>
+                <div><span>Drive folder</span><strong id="cloudDriveFolderId">Chưa chọn</strong></div>
+                <div><span>Local mirror</span><strong id="cloudLocalRoot">-</strong></div>
+                <div><span>Lần kết nối</span><strong id="cloudLastConnected">Chưa kết nối</strong></div>
+              </aside>
+            </div>
+
+            <div class="cloud-standard-head">
+              <div>
+                <p class="eyebrow">Folder standard</p>
+                <h4>Quy chuẩn dữ liệu khi bật Cloud</h4>
+              </div>
+              <small>datasets, models, runs, annotations, configs, exports, logs</small>
+            </div>
+            <div id="cloudStandardFolders" class="cloud-standard-grid"></div>
+            <pre id="cloudOutput" class="preview-box">Chưa kết nối Cloud.</pre>
+          </section>
+
           <section class="work-panel">
             <div class="panel-heading-row">
               <div><p class="eyebrow">Cài đặt</p><h3>Báo cáo máy đang chạy</h3></div>
@@ -890,6 +946,6 @@
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script src="/assets/app.js?v=0.4.18-pro-ai-lab.2"></script>
+    <script src="/assets/app.js?v=0.4.19-cloud.1"></script>
   </body>
 </html>
