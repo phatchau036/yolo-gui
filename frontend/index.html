@@ -768,6 +768,18 @@
               <p>Tab Tiến trình cho biết job đang chạy đến đâu. Nhật ký giúp biết lỗi nằm ở dữ liệu, model hay môi trường.</p>
               <button class="button is-light" data-section="jobs" type="button"><span>Xem tab Tiến trình</span></button>
             </article>
+            <article class="docs-card">
+              <span class="docs-step">5</span>
+              <h4>Lưu theo project</h4>
+              <p>Trong Cài đặt, đặt Tên project và bật Cloud Storage để GUI tự lưu log, config, output và snapshot job.</p>
+              <button class="button is-light" data-section="system" type="button"><span>Xem Cloud Storage</span></button>
+            </article>
+            <article class="docs-card">
+              <span class="docs-step">6</span>
+              <h4>Dự đoán và đóng gói</h4>
+              <p>Sau khi train, dùng tab Dự đoán để xem ảnh/video kết quả ngay trong GUI, rồi Đóng gói nếu cần dùng model ở app khác.</p>
+              <button class="button is-light" data-section="predict" type="button"><span>Xem tab Dự đoán</span></button>
+            </article>
           </section>
 
           <section class="work-panel docs-panel">
@@ -785,6 +797,8 @@
               <div><strong>Đóng gói</strong><span>Xuất model sang định dạng dùng cho app/web/mobile/thiết bị khác.</span></div>
               <div><strong>Automation</strong><span>Chạy nhiều bước liên tiếp bằng một nút, ví dụ chuẩn bị dữ liệu rồi train rồi đóng gói.</span></div>
               <div><strong>Nhật ký</strong><span>Nơi ghi tiến trình và lỗi đầy đủ để người dùng biết cần sửa gì.</span></div>
+              <div><strong>Cloud Project</strong><span>Workspace theo tên project, giúp nhiều máy hoặc Colab mở lại đúng profile, log và output.</span></div>
+              <div><strong>Cloud Storage</strong><span>Chế độ tự lưu config, log, output và snapshot job sau khi workflow kết thúc.</span></div>
             </div>
           </section>
 
@@ -797,6 +811,7 @@
               <p><strong>Mức huấn luyện:</strong> chọn Cân bằng. Test nhanh chỉ dùng để phát hiện lỗi dữ liệu, Train kỹ dùng khi dataset đã ổn.</p>
               <p><strong>Máy chạy:</strong> để Tự động. Chỉ chọn GPU khi chắc CUDA đã sẵn sàng, chọn CPU khi muốn tương thích dù chậm hơn.</p>
               <p><strong>Automation:</strong> dùng Full pipeline khi muốn GUI tự chạy toàn bộ luồng, nhưng nên thử Chuẩn bị dataset trước nếu đây là dataset mới.</p>
+              <p><strong>Cloud Storage:</strong> bật khi muốn lưu full log/config/output theo project. Đặt tên project dễ nhớ trước khi train để sau này mở lại đúng dữ liệu.</p>
             </div>
           </section>
         </section>

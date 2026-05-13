@@ -2,6 +2,8 @@
 
 Tài liệu này dành cho người không muốn dùng CLI. Mọi thao tác chính đều làm trong giao diện web.
 
+Nếu cần bản hướng dẫn thật chi tiết theo từng nút trong GUI, đọc thêm [GUI_STEP_BY_STEP.md](GUI_STEP_BY_STEP.md). File đó đi từ mở app, cài môi trường, chuẩn bị dataset, gán nhãn, train, predict, Cloud Project/Storage, Automation đến cách đọc log khi lỗi.
+
 ## Luồng Nhanh
 
 1. Trên Windows, mở app bằng `start.ps1`, sau đó vào địa chỉ web local hiện trên terminal.

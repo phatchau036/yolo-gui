@@ -157,6 +157,8 @@
   - Thêm tooltip dấu hỏi cho nhãn, option card, checkbox và các cụm thuật ngữ chính.
   - Thêm tab `Hướng dẫn` ngay trong app.
   - Thêm `docs/USER_GUIDE.md` cho người dùng cuối đọc theo luồng thao tác.
+  - Thêm `docs/GUI_STEP_BY_STEP.md` làm manual chi tiết từng bước cho người mới dùng GUI, bao gồm mở app, cài môi trường, dataset, annotator, train, predict, export, automation, Cloud Storage và đọc log.
+  - Tab `Hướng dẫn` trong GUI có thêm nội dung Cloud Storage, dự đoán/đóng gói và khái niệm Cloud Project.
 - Redesign Pro AI Lab:
   - Giao diện dùng `Be Vietnam Pro`, shell/sidebar/header tối và workspace sáng.
   - Làm mới design system cho button, form, card, focus state, dependency card, dataset wizard, annotator, automation, docs, version và jobs.

@@ -487,3 +487,11 @@
 - `TrainingManager` nhận callback `on_job_finished`; `app.py` nối callback này với `cloud_manager.capture_job`.
 - Frontend tab `Cài đặt` thêm `Tên project`, toggle `Bật Cloud Storage`, summary `Project workspace` và nhóm `Job snapshots` trong Cloud Manager.
 - Cập nhật README, changelog và docs handoff cho chuẩn Cloud Storage mới.
+
+## 2026-05-13 - Bổ sung hướng dẫn dùng GUI thật chi tiết
+
+- Nhận nhắc nhở: cần doc kỹ để người dùng biết cách dùng GUI, không chỉ biết có tính năng.
+- Thêm `docs/GUI_STEP_BY_STEP.md` làm manual từng bước: mở GUI, kiểm tra/cài môi trường, bật Cloud Project/Storage, chuẩn bị dataset, gán nhãn, train, predict, validate, export, automation, Cloud Manager, đọc log và cập nhật.
+- `docs/USER_GUIDE.md` thêm link sang manual chi tiết.
+- `README.md` và `docs/INDEX.md` thêm đường dẫn đọc tài liệu mới.
+- Tab `Hướng dẫn` trong GUI bổ sung card Cloud Storage, dự đoán/đóng gói và khái niệm Cloud Project/Cloud Storage.
