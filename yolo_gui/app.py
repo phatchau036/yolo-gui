@@ -27,6 +27,7 @@ from .schemas import (
     DatasetAuditRequest,
     DatasetInspectRequest,
     DatasetYamlCreateRequest,
+    CloudProfileSaveRequest,
     CloudSettingsRequest,
     ExportRequest,
     MetricsRequest,
@@ -144,6 +145,24 @@ def cloud_google_drive_connect() -> dict[str, Any]:
         return cloud_manager.connect_google_drive()
     except RuntimeError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/cloud/manager")
+def cloud_workspace_manager() -> dict[str, Any]:
+    return cloud_manager.manager()
+
+
+@app.post("/api/cloud/profiles")
+def cloud_profile_save(request: CloudProfileSaveRequest) -> dict[str, Any]:
+    return cloud_manager.save_profile(request)
+
+
+@app.delete("/api/cloud/profiles/{profile_id}")
+def cloud_profile_delete(profile_id: str) -> dict[str, Any]:
+    try:
+        return cloud_manager.delete_profile(profile_id)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.get("/api/models")

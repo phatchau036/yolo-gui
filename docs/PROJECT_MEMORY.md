@@ -32,6 +32,8 @@
 - Google API key do người dùng nhập chỉ được lưu local trong `logs/cloud/cloud-settings.local.json` hoặc lấy từ env `YOLO_GUI_GOOGLE_API_KEY`. Không commit key, không ghi key vào manifest, không render raw key trong UI hoặc response.
 - Chuẩn folder Cloud đã chốt: `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`. Máy khác hoặc Colab kết nối cùng Drive folder và cùng `root_name` sẽ thấy cùng contract folder/mirror.
 - Private Google Drive, upload, sync hai chiều và mount Drive theo tài khoản cá nhân cần OAuth/service account ở phase sau; API key không đủ quyền cho các hành vi đó.
+- Cloud Manager phải là thao tác quản lý, không tự chạy workflow. Profile lưu trạng thái GUI để người dùng áp dụng lại, rồi tự bấm train/predict/export khi đã kiểm tra đúng.
+- Profile Cloud Manager nằm trong `runs/cloud/.../configs/gui-settings/` và phải được backend sanitize để không chứa key/token/password.
 
 ## Quy tắc duy trì docs
 

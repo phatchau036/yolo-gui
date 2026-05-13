@@ -45,6 +45,11 @@
   - Nên đọc env trước file local để Colab/server có thể cấu hình key mà không ghi ra đĩa.
   - Khi gọi API bên ngoài bằng key người dùng nhập, thông báo rõ giới hạn quyền đọc/ghi thay vì giả vờ đã sync đầy đủ.
 - Với Cloud frontend, giữ state trong `state.cloud`, khóa input/button khi đang kiểm tra/lưu/kết nối, và render folder chuẩn từ payload backend thay vì hardcode trạng thái giả.
+- Với Cloud Manager:
+  - Lưu profile bằng cả payload workflow đã normalize và payload UI thô để áp dụng lại đúng radio/checkbox/preset.
+  - Nút `Áp dụng` chỉ điền form, không tự chạy job.
+  - Asset scan phải có giới hạn số lượng để tránh treo GUI nếu workspace có nhiều file.
+  - Trước khi ghi profile, backend phải lọc các key nhạy cảm như `api_key`, `token`, `password`, `secret`.
 - Setting mới nên đi theo thứ tự:
   1. Thêm field vào schema tương ứng trong `schemas.py`.
   2. Thêm input có `name` trùng field vào frontend.

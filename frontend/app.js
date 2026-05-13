@@ -10,6 +10,7 @@ const state = {
   dependencyStatusRequestSeq: 0,
   dependencyActionsLocked: true,
   cloud: null,
+  cloudManager: null,
   cloudBusy: false,
   automationTimer: null,
   colabRestartTimer: null,
@@ -252,6 +253,11 @@ const helpCatalog = {
   "Lưu cài đặt Cloud": "Lưu trạng thái bật Cloud, folder Drive và API key vào file local bị git ignore.",
   "Connect Google Drive": "Kiểm tra key, đọc folder Google Drive và tạo manifest/mirror theo chuẩn dữ liệu của GUI.",
   "Quy chuẩn dữ liệu khi bật Cloud": "Các folder mà GUI dùng thống nhất: datasets, models, runs, annotations, configs, exports và logs.",
+  "Lưu và mở lại cấu hình, model, ảnh": "Cloud Manager lưu profile cấu hình GUI hiện tại và quét model, ảnh, dataset trong workspace để bấm dùng lại nhanh.",
+  "Tên cấu hình muốn lưu": "Tên profile để bạn nhận ra cấu hình train/predict/dataset này sau này.",
+  "Lưu cấu hình hiện tại": "Lưu các lựa chọn GUI hiện tại như dataset, model, preset train, nguồn dự đoán và annotator vào Cloud workspace.",
+  "Profile đã lưu": "Danh sách cấu hình GUI đã lưu. Bấm Áp dụng để điền lại form mà không cần nhập tay.",
+  "Thư viện Cloud": "Các model, file cấu hình, ảnh và folder kết quả đang nằm trong Cloud workspace local.",
   "Báo cáo máy đang chạy": "Tạo báo cáo môi trường để biết Python, PyTorch, CUDA, GPU và Ultralytics đang như thế nào.",
   "Trạng thái và nhật ký": "Theo dõi tiến trình và đọc log đầy đủ khi có lỗi.",
 };
@@ -459,6 +465,7 @@ function setActiveSection(section) {
   }
   if (section === "system") {
     loadCloudStatus().catch((error) => showToast(error.message));
+    loadCloudManager({ silent: true }).catch(() => {});
   }
 }
 
@@ -2331,6 +2338,10 @@ function cloudControls() {
     qs("#cloudRootName"),
     qs("#saveCloudSettingsButton"),
     qs("#connectGoogleDriveButton"),
+    qs("#cloudProfileName"),
+    qs("#cloudProfileNotes"),
+    qs("#saveCloudProfileButton"),
+    qs("#refreshCloudManagerButton"),
   ].filter(Boolean);
 }
 
@@ -2370,6 +2381,14 @@ function formatCloudTime(value) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function formatBytes(value) {
+  const size = Number(value || 0);
+  if (!size) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const index = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1);
+  return `${(size / (1024 ** index)).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
 function cloudPayloadFromForm() {
@@ -2489,6 +2508,7 @@ async function saveCloudSettings() {
       body: JSON.stringify(cloudPayloadFromForm()),
     });
     renderCloudStatus(payload);
+    await loadCloudManager({ silent: true });
     showToast("Đã lưu cài đặt Cloud");
     return payload;
   } finally {
@@ -2509,6 +2529,7 @@ async function connectGoogleDrive() {
     });
     const payload = await api("/api/cloud/google-drive/connect", { method: "POST" });
     renderCloudStatus(payload);
+    await loadCloudManager({ silent: true });
     showToast("Đã kết nối Google Drive");
     return payload;
   } catch (error) {
@@ -2521,6 +2542,326 @@ async function connectGoogleDrive() {
       "Kiểm tra lại API key, folder ID/link và quyền public/shared của folder.",
     ].join("\n");
     throw error;
+  } finally {
+    setCloudBusy(false);
+  }
+}
+
+function collectFormUiState(formSelector) {
+  const form = qs(formSelector);
+  const payload = {
+    fields: {},
+    checks: {},
+    radios: {},
+    model_preset: form.querySelector(".model-preset")?.value || "",
+    custom_model: form.querySelector("[data-custom-model]")?.value.trim() || "",
+    extra_args: form.querySelector("[data-extra-args]")?.value.trim() || "",
+  };
+  for (const element of Array.from(form.elements)) {
+    if (!element.name) continue;
+    if (element.type === "radio") {
+      if (element.checked) payload.radios[element.name] = element.value;
+      continue;
+    }
+    if (element.type === "checkbox") {
+      payload.checks[element.name] = element.checked;
+      continue;
+    }
+    payload.fields[element.name] = element.value;
+  }
+  return payload;
+}
+
+function applyFormUiState(formSelector, payload = {}) {
+  const form = qs(formSelector);
+  if (!form) return;
+  Object.entries(payload.radios || {}).forEach(([name, value]) => {
+    const input = form.querySelector(`input[type="radio"][name="${CSS.escape(name)}"][value="${CSS.escape(String(value))}"]`);
+    if (input) input.checked = true;
+  });
+  Object.entries(payload.checks || {}).forEach(([name, value]) => {
+    form.querySelectorAll(`input[type="checkbox"][name="${CSS.escape(name)}"]`).forEach((input) => {
+      input.checked = Boolean(value);
+    });
+  });
+  Object.entries(payload.fields || {}).forEach(([name, value]) => {
+    form.querySelectorAll(`[name="${CSS.escape(name)}"]`).forEach((element) => {
+      if (element.type !== "radio" && element.type !== "checkbox") {
+        element.value = value ?? "";
+      }
+    });
+  });
+  const modelPreset = form.querySelector(".model-preset");
+  if (modelPreset && payload.model_preset) modelPreset.value = payload.model_preset;
+  const customModel = form.querySelector("[data-custom-model]");
+  if (customModel) customModel.value = payload.custom_model || "";
+  const extraArgs = form.querySelector("[data-extra-args]");
+  if (extraArgs) extraArgs.value = payload.extra_args || "";
+}
+
+const cloudProfileFieldIds = [
+  "yamlRoot",
+  "yamlOutputPath",
+  "yamlTrain",
+  "yamlVal",
+  "yamlTest",
+  "yamlNames",
+  "trainDataPath",
+  "valDataPath",
+  "exportDataPath",
+  "auditPath",
+  "predictSourcePath",
+  "annotatorImageDir",
+  "annotatorLabelDir",
+  "annotatorClasses",
+  "exportModelPath",
+  "valModelCustom",
+  "predictModelCustom",
+  "trainModelCustom",
+];
+
+function collectCloudFieldSnapshot() {
+  const fields = {};
+  cloudProfileFieldIds.forEach((id) => {
+    const element = qs(`#${id}`);
+    if (element) fields[id] = element.value || "";
+  });
+  return fields;
+}
+
+function applyCloudFieldSnapshot(fields = {}) {
+  Object.entries(fields).forEach(([id, value]) => {
+    const element = qs(`#${id}`);
+    if (element) element.value = value || "";
+  });
+  if (fields.yamlOutputPath !== undefined) {
+    setYamlOutputPath(fields.yamlOutputPath || "");
+  } else if (fields.yamlRoot) {
+    setYamlOutputPath(`${String(fields.yamlRoot).replace(/[\\/]$/, "")}\\data.yaml`);
+  }
+  updateDatasetDisplays();
+  updateAnnotatorClassSelect();
+}
+
+function collectCloudProfilePayload() {
+  const fields = collectCloudFieldSnapshot();
+  return {
+    saved_from: "YOLO GUI",
+    saved_at: new Date().toISOString(),
+    fields,
+    train: collectForm("#trainForm"),
+    train_ui: collectFormUiState("#trainForm"),
+    validate: collectForm("#valForm"),
+    validate_ui: collectFormUiState("#valForm"),
+    predict: collectForm("#predictForm"),
+    predict_ui: collectFormUiState("#predictForm"),
+    export: collectForm("#exportForm"),
+    export_ui: collectFormUiState("#exportForm"),
+    dataset: {
+      root: fields.yamlRoot || "",
+      yaml_output_path: fields.yamlOutputPath || "",
+      train: fields.yamlTrain || "",
+      val: fields.yamlVal || "",
+      test: fields.yamlTest || "",
+      names: splitList(fields.yamlNames || ""),
+    },
+    annotator: {
+      image_dir: fields.annotatorImageDir || "",
+      label_dir: fields.annotatorLabelDir || "",
+      classes: splitList(fields.annotatorClasses || ""),
+    },
+  };
+}
+
+function applyCloudProfile(profile) {
+  const payload = profile?.payload || {};
+  applyFormUiState("#trainForm", payload.train_ui);
+  applyFormUiState("#valForm", payload.validate_ui);
+  applyFormUiState("#predictForm", payload.predict_ui);
+  applyFormUiState("#exportForm", payload.export_ui);
+  applyCloudFieldSnapshot(payload.fields || {});
+
+  const datasetPath = payload.train?.data || payload.validate?.data || payload.dataset?.yaml_output_path || "";
+  if (datasetPath) {
+    assignDatasetYaml(datasetPath);
+  }
+  if (payload.predict?.source) {
+    qs("#predictSourcePath").value = payload.predict.source;
+  }
+  updatePredictSourceMode();
+  updatePredictRuntimeGuards();
+  updateDatasetDisplays();
+  updateAnnotatorClassSelect();
+  showToast(`Đã áp dụng profile: ${profile.name || profile.id}`);
+}
+
+function useCloudAsset(path, action) {
+  if (!path) return;
+  if (action === "model-train") {
+    qs("#trainModelCustom").value = path;
+    setActiveSection("train");
+    showToast("Đã gán model vào Huấn luyện");
+    return;
+  }
+  if (action === "model-predict") {
+    qs("#predictModelCustom").value = path;
+    setActiveSection("predict");
+    showToast("Đã gán model vào Dự đoán");
+    return;
+  }
+  if (action === "model-export") {
+    qs("#exportModelPath").value = path;
+    setActiveSection("export");
+    showToast("Đã gán model vào Đóng gói");
+    return;
+  }
+  if (action === "dataset-yaml") {
+    assignDatasetYaml(path);
+    setActiveSection("train");
+    showToast("Đã gán data.yaml vào các tab YOLO");
+    return;
+  }
+  if (action === "predict-source") {
+    qs("#predictSourcePath").value = path;
+    const fileInput = qs('input[name="ui_predict_source_mode"][value="file"]');
+    if (fileInput) fileInput.checked = true;
+    updatePredictSourceMode();
+    setActiveSection("predict");
+    showToast("Đã gán ảnh/nguồn vào Dự đoán");
+    return;
+  }
+  if (action === "dataset-root") {
+    qs("#yamlRoot").value = path;
+    setYamlOutputPath(`${path.replace(/[\\/]$/, "")}\\data.yaml`);
+    setActiveSection("dataset");
+    showToast("Đã gán thư mục dataset vào wizard");
+  }
+}
+
+function cloudAssetActions(section, asset) {
+  const path = asset.path || "";
+  if (section === "models" || section === "exports") {
+    return [
+      ["model-train", "Train"],
+      ["model-predict", "Predict"],
+      ["model-export", "Export"],
+    ];
+  }
+  if (section === "configs" && /\.(ya?ml)$/i.test(asset.name || "")) {
+    return [["dataset-yaml", "Dùng data.yaml"]];
+  }
+  if (section === "images") {
+    return [["predict-source", "Dự đoán"]];
+  }
+  if (section === "datasets") {
+    return [["dataset-root", "Dùng dataset"]];
+  }
+  return path ? [] : [];
+}
+
+function renderCloudManager(payload) {
+  state.cloudManager = payload;
+  const profiles = payload?.profiles || [];
+  qs("#cloudProfileCount").textContent = `${profiles.length} profile`;
+  qs("#cloudProfilesList").innerHTML = profiles.length
+    ? profiles.map((profile) => `
+      <article class="cloud-profile-card">
+        <div>
+          <strong>${escapeHtml(profile.name || profile.id)}</strong>
+          <span>${escapeHtml(formatCloudTime(profile.saved_at))}</span>
+          ${(profile.summary || []).map((line) => `<small>${escapeHtml(line)}</small>`).join("")}
+        </div>
+        <div class="cloud-card-actions">
+          <button class="button is-light" type="button" data-cloud-apply-profile="${escapeHtml(profile.id)}"><span>Áp dụng</span></button>
+          <button class="button is-light" type="button" data-cloud-delete-profile="${escapeHtml(profile.id)}"><span>Xóa</span></button>
+        </div>
+      </article>
+    `).join("")
+    : "Chưa có profile. Bấm lưu cấu hình hiện tại để tạo profile đầu tiên.";
+
+  const sections = [
+    ["models", "Models"],
+    ["configs", "Configs"],
+    ["images", "Ảnh"],
+    ["datasets", "Datasets"],
+    ["runs", "Runs"],
+    ["exports", "Exports"],
+  ];
+  const assets = payload?.assets || {};
+  let total = 0;
+  const html = sections.map(([key, label]) => {
+    const items = assets[key] || [];
+    total += items.length;
+    if (!items.length) {
+      return `<section class="cloud-asset-section"><h5>${label}</h5><p>Chưa có mục nào.</p></section>`;
+    }
+    return `<section class="cloud-asset-section"><h5>${label}</h5>${items.slice(0, 8).map((asset) => {
+      const actions = cloudAssetActions(key, asset);
+      return `
+        <article class="cloud-asset-card">
+          <div>
+            <strong>${escapeHtml(asset.name)}</strong>
+            <span>${escapeHtml(asset.relative_path || asset.path || "")}</span>
+            <small>${asset.kind === "folder" ? "Folder" : formatBytes(asset.size)} · ${escapeHtml(formatCloudTime(asset.modified_at))}</small>
+          </div>
+          <div class="cloud-card-actions">
+            ${actions.map(([action, text]) => `<button class="button is-light" type="button" data-cloud-use-asset="${escapeHtml(asset.path)}" data-cloud-asset-action="${action}"><span>${text}</span></button>`).join("")}
+          </div>
+        </article>
+      `;
+    }).join("")}</section>`;
+  }).join("");
+  qs("#cloudAssetCount").textContent = `${total} mục`;
+  qs("#cloudAssetsList").innerHTML = html;
+  enhanceInlineHelp();
+  setIconRefresh();
+}
+
+async function loadCloudManager(options = {}) {
+  if (!options.silent) {
+    setCloudBusy(true, "check");
+  }
+  try {
+    const payload = await api("/api/cloud/manager");
+    renderCloudManager(payload);
+    return payload;
+  } finally {
+    if (!options.silent) {
+      setCloudBusy(false);
+    }
+  }
+}
+
+async function saveCloudProfile() {
+  if (state.cloudBusy) {
+    showToast("Cloud đang xử lý. Hãy chờ xong rồi bấm tiếp.");
+    return null;
+  }
+  setCloudBusy(true, "save");
+  try {
+    const payload = await api("/api/cloud/profiles", {
+      method: "POST",
+      body: JSON.stringify({
+        name: qs("#cloudProfileName").value.trim() || "Cấu hình YOLO hiện tại",
+        notes: qs("#cloudProfileNotes").value.trim() || null,
+        payload: collectCloudProfilePayload(),
+      }),
+    });
+    renderCloudManager(payload);
+    showToast("Đã lưu profile vào Cloud Manager");
+    return payload;
+  } finally {
+    setCloudBusy(false);
+  }
+}
+
+async function deleteCloudProfile(profileId) {
+  if (!profileId) return;
+  setCloudBusy(true, "save");
+  try {
+    const payload = await api(`/api/cloud/profiles/${encodeURIComponent(profileId)}`, { method: "DELETE" });
+    renderCloudManager(payload);
+    showToast("Đã xóa profile Cloud");
   } finally {
     setCloudBusy(false);
   }
@@ -2664,6 +3005,29 @@ function bindEvents() {
   qs("#connectGoogleDriveButton").addEventListener("click", () => {
     connectGoogleDrive().catch((error) => showToast(error.message));
   });
+  qs("#saveCloudProfileButton").addEventListener("click", () => {
+    saveCloudProfile().catch((error) => showToast(error.message));
+  });
+  qs("#refreshCloudManagerButton").addEventListener("click", () => {
+    loadCloudManager().catch((error) => showToast(error.message));
+  });
+  qs(".cloud-manager-panel").addEventListener("click", (event) => {
+    const applyButton = event.target.closest("[data-cloud-apply-profile]");
+    if (applyButton) {
+      const profile = (state.cloudManager?.profiles || []).find((item) => item.id === applyButton.dataset.cloudApplyProfile);
+      if (profile) applyCloudProfile(profile);
+      return;
+    }
+    const deleteButton = event.target.closest("[data-cloud-delete-profile]");
+    if (deleteButton) {
+      deleteCloudProfile(deleteButton.dataset.cloudDeleteProfile).catch((error) => showToast(error.message));
+      return;
+    }
+    const assetButton = event.target.closest("[data-cloud-use-asset]");
+    if (assetButton) {
+      useCloudAsset(assetButton.dataset.cloudUseAsset, assetButton.dataset.cloudAssetAction);
+    }
+  });
   qs("#cloudEnabled").addEventListener("change", () => {
     qs(".cloud-panel")?.classList.toggle("is-cloud-enabled", qs("#cloudEnabled").checked);
   });
@@ -2676,7 +3040,7 @@ async function boot() {
   setIconRefresh();
   bindEvents();
   startHealthCheckCron();
-  await Promise.all([loadModels(), loadDependencyStatus(), loadCloudStatus(), loadVersion().catch(() => null), loadJobs(), loadAutomations()]);
+  await Promise.all([loadModels(), loadDependencyStatus(), loadCloudStatus(), loadCloudManager(), loadVersion().catch(() => null), loadJobs(), loadAutomations()]);
   updatePredictSourceMode();
   updatePredictRuntimeGuards();
   updateDatasetDisplays();

@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import CLOUD_SETTINGS_PATH, DEFAULT_CLOUD_DIR, ensure_runtime_dirs
-from .schemas import CloudSettingsRequest
+from .schemas import CloudProfileSaveRequest, CloudSettingsRequest
 
 
 GOOGLE_DRIVE_FOLDER_MIME = "application/vnd.google-apps.folder"
@@ -25,6 +25,10 @@ STANDARD_FOLDERS: tuple[dict[str, Any], ...] = (
     {"key": "exports", "label": "Exports", "description": "Model đã đóng gói sang ONNX, TensorRT, TFLite hoặc runtime khác."},
     {"key": "logs", "label": "Logs", "description": "Nhật ký chạy job và báo cáo môi trường."},
 )
+MODEL_EXTENSIONS = {".pt", ".onnx", ".engine", ".tflite", ".mlpackage", ".torchscript", ".pb", ".bin"}
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"}
+CONFIG_EXTENSIONS = {".json", ".yaml", ".yml", ".toml", ".txt"}
+MAX_MANAGER_ITEMS = 80
 
 
 def utc_now() -> str:
@@ -42,6 +46,11 @@ def mask_secret(value: str | None) -> str | None:
 def safe_folder_name(value: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9_. -]+", "-", value).strip(" .-")
     return cleaned or "YOLO-GUI-Cloud"
+
+
+def safe_profile_id(value: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "-", value).strip(".-")
+    return cleaned or "yolo-profile"
 
 
 def extract_drive_folder_id(value: str | None) -> str | None:
@@ -89,6 +98,50 @@ class CloudManager:
             "root_drive": settings.get("root_drive"),
             "manifest_path": str(self._manifest_path(folder_id, root_name)),
         }
+
+    def manager(self) -> dict[str, Any]:
+        status = self.status()
+        local_root = Path(status["local_root"])
+        self._ensure_standard_dirs(status.get("google_drive_folder_id"), status["root_name"])
+        return {
+            **status,
+            "profiles": self._list_profiles(local_root),
+            "assets": {
+                "models": self._scan_files([local_root / "models", local_root / "runs", local_root / "exports"], MODEL_EXTENSIONS),
+                "configs": self._scan_files([local_root / "configs"], CONFIG_EXTENSIONS),
+                "images": self._scan_files([local_root / "datasets", local_root / "annotations", local_root / "runs"], IMAGE_EXTENSIONS),
+                "datasets": self._scan_dirs(local_root / "datasets"),
+                "runs": self._scan_dirs(local_root / "runs"),
+                "exports": self._scan_files([local_root / "exports"], MODEL_EXTENSIONS | CONFIG_EXTENSIONS),
+            },
+        }
+
+    def save_profile(self, request: CloudProfileSaveRequest) -> dict[str, Any]:
+        status = self.status()
+        local_root = self._ensure_standard_dirs(status.get("google_drive_folder_id"), status["root_name"])
+        profile_dir = self._profile_dir(local_root)
+        profile_dir.mkdir(parents=True, exist_ok=True)
+        profile_id = f"{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{safe_profile_id(request.name)[:48]}"
+        payload = self._sanitize_profile_payload(request.payload)
+        profile = {
+            "id": profile_id,
+            "name": request.name.strip(),
+            "notes": (request.notes or "").strip(),
+            "saved_at": utc_now(),
+            "summary": self._profile_summary(payload),
+            "payload": payload,
+        }
+        (profile_dir / f"{profile_id}.json").write_text(json.dumps(profile, ensure_ascii=False, indent=2), encoding="utf-8")
+        return self.manager()
+
+    def delete_profile(self, profile_id: str) -> dict[str, Any]:
+        status = self.status()
+        local_root = Path(status["local_root"])
+        target = self._profile_dir(local_root) / f"{safe_profile_id(profile_id)}.json"
+        if not target.exists():
+            raise RuntimeError("Không tìm thấy profile Cloud này.")
+        target.unlink()
+        return self.manager()
 
     def configure(self, request: CloudSettingsRequest) -> dict[str, Any]:
         settings = self._read_settings()
@@ -193,6 +246,9 @@ class CloudManager:
     def _manifest_path(self, folder_id: str | None, root_name: str) -> Path:
         return self._local_root(folder_id, root_name) / "cloud-manifest.json"
 
+    def _profile_dir(self, local_root: Path) -> Path:
+        return local_root / "configs" / "gui-settings"
+
     def _ensure_standard_dirs(self, folder_id: str | None, root_name: str) -> Path:
         local_root = self._local_root(folder_id, root_name)
         for folder in STANDARD_FOLDERS:
@@ -217,6 +273,114 @@ class CloudManager:
                 }
             )
         return payload
+
+    def _list_profiles(self, local_root: Path) -> list[dict[str, Any]]:
+        profile_dir = self._profile_dir(local_root)
+        if not profile_dir.exists():
+            return []
+        profiles: list[dict[str, Any]] = []
+        for path in sorted(profile_dir.glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True):
+            try:
+                profile = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:
+                profile = {
+                    "id": path.stem,
+                    "name": path.stem,
+                    "notes": "",
+                    "saved_at": self._modified_at(path),
+                    "summary": ["Profile không đọc được, hãy xóa hoặc lưu lại."],
+                    "payload": {},
+                }
+            profile["path"] = str(path)
+            profiles.append(profile)
+            if len(profiles) >= MAX_MANAGER_ITEMS:
+                break
+        return profiles
+
+    def _scan_files(self, roots: list[Path], extensions: set[str]) -> list[dict[str, Any]]:
+        items: list[dict[str, Any]] = []
+        seen: set[Path] = set()
+        for root in roots:
+            if not root.exists():
+                continue
+            for path in root.rglob("*"):
+                if len(items) >= MAX_MANAGER_ITEMS:
+                    return items
+                if not path.is_file() or path.suffix.lower() not in extensions:
+                    continue
+                resolved = path.resolve()
+                if resolved in seen:
+                    continue
+                seen.add(resolved)
+                items.append(self._asset_payload(path, root))
+        return sorted(items, key=lambda item: item.get("modified_at") or "", reverse=True)
+
+    def _scan_dirs(self, root: Path) -> list[dict[str, Any]]:
+        if not root.exists():
+            return []
+        items: list[dict[str, Any]] = []
+        for path in sorted((item for item in root.iterdir() if item.is_dir()), key=lambda item: item.stat().st_mtime, reverse=True):
+            items.append(
+                {
+                    "name": path.name,
+                    "path": str(path),
+                    "relative_path": path.name,
+                    "kind": "folder",
+                    "modified_at": self._modified_at(path),
+                }
+            )
+            if len(items) >= MAX_MANAGER_ITEMS:
+                break
+        return items
+
+    def _asset_payload(self, path: Path, root: Path) -> dict[str, Any]:
+        try:
+            relative = str(path.relative_to(root))
+        except ValueError:
+            relative = path.name
+        return {
+            "name": path.name,
+            "path": str(path),
+            "relative_path": relative,
+            "kind": path.suffix.lower().lstrip(".") or "file",
+            "size": path.stat().st_size,
+            "modified_at": self._modified_at(path),
+        }
+
+    def _modified_at(self, path: Path) -> str | None:
+        try:
+            return datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat()
+        except OSError:
+            return None
+
+    def _sanitize_profile_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        forbidden = {"google_api_key", "api_key", "secret", "token", "password"}
+
+        def clean(value: Any) -> Any:
+            if isinstance(value, dict):
+                return {key: clean(item) for key, item in value.items() if key.lower() not in forbidden}
+            if isinstance(value, list):
+                return [clean(item) for item in value]
+            return value
+
+        cleaned = clean(payload)
+        return cleaned if isinstance(cleaned, dict) else {}
+
+    def _profile_summary(self, payload: dict[str, Any]) -> list[str]:
+        summary: list[str] = []
+        train = payload.get("train") or {}
+        dataset = payload.get("dataset") or {}
+        predict = payload.get("predict") or {}
+        annotator = payload.get("annotator") or {}
+        if train.get("model"):
+            summary.append(f"Train model: {train['model']}")
+        if train.get("data") or dataset.get("yaml_output_path"):
+            summary.append(f"Dataset: {train.get('data') or dataset.get('yaml_output_path')}")
+        if predict.get("source"):
+            summary.append(f"Dự đoán: {predict['source']}")
+        if annotator.get("image_dir"):
+            summary.append(f"Ảnh gán nhãn: {annotator['image_dir']}")
+        return summary[:6] or ["Đã lưu cấu hình GUI hiện tại."]
 
     def _drive_get_file(self, api_key: str, file_id: str) -> dict[str, Any]:
         params = urllib.parse.urlencode(

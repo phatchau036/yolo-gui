@@ -18,6 +18,7 @@
 - Cloud workspace:
   - `logs/cloud/cloud-settings.local.json`
   - `runs/cloud/google-drive/<folder-id>/<root_name>/cloud-manifest.json`
+  - `runs/cloud/google-drive/<folder-id>/<root_name>/configs/gui-settings/*.json`
 - Job config: `runs/gui_jobs/<job_id>/<job_type>_config.json`
 - Output mặc định:
   - Train: `runs/train/<name>/`
@@ -54,6 +55,7 @@ Invoke-RestMethod http://127.0.0.1:8765/api/models
 Invoke-RestMethod http://127.0.0.1:8765/api/jobs
 Invoke-RestMethod http://127.0.0.1:8765/api/jobs/<job_id>/artifacts
 Invoke-RestMethod http://127.0.0.1:8765/api/cloud/status
+Invoke-RestMethod http://127.0.0.1:8765/api/cloud/manager
 ```
 
 Dataset/report:

@@ -78,6 +78,18 @@ Cách dùng:
 
 Lưu ý: API key chỉ đọc được folder public/shared. Nếu folder private, cần OAuth/service account ở bản sau. GUI không đưa raw API key lên màn hình sau khi lưu.
 
+#### Cloud Manager
+
+Phần `Cloud Manager` dùng để lưu và mở lại mọi thứ người dùng hay chọn lại:
+
+1. Chọn dataset, model, preset train, nguồn dự đoán, annotator như bình thường.
+2. Vào `Cài đặt`.
+3. Nhập tên cấu hình, ví dụ `helmet train yolo26n`.
+4. Bấm `Lưu cấu hình hiện tại`.
+5. Lần sau mở lại, bấm `Áp dụng` ở profile đó để GUI tự điền lại form.
+
+Cloud Manager cũng hiện thư viện Cloud. Nếu có model trong folder `models`, ảnh trong `datasets` hoặc file `data.yaml` trong `configs`, có thể bấm nút cạnh từng mục để gán nhanh vào Train, Predict, Export hoặc Dataset Wizard.
+
 ### Phiên bản
 
 Dùng để xem GUI đang ở bản nào, đang chạy ở Local hay Google Colab, đọc changelog và kiểm tra bản mới trên GitHub. Nếu có bản mới và thư mục dự án không có file đang chỉnh sửa, bấm `Cập nhật ngay` để GUI tự tải bản mới. Nếu GUI báo có file đã sửa, bấm `Sao lưu rồi cập nhật` để GUI cất tạm thay đổi rồi cập nhật. Sau khi cập nhật, tải lại trang. Trên Colab, GUI giữ Cloudflare Tunnel hiện tại và chỉ restart server phía sau trên cùng port.

@@ -24,7 +24,7 @@
 - `train_runner.py`: runner train cũ, giữ lại để tham khảo/tương thích nội bộ nhưng luồng mới dùng `workflow_runner.py`.
 - `dataset_tools.py`: inspect/audit dataset YOLO, tạo `data.yaml`, convert VOC XML sang YOLO txt, tính metrics từ label YOLO.
 - `annotation_tools.py`: helper cho công cụ gán nhãn ảnh kiểu LabelImg trong GUI; liệt kê ảnh, suy ra path label, đọc/lưu file YOLO `.txt`.
-- `cloud_manager.py`: quản lý Cloud workspace; lưu setting local trong `logs/cloud/`, đọc metadata Google Drive public/shared bằng API key, tạo mirror/manifest theo chuẩn thư mục chung.
+- `cloud_manager.py`: quản lý Cloud workspace; lưu setting local trong `logs/cloud/`, đọc metadata Google Drive public/shared bằng API key, tạo mirror/manifest, scan asset và lưu/xóa profile Cloud Manager.
 - `system_report.py`: tạo report môi trường `.md` và `.json` trong `logs/system_reports/`.
 - `version_manager.py`: đọc version/changelog, kiểm tra commit mới trên GitHub, chạy `git pull --ff-only` khi người dùng bấm cập nhật; có luồng stash thay đổi local rồi cập nhật khi repo dirty.
 - `config.py`: đường dẫn chuẩn cho frontend, log, job, output và Cloud workspace local.
@@ -54,6 +54,7 @@
 - `logs/updates/`: log mỗi lần người dùng bấm cập nhật phiên bản trong GUI.
 - `runs/gui_jobs/`: config JSON theo job, ví dụ `train_config.json`, `predict_config.json`.
 - `runs/cloud/`: mirror local của Cloud workspace. Cấu trúc hiện tại là `runs/cloud/google-drive/<folder-id-or-not-connected>/<root_name>/`.
+  - `configs/gui-settings/`: profile cấu hình GUI do Cloud Manager lưu để bấm áp dụng lại.
 - `runs/train/`: output train mặc định.
 - `runs/val/`: output validate mặc định.
 - `runs/predict/`: output predict mặc định.

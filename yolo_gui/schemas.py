@@ -251,3 +251,9 @@ class CloudSettingsRequest(BaseModel):
     google_drive_folder: str | None = None
     root_name: str = Field(default="YOLO-GUI-Cloud", min_length=1, max_length=80)
     clear_api_key: bool = False
+
+
+class CloudProfileSaveRequest(BaseModel):
+    name: str = Field(default="Cấu hình YOLO", min_length=1, max_length=80)
+    notes: str | None = Field(default=None, max_length=500)
+    payload: dict[str, Any] = Field(default_factory=dict)

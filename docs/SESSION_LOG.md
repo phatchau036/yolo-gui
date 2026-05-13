@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-05-13 - v0.4.20 Cloud Manager
+
+- Mục tiêu: Cloud không chỉ connect folder mà còn lưu lại cấu hình setting/model/ảnh để người dùng mở lại dạng manager.
+- Backend:
+  - Thêm `GET /api/cloud/manager`.
+  - Thêm `POST /api/cloud/profiles` để lưu profile cấu hình GUI.
+  - Thêm `DELETE /api/cloud/profiles/{profile_id}` để xóa profile.
+  - `CloudManager` scan asset trong `models`, `configs`, `datasets`, `annotations`, `runs`, `exports` với giới hạn số lượng.
+  - Profile được sanitize để không lưu key/token/password.
+- Frontend:
+  - Thêm panel `Cloud Manager` trong tab `Cài đặt`.
+  - Lưu profile bằng cả payload workflow và trạng thái UI thô để áp dụng lại form chính xác.
+  - Có nút áp dụng profile, xóa profile, gán asset làm model train/predict/export, gán ảnh làm nguồn predict, gán dataset folder vào wizard.
+- Ghi chú: nút `Áp dụng` chỉ điền form, không tự chạy job để người dùng vẫn kiểm tra và bấm chạy thủ công.
+
 ## 2026-05-13 - v0.4.19 Cloud workspace Google Drive
 
 - Mục tiêu: thêm tính năng Cloud để người dùng bật chuẩn dữ liệu dùng chung, nhập Google API key, kết nối Google Drive folder và dùng cùng contract dữ liệu trên Windows/local/Colab.

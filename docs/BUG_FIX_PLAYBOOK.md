@@ -120,6 +120,15 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 6. Kiểm tra `runs/cloud/google-drive/<folder-id>/<root_name>/cloud-manifest.json` sau khi connect thành công. Manifest chỉ được chứa metadata, không chứa API key.
 7. Frontend phải khóa `Bật Cloud mode`, input key/folder/root và hai nút Cloud trong lúc đang lưu/kết nối; nếu vẫn bấm được, kiểm tra `setCloudBusy()` và class `.cloud-panel.is-busy`.
 
+## Cloud Manager không áp dụng lại cấu hình đúng
+
+1. Mở profile trong `runs/cloud/.../configs/gui-settings/<profile_id>.json`.
+2. Kiểm tra có đủ `train_ui`, `validate_ui`, `predict_ui`, `export_ui` và `fields` không.
+3. Nếu radio/checkbox không đúng, kiểm tra `collectFormUiState()` và `applyFormUiState()`.
+4. Nếu dataset hiển thị sai, kiểm tra `assignDatasetYaml()` có được gọi sau khi apply profile không.
+5. Nếu model custom không điền, kiểm tra field `[data-custom-model]` của form tương ứng.
+6. Nếu profile chứa secret, sửa `CloudManager._sanitize_profile_payload()` trước khi lưu profile mới.
+
 ## Stop job không dừng
 
 1. Kiểm tra status job trong `GET /api/jobs`.

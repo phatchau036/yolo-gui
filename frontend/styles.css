@@ -2632,6 +2632,160 @@ body {
   min-height: 154px;
 }
 
+.cloud-manager-panel {
+  margin: 18px 0 14px;
+  padding: 16px;
+  border: 1px solid rgba(17, 35, 31, 0.09);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(54, 84, 255, 0.06), transparent 48%),
+    #ffffff;
+  box-shadow: 0 12px 28px rgba(17, 35, 31, 0.05);
+  min-width: 0;
+}
+
+.cloud-save-profile {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.85fr) minmax(220px, 1fr) max-content;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
+  min-width: 0;
+}
+
+.cloud-save-profile .field {
+  margin-bottom: 0;
+}
+
+.cloud-manager-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 14px;
+  min-width: 0;
+}
+
+.cloud-manager-card {
+  min-width: 0;
+  border: 1px solid rgba(17, 35, 31, 0.09);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #f8fbfa);
+  overflow: hidden;
+}
+
+.cloud-manager-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 14px;
+  border-bottom: 1px solid rgba(17, 35, 31, 0.08);
+}
+
+.cloud-manager-card-head strong {
+  color: #17211f;
+  font-weight: 900;
+}
+
+.cloud-manager-card-head span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cloud-manager-list {
+  display: grid;
+  gap: 10px;
+  min-height: 140px;
+  max-height: 470px;
+  overflow: auto;
+  padding: 12px;
+  color: var(--muted);
+}
+
+.cloud-profile-card,
+.cloud-asset-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid rgba(17, 35, 31, 0.08);
+  border-radius: 9px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.cloud-profile-card strong,
+.cloud-profile-card span,
+.cloud-profile-card small,
+.cloud-asset-card strong,
+.cloud-asset-card span,
+.cloud-asset-card small {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cloud-profile-card strong,
+.cloud-asset-card strong {
+  color: #17211f;
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.cloud-profile-card span,
+.cloud-asset-card span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.cloud-profile-card small,
+.cloud-asset-card small {
+  margin-top: 5px;
+  color: #0f766e;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.cloud-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.cloud-card-actions .button {
+  min-height: 32px;
+  padding: 6px 9px;
+  font-size: 0.78rem;
+  box-shadow: none;
+}
+
+.cloud-asset-section {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cloud-asset-section + .cloud-asset-section {
+  padding-top: 12px;
+  border-top: 1px solid rgba(17, 35, 31, 0.08);
+}
+
+.cloud-asset-section h5 {
+  margin: 0;
+  color: #17211f;
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.cloud-asset-section p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .cloud-panel .button[disabled],
 .cloud-panel .input[disabled],
 .cloud-panel input[type="checkbox"][disabled] {
@@ -3805,7 +3959,12 @@ body {
   }
 
   .cloud-layout,
-  .cloud-standard-grid {
+  .cloud-standard-grid,
+  .cloud-manager-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cloud-save-profile {
     grid-template-columns: 1fr;
   }
 }
@@ -3891,5 +4050,19 @@ body {
   .cloud-folder-icon {
     width: 36px;
     height: 36px;
+  }
+
+  .cloud-profile-card,
+  .cloud-asset-card {
+    grid-template-columns: 1fr;
+  }
+
+  .cloud-card-actions {
+    justify-content: stretch;
+  }
+
+  .cloud-card-actions .button {
+    flex: 1 1 96px;
+    justify-content: center;
   }
 }

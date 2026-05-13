@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/styles.css?v=0.4.19-cloud.1" />
+    <link rel="stylesheet" href="/assets/styles.css?v=0.4.20-cloud-manager.1" />
   </head>
   <body>
     <main class="app-shell">
@@ -855,6 +855,42 @@
               <small>datasets, models, runs, annotations, configs, exports, logs</small>
             </div>
             <div id="cloudStandardFolders" class="cloud-standard-grid"></div>
+            <section class="cloud-manager-panel">
+              <div class="cloud-standard-head">
+                <div>
+                  <p class="eyebrow">Cloud manager</p>
+                  <h4>Lưu và mở lại cấu hình, model, ảnh</h4>
+                </div>
+                <button id="refreshCloudManagerButton" class="button is-light" type="button"><span class="icon"><i data-lucide="refresh-cw"></i></span><span>Làm mới manager</span></button>
+              </div>
+              <div class="cloud-save-profile">
+                <label class="field">
+                  <span class="label">Tên cấu hình muốn lưu</span>
+                  <input id="cloudProfileName" class="input" type="text" value="Cấu hình YOLO hiện tại" />
+                </label>
+                <label class="field">
+                  <span class="label">Ghi chú</span>
+                  <input id="cloudProfileNotes" class="input" type="text" placeholder="Ví dụ: helmet dataset, train cân bằng, model yolo26n" />
+                </label>
+                <button id="saveCloudProfileButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="bookmark-plus"></i></span><span>Lưu cấu hình hiện tại</span></button>
+              </div>
+              <div class="cloud-manager-grid">
+                <section class="cloud-manager-card">
+                  <div class="cloud-manager-card-head">
+                    <strong>Profile đã lưu</strong>
+                    <span id="cloudProfileCount">0 profile</span>
+                  </div>
+                  <div id="cloudProfilesList" class="cloud-manager-list">Chưa có profile.</div>
+                </section>
+                <section class="cloud-manager-card">
+                  <div class="cloud-manager-card-head">
+                    <strong>Thư viện Cloud</strong>
+                    <span id="cloudAssetCount">0 mục</span>
+                  </div>
+                  <div id="cloudAssetsList" class="cloud-manager-list">Chưa quét thư viện.</div>
+                </section>
+              </div>
+            </section>
             <pre id="cloudOutput" class="preview-box">Chưa kết nối Cloud.</pre>
           </section>
 
@@ -946,6 +982,6 @@
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script src="/assets/app.js?v=0.4.19-cloud.1"></script>
+    <script src="/assets/app.js?v=0.4.20-cloud-manager.1"></script>
   </body>
 </html>

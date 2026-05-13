@@ -175,6 +175,30 @@ Cloud workspace nằm trong tab `Cài đặt` và dùng `CloudManager` ở backe
 
 Giới hạn hiện tại: Google API key chỉ đọc được folder public/shared. Private Drive, upload file, sync hai chiều hoặc mount theo tài khoản cá nhân cần OAuth/service account ở phase sau. Không tự động download dataset/model lớn trong request kết nối; bước connect hiện là chuẩn hóa workspace, kiểm tra quyền đọc và tạo metadata/mirror.
 
+### Cloud Manager
+
+Cloud Manager là lớp quản lý lại workspace đã chuẩn hóa:
+
+- `GET /api/cloud/manager`: trả về status Cloud, danh sách profile và danh sách asset đã quét trong local mirror.
+- `POST /api/cloud/profiles`: lưu profile cấu hình GUI hiện tại vào `configs/gui-settings/<profile_id>.json` trong Cloud mirror.
+- `DELETE /api/cloud/profiles/{profile_id}`: xóa profile đã lưu.
+
+Frontend thu hai lớp dữ liệu khi lưu profile:
+
+- Payload workflow đã normalize bằng `collectForm(...)` để biết giá trị thật sẽ gửi cho backend.
+- Payload UI thô bằng `collectFormUiState(...)` để áp dụng lại đúng radio, checkbox, preset, custom model, hidden dataset path và nguồn dự đoán.
+
+Khi bấm `Áp dụng`, frontend không chạy job ngay. Nó chỉ điền lại form, gọi `assignDatasetYaml(...)`, cập nhật Dataset/Predict/Annotator state và đưa người dùng về tab phù hợp. Cách này giữ đúng nguyên tắc người dùng luôn xác nhận bằng nút chạy chính.
+
+Cloud Manager scan local mirror có giới hạn `MAX_MANAGER_ITEMS` để tránh quét quá sâu. Asset có thể được dùng nhanh:
+
+- Model/export file -> gán vào Train, Predict hoặc Export.
+- `.yaml/.yml` trong `configs` -> gán làm `data.yaml`.
+- Ảnh trong `datasets`, `annotations`, `runs` -> gán làm nguồn Predict.
+- Folder trong `datasets` -> gán vào Dataset Wizard.
+
+Profile không được chứa `google_api_key`, `api_key`, `secret`, `token`, `password`.
+
 ## System report
 
 `POST /api/system/report` tạo:

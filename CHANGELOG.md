@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.20 - 2026-05-13
+
+- Mở rộng Cloud workspace thành `Cloud Manager`: lưu profile cấu hình GUI hiện tại và áp dụng lại bằng một nút.
+- Profile lưu các lựa chọn train/validate/predict/export, dataset wizard, annotator, model custom, nguồn ảnh/video và các preset GUI.
+- Thêm API `/api/cloud/manager`, `POST /api/cloud/profiles`, `DELETE /api/cloud/profiles/{profile_id}`.
+- Cloud Manager quét local mirror để hiển thị nhanh model, file config, ảnh, dataset folder, run và export trong các folder chuẩn.
+- Từ thư viện Cloud có thể bấm dùng model cho Train/Predict/Export, dùng ảnh làm nguồn Predict hoặc dùng folder dataset trong wizard.
+- Profile được ghi trong `runs/cloud/.../configs/gui-settings/`, không chứa Google API key/token/password.
+
 ## v0.4.19 - 2026-05-13
 
 - Thêm Cloud workspace trong tab `Cài đặt`: bật Cloud mode, nhập Google API key, nhập Google Drive folder ID/link và bấm `Connect Google Drive` ngay trên GUI.

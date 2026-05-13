@@ -54,6 +54,8 @@ Cách dùng:
 
 GUI sẽ tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/` với các folder chuẩn `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`. Khi chạy ở Colab khác hoặc máy khác, dùng cùng Drive folder và cùng `Tên workspace chuẩn` để thấy cùng contract dữ liệu.
 
+Phần `Cloud Manager` trong tab này có thể lưu profile cấu hình GUI. Khi mở lại ở Colab khác, bấm `Áp dụng` để tự điền lại dataset/model/preset/nguồn dự đoán. Profile nằm trong `configs/gui-settings/` của Cloud mirror và không chứa Google API key.
+
 Lưu ý: API key chỉ đọc folder public/shared. Nếu muốn truy cập Drive private của tài khoản Colab, vẫn cần mount Drive hoặc OAuth/service account ở bước sau.
 
 ## Nếu GUI Báo Colab Đang Chạy CPU

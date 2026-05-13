@@ -47,6 +47,21 @@
 
 ## Đã verify trong phiên này
 
+- Verify v0.4.20 Cloud Manager:
+  - `node --check frontend/app.js` pass.
+  - `python -m compileall -q .` pass.
+  - `git diff --check` pass.
+  - API smoke trên `127.0.0.1:8791` pass:
+    - `POST /api/cloud/profiles` lưu profile và sanitize secret.
+    - `GET /api/cloud/manager` trả assets object và danh sách profile.
+    - `DELETE /api/cloud/profiles/{profile_id}` xóa đúng profile.
+    - Profile path nằm dưới `runs/cloud/` và bị `.gitignore`.
+  - Browser QA desktop `1366x768` và mobile `390x844` pass:
+    - Panel `Cloud Manager` hiển thị trong tab `Cài đặt`.
+    - Bấm `Lưu cấu hình hiện tại` tạo profile, hiện nút `Áp dụng` và `Xóa`.
+    - Bấm `Áp dụng` điền lại form và hiện toast xác nhận.
+    - DOM không chứa raw API key, không có horizontal overflow, console sạch warning/error.
+
 - Verify v0.4.19 Cloud workspace:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q .` pass.
@@ -151,6 +166,12 @@
   - Thêm chuẩn thư mục chung `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`.
   - Tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/` và manifest metadata không chứa API key.
   - Frontend khóa control Cloud khi đang kiểm tra/lưu/kết nối và chỉ hiển thị key dạng mask.
+- Cloud Manager:
+  - Thêm API `/api/cloud/manager`, `POST /api/cloud/profiles`, `DELETE /api/cloud/profiles/{profile_id}`.
+  - Lưu profile cấu hình GUI vào `runs/cloud/.../configs/gui-settings/`.
+  - Profile lưu train/validate/predict/export, dataset wizard, annotator, model custom và nguồn dự đoán.
+  - Manager quét model/config/ảnh/dataset/runs/exports trong Cloud mirror và có nút gán nhanh vào GUI.
+  - Backend sanitize profile để không lưu key/token/password.
 - Phiên bản/changelog/update:
   - Thêm tab `Phiên bản` trong GUI.
   - Thêm `CHANGELOG.md`.
@@ -200,6 +221,7 @@
 - Thêm biểu đồ metric từ `results.csv`.
 - Thêm ONNX Runtime smoke check riêng sau export ONNX.
 - Cloud phase sau: thêm OAuth/service account để đọc Drive private, upload/sync hai chiều và tải dataset/model lớn có tiến trình rõ ràng trong GUI.
+- Cloud Manager phase sau: thêm import/copy file vào Cloud mirror bằng GUI, hiện dung lượng tổng từng folder và đồng bộ Drive thật qua OAuth.
 - Thêm downloader/checker cho pretrained weight nếu model chưa có local.
 - Mở rộng annotator lên resize/move box trực tiếp bằng tay nắm nếu người dùng cần chỉnh box cũ nhanh hơn.
 - Thêm auth/local password nếu app mở ra LAN.
