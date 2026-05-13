@@ -50,6 +50,13 @@
   - Nút `Áp dụng` chỉ điền form, không tự chạy job.
   - Asset scan phải có giới hạn số lượng để tránh treo GUI nếu workspace có nhiều file.
   - Trước khi ghi profile, backend phải lọc các key nhạy cảm như `api_key`, `token`, `password`, `secret`.
+- Với Cloud Storage theo project:
+  - Luôn dùng `project_name` đã sanitize khi tạo đường dẫn dưới `runs/cloud/.../projects/`.
+  - Capture job phải chạy sau khi job đã có trạng thái cuối; không được làm job `completed` thành `failed` chỉ vì backup Cloud lỗi.
+  - Snapshot phải ưu tiên dữ liệu debug/handoff: config job, log job, job_dir, output root, reference model/data/source và manifest.
+  - Không copy lại dữ liệu đã nằm sẵn bên trong chính `project_root` để tránh vòng lặp copy vào chính Cloud mirror.
+  - Manifest/index không được chứa raw Google API key hoặc token.
+  - UI phải hiển thị rõ `Project workspace`, trạng thái `Cloud Storage` và nhóm `Job snapshots` để người dùng biết backup đã chạy hay chưa.
 - Setting mới nên đi theo thứ tự:
   1. Thêm field vào schema tương ứng trong `schemas.py`.
   2. Thêm input có `name` trùng field vào frontend.

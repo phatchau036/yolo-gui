@@ -30,10 +30,14 @@
 - Dependency/status endpoint không được crash chỉ vì cache import của Python lỗi; mọi check môi trường phải trả trạng thái/log đọc được để console GUI luôn sạch.
 - Cloud workspace là cầu nối dữ liệu chung giữa Windows/local và Google Colab, nhưng không biến dự án thành SaaS. Giai đoạn hiện tại dùng Google Drive folder public/shared + API key để đọc metadata và tạo mirror/manifest local.
 - Google API key do người dùng nhập chỉ được lưu local trong `logs/cloud/cloud-settings.local.json` hoặc lấy từ env `YOLO_GUI_GOOGLE_API_KEY`. Không commit key, không ghi key vào manifest, không render raw key trong UI hoặc response.
-- Chuẩn folder Cloud đã chốt: `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`. Máy khác hoặc Colab kết nối cùng Drive folder và cùng `root_name` sẽ thấy cùng contract folder/mirror.
+- Chuẩn folder Cloud đã chốt: `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`, `projects`. Máy khác hoặc Colab kết nối cùng Drive folder, cùng `root_name` và cùng `project_name` sẽ thấy cùng contract folder/mirror.
 - Private Google Drive, upload, sync hai chiều và mount Drive theo tài khoản cá nhân cần OAuth/service account ở phase sau; API key không đủ quyền cho các hành vi đó.
 - Cloud Manager phải là thao tác quản lý, không tự chạy workflow. Profile lưu trạng thái GUI để người dùng áp dụng lại, rồi tự bấm train/predict/export khi đã kiểm tra đúng.
-- Profile Cloud Manager nằm trong `runs/cloud/.../configs/gui-settings/` và phải được backend sanitize để không chứa key/token/password.
+- Profile Cloud Manager nằm trong `runs/cloud/.../projects/<project_name>/configs/gui-settings/` và phải được backend sanitize để không chứa key/token/password.
+- Từ v0.4.21, Cloud workspace có lớp `projects/<project_name>/`. Profile mới và job snapshot đều nằm theo project để người dùng có thể đặt tên project và mở lại đúng dữ liệu trên máy khác/Colab.
+- `Cloud Storage` là toggle riêng, không tự bật chỉ vì bật Cloud mode. Khi bật, job kết thúc sẽ tự snapshot config, log, job_dir, reference model/data/source, output và manifest vào project hiện tại.
+- Capture Cloud Storage là best-effort: lỗi backup chỉ ghi vào log job, không được đổi trạng thái thật của job YOLO.
+- `runs/cloud/.../projects/<project_name>/jobs/cloud-jobs-index.json` là nguồn để Cloud Manager hiển thị `Job snapshots`; không đọc raw log/output toàn bộ mỗi lần render UI.
 
 ## Quy tắc duy trì docs
 

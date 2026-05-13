@@ -157,7 +157,7 @@ Frontend khóa cụm annotator trong lúc mở folder hoặc lưu nhãn để tr
 Cloud workspace nằm trong tab `Cài đặt` và dùng `CloudManager` ở backend. Luồng chính:
 
 1. Frontend gọi `GET /api/cloud/status` để lấy trạng thái hiện tại, key đã lưu dạng mask, folder ID, local mirror và danh sách folder chuẩn.
-2. Khi người dùng bấm `Lưu cài đặt Cloud`, frontend gửi `POST /api/cloud/settings` với `enabled`, `google_api_key`, `google_drive_folder`, `root_name`.
+2. Khi người dùng bấm `Lưu cài đặt Cloud`, frontend gửi `POST /api/cloud/settings` với `enabled`, `google_api_key`, `google_drive_folder`, `root_name`, `project_name` và `storage_enabled`.
 3. Backend lưu setting vào `logs/cloud/cloud-settings.local.json`. File này thuộc runtime local và bị `.gitignore`; không commit API key lên GitHub.
 4. Khi người dùng bấm `Connect Google Drive`, frontend lưu setting mới nhất rồi gọi `POST /api/cloud/google-drive/connect`.
 5. Backend đọc API key theo ưu tiên env `YOLO_GUI_GOOGLE_API_KEY` trước, rồi mới đọc key local.
@@ -170,17 +170,45 @@ Cloud workspace nằm trong tab `Cài đặt` và dùng `CloudManager` ở backe
    - `configs`
    - `exports`
    - `logs`
+   - `projects`
 8. Backend ghi `cloud-manifest.json` trong mirror. Manifest chỉ chứa metadata Drive, không chứa API key.
 9. Frontend render summary, folder standard và trạng thái Drive ready/local only.
 
-Giới hạn hiện tại: Google API key chỉ đọc được folder public/shared. Private Drive, upload file, sync hai chiều hoặc mount theo tài khoản cá nhân cần OAuth/service account ở phase sau. Không tự động download dataset/model lớn trong request kết nối; bước connect hiện là chuẩn hóa workspace, kiểm tra quyền đọc và tạo metadata/mirror.
+### Cloud Storage theo project
+
+Cloud workspace có thêm lớp project tại `runs/cloud/google-drive/<folder-id>/<root_name>/projects/<project_name>/`. `project_name` được sanitize bằng `safe_project_name()` để tránh ký tự path không an toàn. Các thư mục project chuẩn gồm `configs`, `jobs`, `logs`, `runs`, `models`, `datasets`, `annotations`, `exports`.
+
+Khi `storage_enabled=true`, `TrainingManager` gọi callback `CloudManager.capture_job()` sau khi job kết thúc. Callback này chạy sau khi trạng thái job đã là `completed`, `failed` hoặc `stopped`, nên lỗi Cloud Storage không làm sai trạng thái job thật. Nếu capture lỗi, lỗi được ghi vào chính log job bằng dòng `Cloud storage capture failed`.
+
+Mỗi snapshot job nằm ở:
+
+```text
+runs/cloud/google-drive/<folder-id>/<root_name>/projects/<project_name>/jobs/<job_type>/<job_id>/
+  config/
+  logs/
+  job_dir/
+  references/
+  outputs/
+  cloud-job-manifest.json
+```
+
+Nội dung snapshot:
+
+- Config JSON của job từ `runs/gui_jobs/<job_id>/`.
+- Log job từ `logs/workflow_jobs/<job_id>.log`.
+- Thư mục job runtime.
+- File tham chiếu tồn tại local như `model`, `data`, `source` nếu không phải URL/camera.
+- Output root lấy từ `project/name*` trong config, ví dụ `runs/predict/gui-predict*`.
+- `jobs/cloud-jobs-index.json` để Cloud Manager render nhóm `Job snapshots`.
+
+Giới hạn hiện tại: Google API key chỉ đọc được folder public/shared. Private Drive, upload file, sync hai chiều hoặc mount theo tài khoản cá nhân cần OAuth/service account ở phase sau. Không tự động download dataset/model lớn trong request kết nối; bước connect hiện là chuẩn hóa workspace, kiểm tra quyền đọc và tạo metadata/mirror. Cloud Storage hiện snapshot vào local mirror để các máy/Colab dùng cùng quy chuẩn thư mục.
 
 ### Cloud Manager
 
 Cloud Manager là lớp quản lý lại workspace đã chuẩn hóa:
 
-- `GET /api/cloud/manager`: trả về status Cloud, danh sách profile và danh sách asset đã quét trong local mirror.
-- `POST /api/cloud/profiles`: lưu profile cấu hình GUI hiện tại vào `configs/gui-settings/<profile_id>.json` trong Cloud mirror.
+- `GET /api/cloud/manager`: trả về status Cloud, danh sách profile theo project, danh sách asset đã quét trong local mirror và `job_snapshots`.
+- `POST /api/cloud/profiles`: lưu profile cấu hình GUI hiện tại vào `projects/<project_name>/configs/gui-settings/<profile_id>.json` trong Cloud mirror.
 - `DELETE /api/cloud/profiles/{profile_id}`: xóa profile đã lưu.
 
 Frontend thu hai lớp dữ liệu khi lưu profile:

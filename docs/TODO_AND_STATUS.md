@@ -47,6 +47,23 @@
 
 ## Đã verify trong phiên này
 
+- Verify v0.4.21 Cloud Storage theo project:
+  - `node --check frontend/app.js` pass.
+  - `python -m compileall -q .` pass.
+  - `git diff --check` pass.
+  - Direct smoke `TrainingManager(on_job_finished=cloud.capture_job)` pass với export job lỗi nhanh:
+    - Job kết thúc `failed` đúng kỳ vọng.
+    - Snapshot có `config`, `log`, `job_dir` và `cloud-job-manifest.json`.
+    - Log job có marker `Cloud storage capture started` và `Cloud storage snapshot`.
+  - API smoke trên `127.0.0.1:8792` pass:
+    - `POST /api/cloud/settings` nhận `project_name` và `storage_enabled`.
+    - `GET /api/cloud/manager` có `assets.job_snapshots`.
+    - Response không leak raw Google API key.
+  - Browser QA desktop `1366x768` và mobile `390x844` pass:
+    - Tab `Cài đặt` hiển thị `Tên project`, `Bật Cloud Storage`, `Project workspace`, `Job snapshots`.
+    - Lưu Cloud setting cập nhật đúng project/storage trên GUI.
+    - Không có horizontal overflow, console sạch warning/error, DOM không chứa raw API key.
+
 - Verify v0.4.20 Cloud Manager:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q .` pass.
@@ -163,15 +180,21 @@
 - Cloud workspace:
   - Thêm tab Cloud trong `Cài đặt` để bật Cloud mode, lưu Google API key local/env và kết nối Google Drive folder public/shared.
   - Thêm API `/api/cloud/status`, `/api/cloud/settings`, `/api/cloud/google-drive/connect`.
-  - Thêm chuẩn thư mục chung `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`.
+  - Thêm chuẩn thư mục chung `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`, `projects`.
   - Tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/` và manifest metadata không chứa API key.
   - Frontend khóa control Cloud khi đang kiểm tra/lưu/kết nối và chỉ hiển thị key dạng mask.
 - Cloud Manager:
   - Thêm API `/api/cloud/manager`, `POST /api/cloud/profiles`, `DELETE /api/cloud/profiles/{profile_id}`.
-  - Lưu profile cấu hình GUI vào `runs/cloud/.../configs/gui-settings/`.
+  - Lưu profile cấu hình GUI vào `runs/cloud/.../projects/<project_name>/configs/gui-settings/`.
   - Profile lưu train/validate/predict/export, dataset wizard, annotator, model custom và nguồn dự đoán.
   - Manager quét model/config/ảnh/dataset/runs/exports trong Cloud mirror và có nút gán nhanh vào GUI.
   - Backend sanitize profile để không lưu key/token/password.
+- Cloud Storage theo project:
+  - Thêm `Tên project` và toggle `Bật Cloud Storage` trong Cloud workspace.
+  - Profile Cloud Manager chuyển sang `runs/cloud/.../projects/<project_name>/configs/gui-settings/`.
+  - Job train/val/predict/export kết thúc sẽ tự snapshot config, log, job_dir, reference model/data/source, output và manifest vào `projects/<project_name>/jobs/<job_type>/<job_id>/` nếu Cloud Storage đang bật.
+  - Cloud Manager hiển thị thêm `Job snapshots` từ `jobs/cloud-jobs-index.json`.
+  - Backend capture là best-effort, lỗi snapshot chỉ ghi vào log job và không làm sai trạng thái YOLO job.
 - Phiên bản/changelog/update:
   - Thêm tab `Phiên bản` trong GUI.
   - Thêm `CHANGELOG.md`.
@@ -216,12 +239,11 @@
 ## Cần làm tiếp
 
 - Thêm queue nhiều job và giới hạn số job chạy song song.
-- Thêm profile cấu hình lưu lại để dùng lại.
 - Thêm gợi ý batch/imgsz theo VRAM.
 - Thêm biểu đồ metric từ `results.csv`.
 - Thêm ONNX Runtime smoke check riêng sau export ONNX.
 - Cloud phase sau: thêm OAuth/service account để đọc Drive private, upload/sync hai chiều và tải dataset/model lớn có tiến trình rõ ràng trong GUI.
-- Cloud Manager phase sau: thêm import/copy file vào Cloud mirror bằng GUI, hiện dung lượng tổng từng folder và đồng bộ Drive thật qua OAuth.
+- Cloud Manager/Storage phase sau: thêm import/copy file vào Cloud mirror bằng GUI, hiện dung lượng tổng từng folder, dọn snapshot cũ và đồng bộ Drive thật qua OAuth.
 - Thêm downloader/checker cho pretrained weight nếu model chưa có local.
 - Mở rộng annotator lên resize/move box trực tiếp bằng tay nắm nếu người dùng cần chỉnh box cũ nhanh hơn.
 - Thêm auth/local password nếu app mở ra LAN.

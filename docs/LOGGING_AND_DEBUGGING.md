@@ -18,7 +18,9 @@
 - Cloud workspace:
   - `logs/cloud/cloud-settings.local.json`
   - `runs/cloud/google-drive/<folder-id>/<root_name>/cloud-manifest.json`
-  - `runs/cloud/google-drive/<folder-id>/<root_name>/configs/gui-settings/*.json`
+  - `runs/cloud/google-drive/<folder-id>/<root_name>/projects/<project_name>/configs/gui-settings/*.json`
+  - `runs/cloud/google-drive/<folder-id>/<root_name>/projects/<project_name>/jobs/<job_type>/<job_id>/cloud-job-manifest.json`
+  - `runs/cloud/google-drive/<folder-id>/<root_name>/projects/<project_name>/jobs/cloud-jobs-index.json`
 - Job config: `runs/gui_jobs/<job_id>/<job_type>_config.json`
 - Output mặc định:
   - Train: `runs/train/<name>/`
@@ -31,6 +33,7 @@ Khi debug một job, đọc theo thứ tự:
 1. `runs/gui_jobs/<job_id>/<job_type>_config.json`
 2. `logs/workflow_jobs/<job_id>.log`
 3. Output trong `runs/train`, `runs/val`, `runs/predict` hoặc nơi Ultralytics báo trong log.
+4. Nếu bật Cloud Storage, đọc thêm `runs/cloud/.../projects/<project_name>/jobs/<job_type>/<job_id>/cloud-job-manifest.json`.
 
 ## Log cần chứa gì
 
@@ -81,6 +84,7 @@ Invoke-RestMethod http://127.0.0.1:8765/api/datasets/audit -Method Post -Content
 - Update xong nhưng GUI chưa đổi: tải lại trang. Nếu thay đổi nằm ở backend Python, restart `start.ps1` hoặc chạy lại cell Colab.
 - Predict xong nhưng không thấy ảnh preview: kiểm tra có bật `Lưu ảnh/video kết quả` không, rồi xem `GET /api/jobs/<job_id>/artifacts` và thư mục `runs/predict/<name>/`.
 - Cloud báo thiếu key/folder: kiểm tra `GET /api/cloud/status`, nhưng không in raw key ra log hoặc chat. Folder private sẽ lỗi với API key, cần public/shared hoặc OAuth ở phase sau.
+- Cloud Storage không tạo snapshot: kiểm tra `GET /api/cloud/status` có `storage_enabled=true`, cuối log job có dòng `Cloud storage capture started`, rồi mở `runs/cloud/.../projects/<project_name>/jobs/<job_type>/<job_id>/`.
 
 ## Nguyên tắc debug
 

@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/styles.css?v=0.4.20-cloud-manager.1" />
+    <link rel="stylesheet" href="/assets/styles.css?v=0.4.21-cloud-storage.1" />
   </head>
   <body>
     <main class="app-shell">
@@ -820,6 +820,14 @@
                 </label>
                 <div class="settings-grid two">
                   <label class="field">
+                    <span class="label">Tên project</span>
+                    <input id="cloudProjectName" class="input" type="text" value="Default Project" placeholder="Ví dụ: Helmet Detection" />
+                  </label>
+                  <label class="checkbox cloud-toggle-row cloud-storage-toggle">
+                    <input id="cloudStorageEnabled" type="checkbox" />
+                    <span><strong>Bật Cloud Storage</strong><small>Tự lưu log, config, output, model và snapshot job theo project.</small></span>
+                  </label>
+                  <label class="field">
                     <span class="label">Google API key</span>
                     <input id="cloudGoogleApiKey" class="input" type="password" autocomplete="off" placeholder="Dán API key để kết nối Drive public/shared" />
                   </label>
@@ -842,7 +850,10 @@
               <aside class="cloud-summary-card">
                 <div><span>Key</span><strong id="cloudKeyStatus">Chưa có</strong></div>
                 <div><span>Drive folder</span><strong id="cloudDriveFolderId">Chưa chọn</strong></div>
+                <div><span>Project</span><strong id="cloudProjectStatus">Default Project</strong></div>
+                <div><span>Cloud Storage</span><strong id="cloudStorageStatus">Đang tắt</strong></div>
                 <div><span>Local mirror</span><strong id="cloudLocalRoot">-</strong></div>
+                <div><span>Project workspace</span><strong id="cloudProjectRoot">-</strong></div>
                 <div><span>Lần kết nối</span><strong id="cloudLastConnected">Chưa kết nối</strong></div>
               </aside>
             </div>
@@ -852,7 +863,7 @@
                 <p class="eyebrow">Folder standard</p>
                 <h4>Quy chuẩn dữ liệu khi bật Cloud</h4>
               </div>
-              <small>datasets, models, runs, annotations, configs, exports, logs</small>
+              <small>datasets, models, runs, annotations, configs, exports, logs, projects</small>
             </div>
             <div id="cloudStandardFolders" class="cloud-standard-grid"></div>
             <section class="cloud-manager-panel">
@@ -982,6 +993,6 @@
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script src="/assets/app.js?v=0.4.20-cloud-manager.1"></script>
+    <script src="/assets/app.js?v=0.4.21-cloud-storage.1"></script>
   </body>
 </html>

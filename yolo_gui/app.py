@@ -46,11 +46,11 @@ from .version_manager import VersionManager
 ensure_runtime_dirs()
 
 app = FastAPI(title="YOLO GUI", version=__version__)
-manager = TrainingManager()
+cloud_manager = CloudManager()
+manager = TrainingManager(on_job_finished=cloud_manager.capture_job)
 automation_manager = AutomationManager(manager)
 dependency_manager = DependencyManager()
 version_manager = VersionManager()
-cloud_manager = CloudManager()
 
 if FRONTEND_DIR.exists():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR)), name="assets")

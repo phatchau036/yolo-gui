@@ -11,7 +11,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, TextIO
 
 from .config import DEFAULT_OUTPUT_DIR, DEFAULT_PREDICT_DIR, DEFAULT_VAL_DIR, JOB_ROOT, LOG_DIR, PROJECT_ROOT, ensure_runtime_dirs
 
@@ -76,10 +76,11 @@ class TrainingJob:
 
 
 class TrainingManager:
-    def __init__(self) -> None:
+    def __init__(self, on_job_finished: Callable[[dict[str, Any]], Any] | None = None) -> None:
         ensure_runtime_dirs()
         self._jobs: dict[str, TrainingJob] = {}
         self._lock = threading.Lock()
+        self._on_job_finished = on_job_finished
 
     def list_jobs(self, job_type: str | None = None) -> list[dict[str, Any]]:
         with self._lock:
@@ -293,3 +294,20 @@ class TrainingManager:
                     job.error = repr(exc)
                 log.write(f"\n[{utc_now()}] Manager failure: {exc!r}\n")
                 log.flush()
+            self._notify_job_finished(job, log)
+
+    def _notify_job_finished(self, job: TrainingJob, log: TextIO) -> None:
+        if self._on_job_finished is None:
+            return
+        try:
+            log.write(f"\n[{utc_now()}] Cloud storage capture started\n")
+            log.flush()
+            result = self._on_job_finished(job.public_dict())
+            if result:
+                log.write(f"[{utc_now()}] Cloud storage snapshot: {result.get('snapshot_dir')}\n")
+            else:
+                log.write(f"[{utc_now()}] Cloud storage skipped\n")
+        except Exception as exc:  # noqa: BLE001 - cloud backup must not break the finished job.
+            log.write(f"[{utc_now()}] Cloud storage capture failed: {exc!r}\n")
+        finally:
+            log.flush()

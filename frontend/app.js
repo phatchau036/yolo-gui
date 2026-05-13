@@ -250,6 +250,9 @@ const helpCatalog = {
   "Google API key": "Key dùng để đọc metadata folder Drive public/shared. Key chỉ lưu local hoặc lấy từ biến môi trường, không ghi vào GitHub.",
   "Google Drive folder ID hoặc link": "Dán link folder Google Drive hoặc ID folder. Folder cần public/shared nếu chỉ dùng API key.",
   "Tên workspace chuẩn": "Tên thư mục chuẩn trong mirror local. Dùng cùng tên trên máy khác để dữ liệu được map giống nhau.",
+  "Tên project": "Tên project dùng để tách workspace riêng. Mỗi project có profile, job, log, output và snapshot riêng trong Cloud Storage.",
+  "Bật Cloud Storage": "Khi bật, mỗi job kết thúc sẽ tự lưu config, log, output và manifest vào project hiện tại.",
+  "Project workspace": "Thư mục local mirror của project hiện tại. Khi máy khác hoặc Colab dùng cùng Drive folder và tên project, dữ liệu sẽ hiện cùng chuẩn.",
   "Lưu cài đặt Cloud": "Lưu trạng thái bật Cloud, folder Drive và API key vào file local bị git ignore.",
   "Connect Google Drive": "Kiểm tra key, đọc folder Google Drive và tạo manifest/mirror theo chuẩn dữ liệu của GUI.",
   "Quy chuẩn dữ liệu khi bật Cloud": "Các folder mà GUI dùng thống nhất: datasets, models, runs, annotations, configs, exports và logs.",
@@ -2333,6 +2336,8 @@ async function calculateMetrics() {
 function cloudControls() {
   return [
     qs("#cloudEnabled"),
+    qs("#cloudStorageEnabled"),
+    qs("#cloudProjectName"),
     qs("#cloudGoogleApiKey"),
     qs("#cloudGoogleDriveFolder"),
     qs("#cloudRootName"),
@@ -2398,6 +2403,8 @@ function cloudPayloadFromForm() {
     google_api_key: qs("#cloudGoogleApiKey").value.trim() || null,
     google_drive_folder: qs("#cloudGoogleDriveFolder").value.trim() || null,
     root_name: qs("#cloudRootName").value.trim() || "YOLO-GUI-Cloud",
+    project_name: qs("#cloudProjectName").value.trim() || "Default Project",
+    storage_enabled: qs("#cloudStorageEnabled").checked,
     clear_api_key: false,
   };
 }
@@ -2429,8 +2436,10 @@ function renderCloudStatus(payload) {
   state.cloud = payload;
   const enabled = Boolean(payload?.enabled);
   const connected = Boolean(payload?.connected);
+  const storageEnabled = Boolean(payload?.storage_enabled);
   qs(".cloud-panel")?.classList.toggle("is-cloud-enabled", enabled);
   qs(".cloud-panel")?.classList.toggle("is-cloud-connected", connected);
+  qs(".cloud-panel")?.classList.toggle("is-cloud-storage-enabled", storageEnabled);
   const badge = qs("#cloudStatusBadge");
   if (badge) {
     badge.className = "status-pill";
@@ -2450,6 +2459,8 @@ function renderCloudStatus(payload) {
   }
 
   qs("#cloudEnabled").checked = enabled;
+  qs("#cloudStorageEnabled").checked = storageEnabled;
+  qs("#cloudProjectName").value = payload?.project_name || "Default Project";
   qs("#cloudGoogleDriveFolder").value = payload?.google_drive_folder || "";
   qs("#cloudRootName").value = payload?.root_name || "YOLO-GUI-Cloud";
   const keyInput = qs("#cloudGoogleApiKey");
@@ -2462,7 +2473,10 @@ function renderCloudStatus(payload) {
     ? `${payload.api_key_masked || "***"} · ${payload.api_key_source || "local"}`
     : "Chưa có";
   qs("#cloudDriveFolderId").textContent = payload?.google_drive_folder_id || "Chưa chọn";
+  qs("#cloudProjectStatus").textContent = payload?.project_name || "Default Project";
+  qs("#cloudStorageStatus").textContent = storageEnabled ? "Đang bật" : "Đang tắt";
   qs("#cloudLocalRoot").textContent = payload?.local_root || "-";
+  qs("#cloudProjectRoot").textContent = payload?.project_root || "-";
   qs("#cloudLastConnected").textContent = formatCloudTime(payload?.last_connected_at);
   renderCloudFolders(payload?.standard_folders || []);
 
@@ -2470,7 +2484,10 @@ function renderCloudStatus(payload) {
     connected ? "Cloud đã kết nối Google Drive." : enabled ? "Cloud đã bật, cần connect Drive để đọc metadata." : "Cloud đang tắt.",
     payload?.root_drive?.name ? `Drive root: ${payload.root_drive.name}` : null,
     payload?.google_drive_folder_id ? `Drive folder ID: ${payload.google_drive_folder_id}` : null,
+    payload?.project_name ? `Project: ${payload.project_name}` : null,
+    payload?.storage_enabled ? "Cloud Storage: bật, job xong sẽ tự snapshot config/log/output." : "Cloud Storage: tắt, chỉ dùng Cloud Manager thủ công.",
     payload?.local_root ? `Local mirror: ${payload.local_root}` : null,
+    payload?.project_root ? `Project workspace: ${payload.project_root}` : null,
     payload?.manifest_path ? `Manifest: ${payload.manifest_path}` : null,
     payload?.last_error ? `Lỗi gần nhất: ${payload.last_error}` : null,
     "",
@@ -2782,10 +2799,11 @@ function renderCloudManager(payload) {
   const sections = [
     ["models", "Models"],
     ["configs", "Configs"],
-    ["images", "Ảnh"],
+    ["images", "Ảnh/video"],
     ["datasets", "Datasets"],
     ["runs", "Runs"],
     ["exports", "Exports"],
+    ["job_snapshots", "Job snapshots"],
   ];
   const assets = payload?.assets || {};
   let total = 0;
@@ -2802,7 +2820,7 @@ function renderCloudManager(payload) {
           <div>
             <strong>${escapeHtml(asset.name)}</strong>
             <span>${escapeHtml(asset.relative_path || asset.path || "")}</span>
-            <small>${asset.kind === "folder" ? "Folder" : formatBytes(asset.size)} · ${escapeHtml(formatCloudTime(asset.modified_at))}</small>
+            <small>${asset.kind === "folder" ? "Folder" : asset.kind === "cloud-job" ? `${asset.size || 0} file đã lưu${asset.status ? ` · ${asset.status}` : ""}` : formatBytes(asset.size)} · ${escapeHtml(formatCloudTime(asset.modified_at))}</small>
           </div>
           <div class="cloud-card-actions">
             ${actions.map(([action, text]) => `<button class="button is-light" type="button" data-cloud-use-asset="${escapeHtml(asset.path)}" data-cloud-asset-action="${action}"><span>${text}</span></button>`).join("")}

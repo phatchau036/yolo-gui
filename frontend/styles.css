@@ -2479,6 +2479,17 @@ body {
   font-weight: 650;
 }
 
+.cloud-storage-toggle {
+  min-height: 100%;
+  margin-bottom: 0;
+  align-items: center;
+}
+
+.cloud-panel.is-cloud-storage-enabled .cloud-storage-toggle {
+  border-color: rgba(0, 143, 122, 0.3);
+  background: linear-gradient(135deg, #ecfdf8, #ffffff);
+}
+
 .cloud-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

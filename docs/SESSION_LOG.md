@@ -475,3 +475,15 @@
 - `demo-annotation.png`: chụp annotator đang load sample image và 2 bounding box, xác nhận toolbar không còn vỡ bởi path dài.
 - `demo-automation.png`: chụp riêng section automation để người xem thấy hero, kịch bản và timeline thay vì bị lẫn quá nhiều dependency card.
 - `demo-mobile.png`: chụp lại layout mobile theo shell/sidebar mới.
+
+## 2026-05-13 - Cloud Storage theo project
+
+- Nhận yêu cầu: Cloud cần cho đặt tên project và nếu bật Cloud Storage thì lưu full từ log, config, model/source, output đến snapshot job theo project.
+- Bump version lên `0.4.21`.
+- Thêm field `project_name` và `storage_enabled` vào `CloudSettingsRequest`, API status/manager trả thêm `project_root`.
+- `CloudManager` tạo workspace `runs/cloud/google-drive/<folder-id>/<root_name>/projects/<project_name>/`.
+- Profile Cloud Manager chuyển sang `projects/<project_name>/configs/gui-settings/`.
+- Thêm `CloudManager.capture_job()` để snapshot config, log, job_dir, reference model/data/source, output root và manifest vào `projects/<project_name>/jobs/<job_type>/<job_id>/`.
+- `TrainingManager` nhận callback `on_job_finished`; `app.py` nối callback này với `cloud_manager.capture_job`.
+- Frontend tab `Cài đặt` thêm `Tên project`, toggle `Bật Cloud Storage`, summary `Project workspace` và nhóm `Job snapshots` trong Cloud Manager.
+- Cập nhật README, changelog và docs handoff cho chuẩn Cloud Storage mới.

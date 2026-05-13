@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.21 - 2026-05-13
+
+- Thêm `Tên project` trong Cloud workspace để tách dữ liệu theo từng project thay vì dùng chung một mirror phẳng.
+- Thêm toggle `Bật Cloud Storage`: khi bật, mỗi job train/val/predict/export kết thúc sẽ tự snapshot config, log, thư mục job, output, model/data/source tham chiếu và manifest vào `runs/cloud/.../projects/<project_name>/jobs/...`.
+- Cloud Manager chuyển profile sang workspace theo project và hiển thị thêm nhóm `Job snapshots` để kiểm tra nhanh job nào đã được lưu.
+- API `/api/cloud/status` và `/api/cloud/manager` trả thêm `storage_enabled`, `project_name`, `project_root`; `POST /api/cloud/settings` nhận thêm `project_name` và `storage_enabled`.
+- `TrainingManager` có callback sau khi job kết thúc để Cloud Storage chạy nền an toàn; nếu capture lỗi, job vẫn giữ trạng thái thật và lỗi chỉ ghi vào log job.
+- Frontend cache-busting lên `0.4.21-cloud-storage.1`, có tooltip cho `Tên project`, `Bật Cloud Storage` và `Project workspace`.
+
 ## v0.4.20 - 2026-05-13
 
 - Mở rộng Cloud workspace thành `Cloud Manager`: lưu profile cấu hình GUI hiện tại và áp dụng lại bằng một nút.

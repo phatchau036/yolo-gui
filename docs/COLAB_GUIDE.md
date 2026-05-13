@@ -50,11 +50,15 @@ Cách dùng:
 2. Bật `Cloud mode`.
 3. Nhập Google API key hoặc đặt env `YOLO_GUI_GOOGLE_API_KEY` trước khi chạy server.
 4. Dán Google Drive folder ID/link.
-5. Bấm `Connect Google Drive`.
+5. Nhập `Tên project` giống với máy Windows/local nếu muốn mở lại cùng dữ liệu.
+6. Bật `Cloud Storage` nếu muốn job Colab tự lưu config, log và output vào project.
+7. Bấm `Connect Google Drive`.
 
-GUI sẽ tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/` với các folder chuẩn `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`. Khi chạy ở Colab khác hoặc máy khác, dùng cùng Drive folder và cùng `Tên workspace chuẩn` để thấy cùng contract dữ liệu.
+GUI sẽ tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/` với các folder chuẩn `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`, `projects`. Khi chạy ở Colab khác hoặc máy khác, dùng cùng Drive folder, cùng `Tên workspace chuẩn` và cùng `Tên project` để thấy cùng contract dữ liệu.
 
-Phần `Cloud Manager` trong tab này có thể lưu profile cấu hình GUI. Khi mở lại ở Colab khác, bấm `Áp dụng` để tự điền lại dataset/model/preset/nguồn dự đoán. Profile nằm trong `configs/gui-settings/` của Cloud mirror và không chứa Google API key.
+Phần `Cloud Manager` trong tab này có thể lưu profile cấu hình GUI. Khi mở lại ở Colab khác, bấm `Áp dụng` để tự điền lại dataset/model/preset/nguồn dự đoán. Profile nằm trong `projects/<project_name>/configs/gui-settings/` của Cloud mirror và không chứa Google API key.
+
+Nếu bật `Cloud Storage`, mỗi job train/val/predict/export trên Colab sẽ tự lưu bản snapshot vào `projects/<project_name>/jobs/<workflow>/<job_id>/`. Snapshot có config, log, thư mục job, output YOLO, file model/data/source tham chiếu nếu tồn tại local và `cloud-job-manifest.json`. Trong Cloud Manager, xem nhóm `Job snapshots` để biết job nào đã được lưu.
 
 Lưu ý: API key chỉ đọc folder public/shared. Nếu muốn truy cập Drive private của tài khoản Colab, vẫn cần mount Drive hoặc OAuth/service account ở bước sau.
 
@@ -120,7 +124,7 @@ Trong Colab, log nằm tại:
 - `logs/dependency_installs/`: log cài PyTorch hoặc Ultralytics từ GUI.
 - `logs/updates/`: log khi bấm cập nhật ở tab `Phiên bản`.
 - `logs/cloud/`: Cloud setting local. Không chia sẻ log này nếu có lưu API key.
-- `runs/cloud/`: mirror local và `cloud-manifest.json` của Cloud workspace.
+- `runs/cloud/`: mirror local, `cloud-manifest.json`, project workspace và snapshot job của Cloud workspace.
 
 Nếu link tunnel không hiện, xem `logs/colab/cloudflared-<port>.log`.
 

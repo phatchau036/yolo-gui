@@ -122,12 +122,23 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 
 ## Cloud Manager không áp dụng lại cấu hình đúng
 
-1. Mở profile trong `runs/cloud/.../configs/gui-settings/<profile_id>.json`.
+1. Mở profile trong `runs/cloud/.../projects/<project_name>/configs/gui-settings/<profile_id>.json`.
 2. Kiểm tra có đủ `train_ui`, `validate_ui`, `predict_ui`, `export_ui` và `fields` không.
 3. Nếu radio/checkbox không đúng, kiểm tra `collectFormUiState()` và `applyFormUiState()`.
 4. Nếu dataset hiển thị sai, kiểm tra `assignDatasetYaml()` có được gọi sau khi apply profile không.
 5. Nếu model custom không điền, kiểm tra field `[data-custom-model]` của form tương ứng.
 6. Nếu profile chứa secret, sửa `CloudManager._sanitize_profile_payload()` trước khi lưu profile mới.
+
+## Cloud Storage không lưu log/config/output theo project
+
+1. Gọi `GET /api/cloud/status` và kiểm tra `enabled=true`, `storage_enabled=true`, `project_name` đúng và `project_root` nằm dưới `runs/cloud/.../projects/<project_name>/`.
+2. Nếu UI đã bật nhưng API trả `storage_enabled=false`, kiểm tra `cloudPayloadFromForm()` có gửi `storage_enabled` và `project_name` không.
+3. Chạy một job nhỏ rồi mở `logs/workflow_jobs/<job_id>.log`; cuối log phải có `Cloud storage capture started` và sau đó là `Cloud storage snapshot` hoặc `Cloud storage capture failed`.
+4. Nếu không có dòng Cloud Storage trong log, kiểm tra `TrainingManager(on_job_finished=cloud_manager.capture_job)` trong `app.py` và `_notify_job_finished()` trong `training_manager.py`.
+5. Kiểm tra snapshot tại `runs/cloud/.../projects/<project_name>/jobs/<job_type>/<job_id>/`. Tối thiểu phải có `config/`, `logs/`, `job_dir/` và `cloud-job-manifest.json`.
+6. Nếu output không được copy, mở config job và kiểm tra `project`/`name`; `CloudManager._job_output_roots()` tìm output theo `project/name*` tương tự artifact preview.
+7. Nếu model/data/source không được copy, kiểm tra đường dẫn đó có tồn tại local không. URL, camera `0` và path không tồn tại sẽ bị bỏ qua.
+8. Đảm bảo `runs/` và `logs/` vẫn bị `.gitignore`; không stage snapshot, log hoặc API key.
 
 ## Stop job không dừng
 

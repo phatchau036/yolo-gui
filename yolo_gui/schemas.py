@@ -250,6 +250,8 @@ class CloudSettingsRequest(BaseModel):
     google_api_key: str | None = None
     google_drive_folder: str | None = None
     root_name: str = Field(default="YOLO-GUI-Cloud", min_length=1, max_length=80)
+    project_name: str = Field(default="Default Project", min_length=1, max_length=100)
+    storage_enabled: bool = False
     clear_api_key: bool = False
 
 

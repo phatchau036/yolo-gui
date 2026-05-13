@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -10,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .config import CLOUD_SETTINGS_PATH, DEFAULT_CLOUD_DIR, ensure_runtime_dirs
+from .config import CLOUD_SETTINGS_PATH, DEFAULT_CLOUD_DIR, PROJECT_ROOT, ensure_runtime_dirs
 from .schemas import CloudProfileSaveRequest, CloudSettingsRequest
 
 
@@ -24,9 +25,11 @@ STANDARD_FOLDERS: tuple[dict[str, Any], ...] = (
     {"key": "configs", "label": "Configs", "description": "data.yaml, preset và cấu hình GUI có thể dùng lại."},
     {"key": "exports", "label": "Exports", "description": "Model đã đóng gói sang ONNX, TensorRT, TFLite hoặc runtime khác."},
     {"key": "logs", "label": "Logs", "description": "Nhật ký chạy job và báo cáo môi trường."},
+    {"key": "projects", "label": "Projects", "description": "Workspace theo tên project, chứa profile, job, log và output đã snapshot."},
 )
 MODEL_EXTENSIONS = {".pt", ".onnx", ".engine", ".tflite", ".mlpackage", ".torchscript", ".pb", ".bin"}
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"}
+VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov", ".avi", ".mkv"}
 CONFIG_EXTENSIONS = {".json", ".yaml", ".yml", ".toml", ".txt"}
 MAX_MANAGER_ITEMS = 80
 
@@ -46,6 +49,11 @@ def mask_secret(value: str | None) -> str | None:
 def safe_folder_name(value: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9_. -]+", "-", value).strip(" .-")
     return cleaned or "YOLO-GUI-Cloud"
+
+
+def safe_project_name(value: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9_. -]+", "-", value).strip(" .-")
+    return cleaned or "Default Project"
 
 
 def safe_profile_id(value: str) -> str:
@@ -81,16 +89,21 @@ class CloudManager:
         folder_id = extract_drive_folder_id(settings.get("google_drive_folder"))
         root_name = safe_folder_name(str(settings.get("root_name") or "YOLO-GUI-Cloud"))
         local_root = self._local_root(folder_id, root_name)
+        project_name = safe_project_name(str(settings.get("project_name") or "Default Project"))
+        project_root = self._project_root(local_root, project_name)
         return {
             "enabled": bool(settings.get("enabled")),
             "provider": settings.get("provider") or "google_drive",
+            "storage_enabled": bool(settings.get("storage_enabled")),
             "has_api_key": bool(api_key),
             "api_key_masked": mask_secret(api_key),
             "api_key_source": "env" if os.environ.get("YOLO_GUI_GOOGLE_API_KEY") else ("local" if settings.get("google_api_key") else None),
             "google_drive_folder": settings.get("google_drive_folder") or "",
             "google_drive_folder_id": folder_id,
             "root_name": root_name,
+            "project_name": project_name,
             "local_root": str(local_root),
+            "project_root": str(project_root),
             "standard_folders": self._standard_folder_payload(local_root, settings.get("drive_children") or []),
             "connected": bool(settings.get("connected")),
             "last_connected_at": settings.get("last_connected_at"),
@@ -103,23 +116,26 @@ class CloudManager:
         status = self.status()
         local_root = Path(status["local_root"])
         self._ensure_standard_dirs(status.get("google_drive_folder_id"), status["root_name"])
+        project_root = self._ensure_project_dirs(local_root, status["project_name"])
         return {
             **status,
-            "profiles": self._list_profiles(local_root),
+            "profiles": self._list_profiles(project_root),
             "assets": {
-                "models": self._scan_files([local_root / "models", local_root / "runs", local_root / "exports"], MODEL_EXTENSIONS),
-                "configs": self._scan_files([local_root / "configs"], CONFIG_EXTENSIONS),
-                "images": self._scan_files([local_root / "datasets", local_root / "annotations", local_root / "runs"], IMAGE_EXTENSIONS),
-                "datasets": self._scan_dirs(local_root / "datasets"),
-                "runs": self._scan_dirs(local_root / "runs"),
-                "exports": self._scan_files([local_root / "exports"], MODEL_EXTENSIONS | CONFIG_EXTENSIONS),
+                "models": self._scan_files([project_root / "models", project_root / "runs", local_root / "models", local_root / "runs", local_root / "exports"], MODEL_EXTENSIONS),
+                "configs": self._scan_files([project_root / "configs", local_root / "configs"], CONFIG_EXTENSIONS),
+                "images": self._scan_files([project_root / "datasets", project_root / "annotations", project_root / "runs", local_root / "datasets", local_root / "annotations", local_root / "runs"], IMAGE_EXTENSIONS | VIDEO_EXTENSIONS),
+                "datasets": self._scan_dirs(project_root / "datasets") + self._scan_dirs(local_root / "datasets"),
+                "runs": self._scan_dirs(project_root / "runs") + self._scan_dirs(local_root / "runs"),
+                "exports": self._scan_files([project_root / "exports", local_root / "exports"], MODEL_EXTENSIONS | CONFIG_EXTENSIONS),
+                "job_snapshots": self._list_job_snapshots(project_root),
             },
         }
 
     def save_profile(self, request: CloudProfileSaveRequest) -> dict[str, Any]:
         status = self.status()
         local_root = self._ensure_standard_dirs(status.get("google_drive_folder_id"), status["root_name"])
-        profile_dir = self._profile_dir(local_root)
+        project_root = self._ensure_project_dirs(local_root, status["project_name"])
+        profile_dir = self._profile_dir(project_root)
         profile_dir.mkdir(parents=True, exist_ok=True)
         profile_id = f"{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{safe_profile_id(request.name)[:48]}"
         payload = self._sanitize_profile_payload(request.payload)
@@ -136,8 +152,8 @@ class CloudManager:
 
     def delete_profile(self, profile_id: str) -> dict[str, Any]:
         status = self.status()
-        local_root = Path(status["local_root"])
-        target = self._profile_dir(local_root) / f"{safe_profile_id(profile_id)}.json"
+        project_root = Path(status["project_root"])
+        target = self._profile_dir(project_root) / f"{safe_profile_id(profile_id)}.json"
         if not target.exists():
             raise RuntimeError("Không tìm thấy profile Cloud này.")
         target.unlink()
@@ -149,10 +165,13 @@ class CloudManager:
         previous_root_name = safe_folder_name(str(settings.get("root_name") or "YOLO-GUI-Cloud"))
         next_folder_id = extract_drive_folder_id(request.google_drive_folder)
         next_root_name = safe_folder_name(request.root_name)
+        next_project_name = safe_project_name(request.project_name)
         settings["enabled"] = request.enabled
         settings["provider"] = request.provider
+        settings["storage_enabled"] = request.storage_enabled
         settings["google_drive_folder"] = request.google_drive_folder or ""
         settings["root_name"] = next_root_name
+        settings["project_name"] = next_project_name
         settings["last_error"] = None
         if not request.enabled:
             settings["connected"] = False
@@ -167,8 +186,71 @@ class CloudManager:
         settings["updated_at"] = utc_now()
         settings.setdefault("connected", False)
         self._write_settings(settings)
-        self._ensure_standard_dirs(next_folder_id, settings["root_name"])
+        local_root = self._ensure_standard_dirs(next_folder_id, settings["root_name"])
+        self._ensure_project_dirs(local_root, next_project_name)
         return self.status()
+
+    def capture_job(self, job: dict[str, Any]) -> dict[str, Any] | None:
+        status = self.status()
+        if not status.get("enabled") or not status.get("storage_enabled"):
+            return None
+        local_root = self._ensure_standard_dirs(status.get("google_drive_folder_id"), status["root_name"])
+        project_root = self._ensure_project_dirs(local_root, status["project_name"])
+        job_id = str(job.get("id") or "unknown-job")
+        job_type = str(job.get("job_type") or "job")
+        snapshot_dir = project_root / "jobs" / job_type / job_id
+        snapshot_dir.mkdir(parents=True, exist_ok=True)
+
+        copied: list[dict[str, str]] = []
+        config_path = Path(str(job.get("config_path") or ""))
+        config = self._read_json_file(config_path)
+        if config_path.is_file():
+            target = snapshot_dir / "config" / config_path.name
+            self._copy_file(config_path, target)
+            copied.append({"type": "config", "path": str(target)})
+
+        log_path = Path(str(job.get("log_path") or ""))
+        if log_path.is_file():
+            target = snapshot_dir / "logs" / log_path.name
+            self._copy_file(log_path, target)
+            copied.append({"type": "log", "path": str(target)})
+            project_log = project_root / "logs" / job_type / log_path.name
+            self._copy_file(log_path, project_log)
+
+        job_dir = Path(str(job.get("job_dir") or ""))
+        if job_dir.is_dir():
+            target = snapshot_dir / "job_dir"
+            self._copy_tree(job_dir, target, project_root)
+            copied.append({"type": "job_dir", "path": str(target)})
+
+        for field_name, reference_path in self._job_reference_paths(config):
+            try:
+                reference_path.resolve().relative_to(project_root.resolve())
+                continue
+            except ValueError:
+                pass
+            target = snapshot_dir / "references" / field_name / reference_path.name
+            self._copy_tree(reference_path, target, project_root)
+            copied.append({"type": f"reference:{field_name}", "path": str(target)})
+
+        for output_root in self._job_output_roots(config, project_root):
+            if output_root.exists():
+                target = snapshot_dir / "outputs" / output_root.name
+                self._copy_tree(output_root, target, project_root)
+                copied.append({"type": "output", "path": str(target)})
+
+        manifest = {
+            "captured_at": utc_now(),
+            "project_name": status["project_name"],
+            "project_root": str(project_root),
+            "job": job,
+            "config": config,
+            "copied": copied,
+        }
+        manifest_path = snapshot_dir / "cloud-job-manifest.json"
+        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+        self._update_job_index(project_root, manifest)
+        return {"snapshot_dir": str(snapshot_dir), "manifest_path": str(manifest_path), "copied": copied}
 
     def connect_google_drive(self) -> dict[str, Any]:
         settings = self._read_settings()
@@ -246,14 +328,23 @@ class CloudManager:
     def _manifest_path(self, folder_id: str | None, root_name: str) -> Path:
         return self._local_root(folder_id, root_name) / "cloud-manifest.json"
 
-    def _profile_dir(self, local_root: Path) -> Path:
-        return local_root / "configs" / "gui-settings"
+    def _project_root(self, local_root: Path, project_name: str) -> Path:
+        return local_root / "projects" / safe_project_name(project_name)
+
+    def _profile_dir(self, project_root: Path) -> Path:
+        return project_root / "configs" / "gui-settings"
 
     def _ensure_standard_dirs(self, folder_id: str | None, root_name: str) -> Path:
         local_root = self._local_root(folder_id, root_name)
         for folder in STANDARD_FOLDERS:
             (local_root / str(folder["key"])).mkdir(parents=True, exist_ok=True)
         return local_root
+
+    def _ensure_project_dirs(self, local_root: Path, project_name: str) -> Path:
+        project_root = self._project_root(local_root, project_name)
+        for key in ("configs", "jobs", "logs", "runs", "models", "datasets", "annotations", "exports"):
+            (project_root / key).mkdir(parents=True, exist_ok=True)
+        return project_root
 
     def _standard_folder_payload(self, local_root: Path, drive_children: list[dict[str, Any]]) -> list[dict[str, Any]]:
         drive_map = {
@@ -333,6 +424,34 @@ class CloudManager:
                 break
         return items
 
+    def _list_job_snapshots(self, project_root: Path) -> list[dict[str, Any]]:
+        index_path = project_root / "jobs" / "cloud-jobs-index.json"
+        try:
+            index = json.loads(index_path.read_text(encoding="utf-8")) if index_path.exists() else []
+        except Exception:
+            index = []
+        snapshots: list[dict[str, Any]] = []
+        for item in index:
+            job = item.get("job") or {}
+            copied = item.get("copied") or []
+            job_id = str(job.get("id") or "unknown-job")
+            job_type = str(job.get("job_type") or "job")
+            snapshot_dir = project_root / "jobs" / job_type / job_id
+            snapshots.append(
+                {
+                    "name": f"{job_type} / {job_id}",
+                    "path": str(snapshot_dir),
+                    "relative_path": f"jobs/{job_type}/{job_id}",
+                    "kind": "cloud-job",
+                    "size": len(copied),
+                    "modified_at": item.get("captured_at"),
+                    "status": job.get("status"),
+                }
+            )
+            if len(snapshots) >= MAX_MANAGER_ITEMS:
+                break
+        return snapshots
+
     def _asset_payload(self, path: Path, root: Path) -> dict[str, Any]:
         try:
             relative = str(path.relative_to(root))
@@ -381,6 +500,74 @@ class CloudManager:
         if annotator.get("image_dir"):
             summary.append(f"Ảnh gán nhãn: {annotator['image_dir']}")
         return summary[:6] or ["Đã lưu cấu hình GUI hiện tại."]
+
+    def _read_json_file(self, path: Path) -> dict[str, Any]:
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+
+    def _copy_file(self, source: Path, target: Path) -> None:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+
+    def _copy_tree(self, source: Path, target: Path, project_root: Path) -> None:
+        try:
+            source.resolve().relative_to(project_root.resolve())
+            return
+        except ValueError:
+            pass
+        if source.is_file():
+            self._copy_file(source, target)
+            return
+        shutil.copytree(source, target, dirs_exist_ok=True)
+
+    def _job_output_roots(self, config: dict[str, Any], project_root: Path) -> list[Path]:
+        roots: list[Path] = []
+        project_value = config.get("project")
+        name = str(config.get("name") or "").strip()
+        if not project_value:
+            return roots
+        project = Path(str(project_value)).expanduser()
+        if not project.is_absolute():
+            project = PROJECT_ROOT / project
+        try:
+            project.resolve().relative_to(project_root.resolve())
+            return roots
+        except ValueError:
+            pass
+        if name and project.exists():
+            roots.extend(path for path in project.glob(f"{name}*") if path.is_dir())
+        elif project.exists():
+            roots.append(project)
+        return list(dict.fromkeys(roots))
+
+    def _job_reference_paths(self, config: dict[str, Any]) -> list[tuple[str, Path]]:
+        references: list[tuple[str, Path]] = []
+        for field_name in ("model", "data", "source"):
+            raw_value = config.get(field_name)
+            if raw_value is None:
+                continue
+            value = str(raw_value).strip()
+            if not value or value.isdigit() or re.match(r"^[a-z]+://", value, flags=re.IGNORECASE):
+                continue
+            path = Path(value).expanduser()
+            if not path.is_absolute():
+                path = PROJECT_ROOT / path
+            if path.exists():
+                references.append((field_name, path))
+        return references
+
+    def _update_job_index(self, project_root: Path, manifest: dict[str, Any]) -> None:
+        index_path = project_root / "jobs" / "cloud-jobs-index.json"
+        try:
+            index = json.loads(index_path.read_text(encoding="utf-8")) if index_path.exists() else []
+        except Exception:
+            index = []
+        job_id = manifest.get("job", {}).get("id")
+        index = [item for item in index if item.get("job", {}).get("id") != job_id]
+        index.insert(0, manifest)
+        index_path.write_text(json.dumps(index[:200], ensure_ascii=False, indent=2), encoding="utf-8")
 
     def _drive_get_file(self, api_key: str, file_id: str) -> dict[str, Any]:
         params = urllib.parse.urlencode(
