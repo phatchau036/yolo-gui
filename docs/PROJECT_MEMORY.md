@@ -38,6 +38,7 @@
 - `Cloud Storage` là toggle riêng, không tự bật chỉ vì bật Cloud mode. Khi bật, job kết thúc sẽ tự snapshot config, log, job_dir, reference model/data/source, output và manifest vào project hiện tại.
 - Capture Cloud Storage là best-effort: lỗi backup chỉ ghi vào log job, không được đổi trạng thái thật của job YOLO.
 - `runs/cloud/.../projects/<project_name>/jobs/cloud-jobs-index.json` là nguồn để Cloud Manager hiển thị `Job snapshots`; không đọc raw log/output toàn bộ mỗi lần render UI.
+- Colab launcher `start_colab.py` là runtime wrapper quan trọng ngang backend: khi thêm file điều khiển restart trong `yolo_gui.colab_runtime`, phải import đủ path request/state và smoke trực tiếp các hàm theo dõi như `next_restart_request()`. `python -m compileall` không bắt lỗi thiếu global import trong nhánh chạy sau khi tunnel đã mở.
 
 ## Quy tắc duy trì docs
 

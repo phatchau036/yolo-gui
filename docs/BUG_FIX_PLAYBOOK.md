@@ -101,6 +101,23 @@ python -m uvicorn yolo_gui.app:app --host 127.0.0.1 --port 8766
 5. Trong notebook Colab, xem `logs/colab/uvicorn-<port>.log`; tunnel log chỉ cần xem nếu link public bị mất.
 6. Nếu cập nhật từ bản quá cũ chưa có restart sau tunnel, dừng cell và chạy lại cell một lần để nạp `start_colab.py` mới; các lần cập nhật sau sẽ restart server sau link hiện tại.
 
+## Colab mở link xong rồi cell tự dừng
+
+1. Nếu log cell có `NameError: name 'RESTART_REQUEST_PATH' is not defined`, kiểm tra import đầu file `start_colab.py`.
+2. `start_colab.py` phải import cả `RESTART_REQUEST_PATH` và `RESTART_STATE_PATH` từ `yolo_gui.colab_runtime`.
+3. Chạy smoke trực tiếp:
+
+```powershell
+@'
+import time
+import start_colab
+print(start_colab.next_restart_request(set(), time.time()))
+'@ | python -
+```
+
+4. Kết quả phải là `None` khi chưa có request mới, không được crash sau khi Cloudflare Tunnel đã mở.
+5. Nếu cần test request thật, tạo file `logs/colab/restart-request.json` qua helper `create_restart_request()` rồi xóa lại runtime log sau khi kiểm tra; không stage `logs/`.
+
 ## Tooltip dấu hỏi bị lệch trong card
 
 1. Kiểm tra selector nào đang gắn tooltip trong `enhanceInlineHelp()` của `frontend/app.js`.

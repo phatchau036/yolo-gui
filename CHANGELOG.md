@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.22 - 2026-05-14
+
+- Sửa lỗi Google Colab mở Cloudflare Tunnel xong rồi cell tự dừng vì `start_colab.py` thiếu import `RESTART_REQUEST_PATH`.
+- Vòng theo dõi restart sau update Colab giờ đọc đúng `logs/colab/restart-request.json`, nên có thể giữ nguyên tunnel/link hiện tại và restart server trên cùng port như thiết kế.
+- Bổ sung smoke test trực tiếp cho `next_restart_request()` để bắt lỗi runtime global thiếu import trước khi push.
+
 ## v0.4.21 - 2026-05-13
 
 - Thêm `Tên project` trong Cloud workspace để tách dữ liệu theo từng project thay vì dùng chung một mirror phẳng.

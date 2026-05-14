@@ -1,5 +1,13 @@
 # Session Log
 
+## 2026-05-14 - v0.4.22 Colab restart request import
+
+- Nhận lỗi thực tế trên Google Colab: cell mở server và Cloudflare Tunnel thành công, in link `trycloudflare.com`, sau đó dừng vì `NameError: RESTART_REQUEST_PATH`.
+- Nguyên nhân: `start_colab.py` dùng `RESTART_REQUEST_PATH` trong `next_restart_request()` nhưng import từ `yolo_gui.colab_runtime` chỉ có `RESTART_STATE_PATH`.
+- Bump version lên `0.4.22`.
+- Sửa import để Colab launcher đọc đúng `logs/colab/restart-request.json` và tiếp tục giữ tunnel sau khi link đã sẵn sàng.
+- Bổ sung bài học vào bug fix playbook: lỗi global thiếu import cần có smoke gọi trực tiếp hàm runtime, vì `compileall` chỉ kiểm tra cú pháp.
+
 ## 2026-05-13 - v0.4.20 Cloud Manager
 
 - Mục tiêu: Cloud không chỉ connect folder mà còn lưu lại cấu hình setting/model/ảnh để người dùng mở lại dạng manager.

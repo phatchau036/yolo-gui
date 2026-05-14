@@ -47,6 +47,11 @@
 
 ## Đã verify trong phiên này
 
+- Verify v0.4.22 Colab restart request import:
+  - `python -m compileall -q .` pass.
+  - `node --check frontend/app.js` pass.
+  - Direct smoke `start_colab.next_restart_request(set(), time.time())` pass và trả `None` khi chưa có restart request mới, không còn crash vì thiếu `RESTART_REQUEST_PATH`.
+
 - Verify v0.4.21 Cloud Storage theo project:
   - `node --check frontend/app.js` pass.
   - `python -m compileall -q .` pass.

@@ -16,6 +16,7 @@ from urllib.request import urlopen
 
 from yolo_gui.colab_runtime import (
     COLAB_LOG_DIR,
+    RESTART_REQUEST_PATH,
     RESTART_STATE_PATH,
     read_json_file,
     timestamp,
