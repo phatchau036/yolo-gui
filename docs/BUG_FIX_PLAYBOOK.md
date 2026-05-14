@@ -136,7 +136,8 @@ print(start_colab.next_restart_request(set(), time.time()))
 5. Nếu Google trả `401/403`, kiểm tra token còn hạn và có quyền Drive. API key không thay thế được Drive Auth.
 6. Kiểm tra `logs/cloud/cloud-settings.local.json` chỉ nằm local và không được stage. Không đưa key/token vào docs, README, changelog hoặc commit.
 7. Kiểm tra `runs/cloud/google-drive/<folder-id>/<root_name>/cloud-manifest.json` sau khi connect thành công. Manifest chỉ được chứa metadata, không chứa API key hoặc Drive token.
-8. Frontend phải khóa bước Google Drive cho tới khi `cloud_key_valid=true`; nếu vẫn bấm được, kiểm tra `updateCloudStepLocks()` và class `#cloudDriveAuthBlock.is-hidden`.
+8. Frontend phải khóa bước Google Drive cho tới khi `cloud_key_valid=true`; nếu vẫn bấm được, kiểm tra `updateCloudStepLocks()`, `renderCloudFlow()` và class `#cloudDriveAuthBlock.is-hidden`.
+9. Nếu người dùng nhập Cloud key mới nhưng phần Drive vẫn mở, kiểm tra nhánh draft key trong `cloudFlowPayloadFromUi()` và điều kiện `keyValid && !keyDraft`.
 
 ## Cloud Manager không áp dụng lại cấu hình đúng
 

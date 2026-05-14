@@ -246,17 +246,26 @@ const helpCatalog = {
   "Trạng thái cập nhật": "Cho biết GUI đang là bản mới nhất hay có bản mới có thể cập nhật.",
   "Có gì mới": "Changelog các thay đổi chính theo từng phiên bản.",
   "Google Drive dùng chung cho mọi máy": "Kiểm tra Cloud key trước, sau đó thêm Google Drive Auth để GUI tự tạo workspace và folder chuẩn trong Drive.",
+  "Bật Cloud": "Bước mở chế độ dùng workspace chung. Khi chưa bật, các bước Drive sẽ được khóa để tránh nhập nhầm.",
   "Bật Cloud mode": "Bật chế độ dùng workspace Drive chung. Khi tắt, GUI vẫn chạy local như bình thường.",
   "Cloud API key": "Key Google Cloud dùng để kiểm tra Drive API đã sẵn sàng. Key chỉ lưu local hoặc lấy từ biến môi trường, không ghi vào GitHub.",
+  "Cloud key": "Phần nhập và kiểm tra Google Cloud API key. Key này chỉ xác nhận API đã sẵn sàng, không phải quyền truy cập Drive.",
+  "Kiểm tra key": "Bước xác nhận Cloud API key hợp lệ trước khi cho nhập Google Drive Auth.",
   "Kiểm tra Cloud key": "Xác nhận key hợp lệ trước khi mở bước Google Drive Auth.",
   "Google Drive Auth": "Access token OAuth của tài khoản Drive. GUI dùng token này để tạo folder chuẩn thay vì yêu cầu bạn tự tạo folder ID.",
+  "Drive Auth": "Bước cấp quyền Google Drive bằng OAuth access token sau khi Cloud key đã hợp lệ.",
   "Google Drive parent": "Tùy chọn. Nếu để trống, GUI tự tạo workspace trong My Drive. Nếu nhập folder cha, workspace sẽ nằm trong folder đó.",
   "Tên workspace chuẩn": "Tên thư mục gốc GUI sẽ tự tạo trong Google Drive và mirror local. Dùng cùng tên trên máy khác để dữ liệu được map giống nhau.",
   "Tên project": "Tên project dùng để tách workspace riêng. Mỗi project có profile, job, log, output và snapshot riêng trong Cloud Storage.",
+  "Tạo workspace": "Bước tạo folder chuẩn và project để dữ liệu trên Windows, Colab và máy khác đi theo cùng một cấu trúc.",
+  "Quy chuẩn lưu trữ": "Tên workspace, tên project và Cloud Storage quyết định dữ liệu được tổ chức như thế nào.",
   "Bật Cloud Storage": "Khi bật, mỗi job kết thúc sẽ tự lưu config, log, output và manifest vào project hiện tại.",
   "Project workspace": "Thư mục local mirror của project hiện tại. Khi máy khác hoặc Colab dùng cùng Drive folder và tên project, dữ liệu sẽ hiện cùng chuẩn.",
   "Lưu cài đặt Cloud": "Lưu trạng thái Cloud, project và workspace vào file local bị git ignore.",
   "Connect Google Drive": "Dùng Google Drive Auth để tự tạo workspace, folder chuẩn, manifest và mirror dữ liệu.",
+  "Tạo workspace Drive": "Bước cuối dùng Drive Auth để tạo workspace, folder chuẩn, manifest và mirror dữ liệu.",
+  "Kết nối và tạo folder": "Lưu Auth, tạo workspace Google Drive và chuẩn hóa các folder cho project hiện tại.",
+  "Trạng thái kết nối": "Tóm tắt Cloud key, Drive Auth, folder Drive, project và nơi mirror local đang dùng.",
   "Quy chuẩn dữ liệu khi bật Cloud": "Các folder mà GUI dùng thống nhất: datasets, models, runs, annotations, configs, exports và logs.",
   "Lưu và mở lại cấu hình, model, ảnh": "Cloud Manager lưu profile cấu hình GUI hiện tại và quét model, ảnh, dataset trong workspace để bấm dùng lại nhanh.",
   "Tên cấu hình muốn lưu": "Tên profile để bạn nhận ra cấu hình train/predict/dataset này sau này.",
@@ -438,6 +447,10 @@ function enhanceInlineHelp() {
     ".docs-card h4",
     ".term-grid strong",
     ".cloud-folder-card strong",
+    ".cloud-flow-rail strong",
+    ".cloud-step-head strong",
+    ".cloud-connect-action strong",
+    ".cloud-summary-head strong",
   ].forEach((selector) => qsa(selector).forEach((element) => attachHelpTerm(element)));
 
   qsa("button span:not(.icon), .quick-card small, .nav-item span").forEach((element) => applyHelpTitle(element));
@@ -2373,14 +2386,14 @@ function setCloudBusy(busy, action = "check") {
   if (!busy) {
     saveLabel.textContent = "Lưu cài đặt Cloud";
     keyLabel.textContent = "Kiểm tra Cloud key";
-    connectLabel.textContent = "Connect Google Drive";
+    connectLabel.textContent = "Kết nối và tạo folder";
     updateCloudStepLocks();
     return;
   }
 
   saveLabel.textContent = action === "save" ? "Đang lưu..." : "Đang khóa...";
   keyLabel.textContent = action === "key" ? "Đang kiểm tra..." : "Đang khóa...";
-  connectLabel.textContent = action === "connect" ? "Đang tạo Drive..." : "Đang khóa...";
+  connectLabel.textContent = action === "connect" ? "Đang tạo folder..." : "Đang khóa...";
 }
 
 function formatCloudTime(value) {
@@ -2404,10 +2417,81 @@ function formatBytes(value) {
   return `${(size / (1024 ** index)).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
+function cloudFlowPayloadFromUi() {
+  const payload = { ...(state.cloud || {}) };
+  const enabledInput = qs("#cloudEnabled");
+  const storageInput = qs("#cloudStorageEnabled");
+  const keyInput = qs("#cloudGoogleApiKey");
+  const tokenInput = qs("#cloudGoogleDriveToken");
+  if (enabledInput) payload.enabled = enabledInput.checked;
+  if (storageInput) payload.storage_enabled = storageInput.checked;
+  if (keyInput?.value.trim()) {
+    payload.has_api_key = true;
+    payload.cloud_key_valid = false;
+    payload.cloud_key_checked = false;
+  }
+  if (tokenInput?.value.trim()) payload.has_drive_auth = true;
+  return payload;
+}
+
+function setCloudFlowStep(selector, status) {
+  const step = qs(selector);
+  if (!step) return;
+  step.classList.toggle("is-complete", status === "complete");
+  step.classList.toggle("is-current", status === "current");
+  step.classList.toggle("is-locked", status === "locked");
+  if (status === "current") {
+    step.setAttribute("aria-current", "step");
+  } else {
+    step.removeAttribute("aria-current");
+  }
+}
+
+function renderCloudFlow(payload = cloudFlowPayloadFromUi()) {
+  const enabled = Boolean(payload?.enabled);
+  const hasApiKey = Boolean(payload?.has_api_key);
+  const keyValid = Boolean(payload?.cloud_key_valid);
+  const hasDriveAuth = Boolean(payload?.has_drive_auth);
+  const connected = Boolean(payload?.connected);
+
+  setCloudFlowStep("#cloudStepMode", enabled ? "complete" : "current");
+  setCloudFlowStep("#cloudStepKey", !enabled ? "locked" : keyValid ? "complete" : "current");
+  setCloudFlowStep("#cloudStepDrive", !enabled || !keyValid ? "locked" : (hasDriveAuth || connected) ? "complete" : "current");
+  setCloudFlowStep("#cloudStepWorkspace", !enabled || !keyValid || !hasDriveAuth ? "locked" : connected ? "complete" : "current");
+
+  const summaryState = qs("#cloudSummaryState");
+  const hint = qs("#cloudConnectionHint");
+  let summary = "Chưa bật";
+  let message = "Bật Cloud mode rồi kiểm tra Cloud key để mở bước Google Drive.";
+  if (enabled && !hasApiKey) {
+    summary = "Thiếu key";
+    message = "Dán Cloud API key, lưu cài đặt rồi bấm Kiểm tra Cloud key.";
+  } else if (enabled && hasApiKey && !keyValid) {
+    summary = "Chờ kiểm tra key";
+    message = "Cloud đã có key. Bấm Kiểm tra Cloud key để xác nhận API hoạt động.";
+  } else if (enabled && keyValid && !hasDriveAuth) {
+    summary = "Chờ Drive Auth";
+    message = "Key đã hợp lệ. Dán Google Drive Auth để GUI có quyền tạo workspace.";
+  } else if (enabled && keyValid && hasDriveAuth && !connected) {
+    summary = "Sẵn sàng tạo folder";
+    message = "Auth đã sẵn sàng. Bấm Kết nối và tạo folder để chuẩn hóa workspace.";
+  } else if (connected) {
+    summary = "Đã kết nối";
+    message = "Workspace đã sẵn sàng. Máy local hoặc Colab khác dùng cùng Drive và tên project sẽ thấy cùng cấu trúc.";
+  }
+  if (payload?.last_error && enabled && !connected) {
+    summary = "Cần xử lý lỗi";
+    message = `Lỗi gần nhất: ${payload.last_error}`;
+  }
+  if (summaryState) summaryState.textContent = summary;
+  if (hint) hint.textContent = message;
+}
+
 function updateCloudStepLocks() {
   if (state.cloudBusy) return;
   const enabled = Boolean(qs("#cloudEnabled")?.checked);
-  const keyValid = Boolean(state.cloud?.cloud_key_valid);
+  const keyDraft = qs("#cloudGoogleApiKey")?.value.trim();
+  const keyValid = Boolean(state.cloud?.cloud_key_valid) && !keyDraft;
   const authBlock = qs("#cloudDriveAuthBlock");
   authBlock?.classList.toggle("is-hidden", !(enabled && keyValid));
   const connectButton = qs("#connectGoogleDriveButton");
@@ -2419,6 +2503,7 @@ function updateCloudStepLocks() {
     control.disabled = !(enabled && keyValid);
     control.setAttribute("aria-disabled", control.disabled ? "true" : "false");
   });
+  renderCloudFlow(cloudFlowPayloadFromUi());
 }
 
 function cloudPayloadFromForm() {
@@ -3134,6 +3219,14 @@ function bindEvents() {
   qs("#cloudEnabled").addEventListener("change", () => {
     qs(".cloud-panel")?.classList.toggle("is-cloud-enabled", qs("#cloudEnabled").checked);
     updateCloudStepLocks();
+  });
+  qsa("#cloudGoogleApiKey, #cloudGoogleDriveToken, #cloudGoogleDriveParent, #cloudRootName, #cloudProjectName").forEach((input) => {
+    input.addEventListener("input", () => {
+      updateCloudStepLocks();
+    });
+  });
+  qs("#cloudStorageEnabled").addEventListener("change", () => {
+    renderCloudFlow(cloudFlowPayloadFromUi());
   });
   qs("#createReportButton").addEventListener("click", () => {
     createReport().catch((error) => showToast(error.message));

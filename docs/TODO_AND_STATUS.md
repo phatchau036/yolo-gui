@@ -47,6 +47,18 @@
 
 ## Đã verify trong phiên này
 
+- Verify v0.4.24 Cloud/Drive flow UI:
+  - `python -m compileall -q .` pass.
+  - `node --check frontend/app.js` pass.
+  - `git diff --check` pass.
+  - Browser QA trên `127.0.0.1:8796` pass:
+    - Desktop `1366x768`: tab `Cài đặt` không horizontal overflow, Cloud step rail hiển thị `Bật Cloud` current và các bước sau locked khi Cloud chưa bật.
+    - Mobile `390x844`: không còn body/document horizontal overflow; quick workflow và tooltip không làm vỡ layout.
+    - Khi render trạng thái key hợp lệ giả lập, `Google Drive Auth` hiện ra, nút `Kết nối và tạo folder` mở khóa, step Drive là current.
+    - Khi người dùng nhập key mới dạng draft, Drive Auth tự ẩn lại, connect bị khóa, step `Kiểm tra key` quay về current.
+    - Khi render trạng thái connected giả lập, cả 4 step đều complete và summary báo `Đã kết nối`.
+    - Console browser không có warning/error.
+
 - Verify v0.4.23 Cloud key và Google Drive Auth:
   - `python -m compileall -q .` pass.
   - `node --check frontend/app.js` pass.
@@ -215,8 +227,8 @@
   - Backend capture là best-effort, lỗi snapshot chỉ ghi vào log job và không làm sai trạng thái YOLO job.
 - Cloud key và Google Drive Auth:
   - Thêm `POST /api/cloud/key/check` để kiểm tra Cloud API key trước khi hiện bước Drive.
-  - `Connect Google Drive` dùng OAuth access token, tự tạo workspace `YOLO-GUI-Cloud`, folder chuẩn và project folder trên Google Drive.
-  - Frontend khóa bước Drive/Auth cho tới khi `cloud_key_valid=true`, không còn bắt người dùng tự tạo/dán folder ID trước.
+  - Nút `Kết nối và tạo folder` dùng OAuth access token, tự tạo workspace `YOLO-GUI-Cloud`, folder chuẩn và project folder trên Google Drive.
+  - Frontend render flow 4 bước `Bật Cloud`, `Kiểm tra key`, `Drive Auth`, `Tạo workspace`; khóa bước Drive/Auth cho tới khi `cloud_key_valid=true`, không còn bắt người dùng tự tạo/dán folder ID trước.
   - Status hiển thị riêng Cloud key, Drive Auth, Drive folder tự tạo, local mirror và project workspace.
 - Phiên bản/changelog/update:
   - Thêm tab `Phiên bản` trong GUI.

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.24 - 2026-05-14
+
+- Thiết kế lại phần Cloud/Google Drive trong tab `Cài đặt` thành flow 4 bước: bật Cloud, kiểm tra key, cấp Drive Auth và tạo workspace.
+- Thêm thanh tiến trình Cloud bên trái, trạng thái/hướng dẫn động và summary rõ ràng để người dùng biết đang kẹt ở bước nào.
+- Chỉ mở phần Google Drive Auth khi Cloud key hợp lệ; nếu người dùng nhập key mới, GUI khóa lại bước Drive cho tới khi kiểm tra lại key.
+- Nút connect đổi thành `Kết nối và tạo folder`, nhấn mạnh GUI tự tạo workspace và các folder chuẩn thay vì bắt người dùng tự tạo folder ID.
+- Cập nhật tooltip và tài liệu để Cloud key, Drive Auth, project và Cloud Storage được giải thích theo ngôn ngữ dễ hiểu hơn.
+
 ## v0.4.23 - 2026-05-14
 
 - Đổi Cloud workspace thành luồng 2 bước: `Kiểm tra Cloud key` trước, sau đó mới hiện phần `Google Drive Auth`.

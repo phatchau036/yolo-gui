@@ -48,16 +48,17 @@ Cloud không bắt buộc. Nếu chỉ train local một lần, có thể bỏ q
 Nếu muốn Windows và Colab dùng cùng chuẩn dữ liệu:
 
 1. Vào tab `Cài đặt`.
-2. Bật `Cloud mode`.
-3. Nhập `Cloud API key`.
-4. Bấm `Kiểm tra Cloud key`.
-5. Khi GUI báo key hợp lệ, phần `Google Drive Auth` sẽ hiện ra.
-6. Dán OAuth access token có quyền Google Drive vào ô `Google Drive Auth`.
-7. Nếu muốn workspace nằm trong một folder cha có sẵn, nhập `Google Drive parent`; nếu không, để trống để GUI tạo trong My Drive.
-8. Nhập `Tên workspace chuẩn`, ví dụ `YOLO-GUI-Cloud`.
-9. Nhập `Tên project`, ví dụ `Helmet Detection`.
-10. Bật `Cloud Storage` nếu muốn mỗi job tự lưu log, config và output.
-11. Bấm `Connect Google Drive` để GUI tự tạo workspace, folder chuẩn và mirror.
+2. Nhìn thanh tiến trình bên trái: `Bật Cloud`, `Kiểm tra key`, `Drive Auth`, `Tạo workspace`.
+3. Bật `Cloud mode`.
+4. Nhập `Cloud API key`.
+5. Bấm `Kiểm tra Cloud key`.
+6. Khi GUI báo key hợp lệ, phần `Google Drive Auth` sẽ hiện ra.
+7. Dán OAuth access token có quyền Google Drive vào ô `Google Drive Auth`.
+8. Nếu muốn workspace nằm trong một folder cha có sẵn, nhập `Google Drive parent`; nếu không, để trống để GUI tạo trong My Drive.
+9. Nhập `Tên workspace chuẩn`, ví dụ `YOLO-GUI-Cloud`.
+10. Nhập `Tên project`, ví dụ `Helmet Detection`.
+11. Bật `Cloud Storage` nếu muốn mỗi job tự lưu log, config và output.
+12. Bấm `Kết nối và tạo folder` để GUI tự tạo workspace, folder chuẩn và mirror.
 
 Khi bật Cloud Storage, mỗi job xong sẽ có snapshot ở:
 

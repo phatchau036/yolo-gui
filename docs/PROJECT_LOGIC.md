@@ -160,10 +160,11 @@ Cloud workspace nằm trong tab `Cài đặt` và dùng `CloudManager` ở backe
 2. Khi người dùng bấm `Lưu cài đặt Cloud`, frontend gửi `POST /api/cloud/settings` với `enabled`, `google_api_key`, `root_name`, `project_name` và `storage_enabled`.
 3. Backend lưu setting vào `logs/cloud/cloud-settings.local.json`. File này thuộc runtime local và bị `.gitignore`; không commit API key lên GitHub.
 4. Khi người dùng bấm `Kiểm tra Cloud key`, frontend gọi `POST /api/cloud/key/check`. Backend dùng Cloud API key để gọi Google Drive discovery endpoint, sau đó lưu `cloud_key_valid=true` nếu key hợp lệ.
-5. Chỉ khi key hợp lệ, frontend mới hiện phần `Google Drive Auth`.
-6. Khi người dùng bấm `Connect Google Drive`, frontend lưu setting mới nhất rồi gọi `POST /api/cloud/google-drive/connect` kèm OAuth access token và parent folder tùy chọn.
-7. Backend đọc Drive token theo ưu tiên env `YOLO_GUI_DRIVE_ACCESS_TOKEN` trước, rồi mới đọc token local.
-8. Backend gọi Google Drive API v3 bằng Bearer token, lấy thông tin tài khoản Drive, tự tìm hoặc tạo workspace `root_name`, sau đó tạo các folder chuẩn:
+5. Frontend render luồng 4 bước `Bật Cloud` -> `Kiểm tra key` -> `Drive Auth` -> `Tạo workspace`. Step và summary chỉ dựa trên `enabled`, `has_api_key`, `cloud_key_valid`, `has_drive_auth` và `connected`.
+6. Chỉ khi key hợp lệ, frontend mới hiện phần `Google Drive Auth`. Nếu người dùng nhập key mới trong ô key, UI xem key đó là draft và khóa lại bước Drive cho tới khi kiểm tra lại.
+7. Khi người dùng bấm `Kết nối và tạo folder`, frontend lưu setting mới nhất rồi gọi `POST /api/cloud/google-drive/connect` kèm OAuth access token và parent folder tùy chọn.
+8. Backend đọc Drive token theo ưu tiên env `YOLO_GUI_DRIVE_ACCESS_TOKEN` trước, rồi mới đọc token local.
+9. Backend gọi Google Drive API v3 bằng Bearer token, lấy thông tin tài khoản Drive, tự tìm hoặc tạo workspace `root_name`, sau đó tạo các folder chuẩn:
    - `datasets`
    - `models`
    - `runs`
@@ -172,10 +173,10 @@ Cloud workspace nằm trong tab `Cài đặt` và dùng `CloudManager` ở backe
    - `exports`
    - `logs`
    - `projects`
-9. Backend tạo thêm `projects/<project_name>/` và các folder con chuẩn của project trên Drive.
-10. Backend tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/`.
-11. Backend ghi `cloud-manifest.json` trong mirror. Manifest chỉ chứa metadata Drive, không chứa API key hoặc Drive token.
-12. Frontend render summary, folder standard và trạng thái Drive ready/local only.
+10. Backend tạo thêm `projects/<project_name>/` và các folder con chuẩn của project trên Drive.
+11. Backend tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/`.
+12. Backend ghi `cloud-manifest.json` trong mirror. Manifest chỉ chứa metadata Drive, không chứa API key hoặc Drive token.
+13. Frontend render summary, folder standard và trạng thái Drive ready/local only.
 
 ### Cloud Storage theo project
 

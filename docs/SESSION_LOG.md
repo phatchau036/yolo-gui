@@ -1,5 +1,14 @@
 # Session Log
 
+## 2026-05-14 - v0.4.24 Cloud/Drive flow UI
+
+- Nhận feedback: phần connect Google Drive đang lộn xộn, cần bố cục có logic khoa học hơn.
+- Bump version lên `0.4.24`.
+- Frontend đổi Cloud workspace thành layout 3 vùng: thanh tiến trình 4 bước, form thao tác chính và summary trạng thái.
+- JS thêm trạng thái động cho `Bật Cloud`, `Kiểm tra key`, `Drive Auth`, `Tạo workspace`; nếu người dùng nhập key mới, bước Drive bị khóa lại cho tới khi key được kiểm tra hợp lệ.
+- Nút connect đổi thành `Kết nối và tạo folder`, mô tả rõ GUI tự tạo folder chuẩn thay vì bắt người dùng tự chuẩn bị folder ID.
+- Cập nhật README và docs handoff để dev sau giữ pattern Cloud staged flow.
+
 ## 2026-05-14 - v0.4.23 Cloud key và Google Drive Auth
 
 - Nhận feedback: ô Cloud hiện tại đang nhập key, còn Google Drive phải xuất hiện sau khi key hợp lệ, yêu cầu Auth và tự tạo folder chuẩn thay vì bắt người dùng tự tạo/dán folder ID.

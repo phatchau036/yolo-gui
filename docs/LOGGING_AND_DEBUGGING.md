@@ -85,7 +85,7 @@ Invoke-RestMethod http://127.0.0.1:8765/api/datasets/audit -Method Post -Content
 - Tab Phiên bản báo cần lưu thay đổi: bấm `Sao lưu rồi cập nhật`. GUI sẽ ghi log trong `logs/updates/` và cất tạm thay đổi bằng Git stash trước khi pull.
 - Update xong nhưng GUI chưa đổi: tải lại trang. Nếu thay đổi nằm ở backend Python, restart `start.ps1` hoặc chạy lại cell Colab.
 - Predict xong nhưng không thấy ảnh preview: kiểm tra có bật `Lưu ảnh/video kết quả` không, rồi xem `GET /api/jobs/<job_id>/artifacts` và thư mục `runs/predict/<name>/`.
-- Cloud báo thiếu key/Auth: kiểm tra `GET /api/cloud/status`, nhưng không in raw key/token ra log hoặc chat. Luồng đúng là `Kiểm tra Cloud key` trước, sau đó thêm Google Drive Auth rồi mới `Connect Google Drive`.
+- Cloud báo thiếu key/Auth: kiểm tra `GET /api/cloud/status`, nhưng không in raw key/token ra log hoặc chat. Luồng đúng là `Bật Cloud` -> `Kiểm tra Cloud key` -> `Google Drive Auth` -> `Kết nối và tạo folder`.
 - Cloud Storage không tạo snapshot: kiểm tra `GET /api/cloud/status` có `storage_enabled=true`, cuối log job có dòng `Cloud storage capture started`, rồi mở `runs/cloud/.../projects/<project_name>/jobs/<job_type>/<job_id>/`.
 
 ## Nguyên tắc debug

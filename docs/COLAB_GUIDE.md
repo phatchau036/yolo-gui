@@ -47,13 +47,14 @@ Từ v0.4.19, tab `Cài đặt` có phần Cloud workspace để Colab và Windo
 Cách dùng:
 
 1. Mở tab `Cài đặt`.
-2. Bật `Cloud mode`.
-3. Nhập Cloud API key hoặc đặt env `YOLO_GUI_GOOGLE_API_KEY` trước khi chạy server.
-4. Bấm `Kiểm tra Cloud key`.
-5. Khi key hợp lệ, dán Google Drive OAuth access token vào `Google Drive Auth`, hoặc đặt env `YOLO_GUI_DRIVE_ACCESS_TOKEN`.
-6. Nhập `Tên project` giống với máy Windows/local nếu muốn mở lại cùng dữ liệu.
-7. Bật `Cloud Storage` nếu muốn job Colab tự lưu config, log và output vào project.
-8. Bấm `Connect Google Drive`.
+2. Làm theo thanh tiến trình Cloud: `Bật Cloud`, `Kiểm tra key`, `Drive Auth`, `Tạo workspace`.
+3. Bật `Cloud mode`.
+4. Nhập Cloud API key hoặc đặt env `YOLO_GUI_GOOGLE_API_KEY` trước khi chạy server.
+5. Bấm `Kiểm tra Cloud key`.
+6. Khi key hợp lệ, dán Google Drive OAuth access token vào `Google Drive Auth`, hoặc đặt env `YOLO_GUI_DRIVE_ACCESS_TOKEN`.
+7. Nhập `Tên project` giống với máy Windows/local nếu muốn mở lại cùng dữ liệu.
+8. Bật `Cloud Storage` nếu muốn job Colab tự lưu config, log và output vào project.
+9. Bấm `Kết nối và tạo folder`.
 
 GUI sẽ tự tạo workspace `YOLO-GUI-Cloud` trên Drive rồi tạo mirror local trong `runs/cloud/google-drive/<folder-id>/<root_name>/` với các folder chuẩn `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`, `projects`. Khi chạy ở Colab khác hoặc máy khác, dùng cùng Drive workspace, cùng `Tên workspace chuẩn` và cùng `Tên project` để thấy cùng contract dữ liệu.
 

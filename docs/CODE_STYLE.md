@@ -45,6 +45,8 @@
   - Nên đọc env trước file local để Colab/server có thể cấu hình key mà không ghi ra đĩa.
   - Khi gọi API bên ngoài bằng key người dùng nhập, thông báo rõ giới hạn quyền đọc/ghi thay vì giả vờ đã sync đầy đủ.
 - Với Cloud frontend, giữ state trong `state.cloud`, khóa input/button khi đang kiểm tra/lưu/kết nối, và render folder chuẩn từ payload backend thay vì hardcode trạng thái giả.
+- UI Cloud/Drive phải giữ mô hình staged flow: `enabled` -> `cloud_key_valid` -> `has_drive_auth` -> `connected`. Không gom Cloud key, Drive Auth, project và manager vào một form ngang khó hiểu.
+- Nếu người dùng nhập Cloud key mới trong ô key, frontend phải coi key đó là draft và khóa bước Drive cho tới khi endpoint kiểm tra key trả hợp lệ.
 - Với Cloud Manager:
   - Lưu profile bằng cả payload workflow đã normalize và payload UI thô để áp dụng lại đúng radio/checkbox/preset.
   - Nút `Áp dụng` chỉ điền form, không tự chạy job.

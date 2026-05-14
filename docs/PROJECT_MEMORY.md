@@ -33,6 +33,7 @@
 - Chuẩn folder Cloud đã chốt: `datasets`, `models`, `runs`, `annotations`, `configs`, `exports`, `logs`, `projects`. Máy khác hoặc Colab kết nối cùng Drive folder, cùng `root_name` và cùng `project_name` sẽ thấy cùng contract folder/mirror.
 - Upload/sync file lớn hai chiều và mount Drive theo tài khoản cá nhân vẫn là phase sau; key/token hiện chỉ dùng để chuẩn hóa workspace và folder metadata.
 - Từ v0.4.23, Cloud workspace dùng luồng 2 bước: Cloud API key chỉ để kiểm tra Google Cloud/Drive API đã hợp lệ, còn Google Drive Auth mới là quyền tạo workspace/folder chuẩn. UI không được bắt người dùng tự tạo/dán folder ID trước; sau Auth, backend tự tạo `root_name`, các folder chuẩn và project folder.
+- Từ v0.4.24, UI Cloud/Drive phải trình bày theo flow 4 bước có trạng thái rõ: `Bật Cloud`, `Kiểm tra key`, `Drive Auth`, `Tạo workspace`. Không trộn Cloud key, Drive Auth, project, Cloud Storage và Cloud Manager thành một cụm form dài; manager là phần quản lý sau khi workspace đã có logic rõ.
 - Cloud Manager phải là thao tác quản lý, không tự chạy workflow. Profile lưu trạng thái GUI để người dùng áp dụng lại, rồi tự bấm train/predict/export khi đã kiểm tra đúng.
 - Profile Cloud Manager nằm trong `runs/cloud/.../projects/<project_name>/configs/gui-settings/` và phải được backend sanitize để không chứa key/token/password.
 - Từ v0.4.21, Cloud workspace có lớp `projects/<project_name>/`. Profile mới và job snapshot đều nằm theo project để người dùng có thể đặt tên project và mở lại đúng dữ liệu trên máy khác/Colab.
