@@ -2461,6 +2461,53 @@ body {
   padding: 16px;
 }
 
+.cloud-step-card,
+.cloud-drive-auth-block {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.cloud-step-card {
+  padding: 14px;
+  border: 1px solid rgba(0, 143, 122, 0.16);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f3fffb, #ffffff);
+}
+
+.cloud-drive-auth-block {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(54, 84, 255, 0.14);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f7f9ff, #ffffff 64%);
+}
+
+.cloud-step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cloud-step-head span {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(0, 143, 122, 0.1);
+  color: #007f6d;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.cloud-step-head strong {
+  min-width: 0;
+  color: #17211f;
+  font-weight: 900;
+  text-align: right;
+}
+
 .cloud-toggle-row {
   align-items: flex-start;
   margin-bottom: 16px;
@@ -2501,6 +2548,10 @@ body {
 .cloud-actions .button {
   width: 100%;
   justify-content: center;
+}
+
+.cloud-key-actions {
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
 }
 
 .cloud-summary-card {

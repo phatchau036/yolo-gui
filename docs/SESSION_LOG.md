@@ -1,5 +1,14 @@
 # Session Log
 
+## 2026-05-14 - v0.4.23 Cloud key và Google Drive Auth
+
+- Nhận feedback: ô Cloud hiện tại đang nhập key, còn Google Drive phải xuất hiện sau khi key hợp lệ, yêu cầu Auth và tự tạo folder chuẩn thay vì bắt người dùng tự tạo/dán folder ID.
+- Bump version lên `0.4.23`.
+- Backend thêm `POST /api/cloud/key/check` để kiểm tra Cloud API key và lưu trạng thái `cloud_key_valid`.
+- `POST /api/cloud/google-drive/connect` chuyển sang nhận Google Drive OAuth access token, tự tạo workspace `root_name`, các folder chuẩn và project folder trên Drive.
+- Frontend tách Cloud thành 2 bước: kiểm tra key trước, sau đó mới hiện `Google Drive Auth`, `Tên workspace chuẩn`, `Tên project`, `Cloud Storage` và nút connect.
+- Docs cập nhật để phân biệt Cloud API key với Google Drive Auth, đồng thời nhắc không commit key/token hoặc runtime `logs/cloud/`.
+
 ## 2026-05-14 - v0.4.22 Colab restart request import
 
 - Nhận lỗi thực tế trên Google Colab: cell mở server và Cloudflare Tunnel thành công, in link `trycloudflare.com`, sau đó dừng vì `NameError: RESTART_REQUEST_PATH`.

@@ -24,7 +24,7 @@
 - `train_runner.py`: runner train cũ, giữ lại để tham khảo/tương thích nội bộ nhưng luồng mới dùng `workflow_runner.py`.
 - `dataset_tools.py`: inspect/audit dataset YOLO, tạo `data.yaml`, convert VOC XML sang YOLO txt, tính metrics từ label YOLO.
 - `annotation_tools.py`: helper cho công cụ gán nhãn ảnh kiểu LabelImg trong GUI; liệt kê ảnh, suy ra path label, đọc/lưu file YOLO `.txt`.
-- `cloud_manager.py`: quản lý Cloud workspace; lưu setting local trong `logs/cloud/`, đọc metadata Google Drive public/shared bằng API key, tạo mirror/manifest, tách workspace theo project, scan asset, lưu/xóa profile Cloud Manager và snapshot job khi bật Cloud Storage.
+- `cloud_manager.py`: quản lý Cloud workspace; lưu setting local trong `logs/cloud/`, kiểm tra Cloud API key, dùng Google Drive Auth để tự tạo workspace/folder chuẩn, tạo mirror/manifest, tách workspace theo project, scan asset, lưu/xóa profile Cloud Manager và snapshot job khi bật Cloud Storage.
 - `system_report.py`: tạo report môi trường `.md` và `.json` trong `logs/system_reports/`.
 - `version_manager.py`: đọc version/changelog, kiểm tra commit mới trên GitHub, chạy `git pull --ff-only` khi người dùng bấm cập nhật; có luồng stash thay đổi local rồi cập nhật khi repo dirty.
 - `config.py`: đường dẫn chuẩn cho frontend, log, job, output và Cloud workspace local.
@@ -50,7 +50,7 @@
   - `uvicorn.log`: log server khi chạy bằng `start_colab.py`.
   - `cloudflared.log`: log Cloudflare Tunnel và link `trycloudflare.com`.
 - `logs/cloud/`:
-  - `cloud-settings.local.json`: setting Cloud local, có thể chứa Google API key dạng raw nếu người dùng nhập từ GUI. Thư mục này bị `.gitignore`, không được stage/commit.
+  - `cloud-settings.local.json`: setting Cloud local, có thể chứa Google API key hoặc Google Drive token dạng raw nếu người dùng nhập từ GUI. Thư mục này bị `.gitignore`, không được stage/commit.
 - `logs/updates/`: log mỗi lần người dùng bấm cập nhật phiên bản trong GUI.
 - `runs/gui_jobs/`: config JSON theo job, ví dụ `train_config.json`, `predict_config.json`.
 - `runs/cloud/`: mirror local của Cloud workspace. Cấu trúc hiện tại là `runs/cloud/google-drive/<folder-id-or-not-connected>/<root_name>/`.

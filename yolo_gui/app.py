@@ -27,6 +27,7 @@ from .schemas import (
     DatasetAuditRequest,
     DatasetInspectRequest,
     DatasetYamlCreateRequest,
+    CloudDriveConnectRequest,
     CloudProfileSaveRequest,
     CloudSettingsRequest,
     ExportRequest,
@@ -139,10 +140,18 @@ def cloud_settings(request: CloudSettingsRequest) -> dict[str, Any]:
     return cloud_manager.configure(request)
 
 
-@app.post("/api/cloud/google-drive/connect")
-def cloud_google_drive_connect() -> dict[str, Any]:
+@app.post("/api/cloud/key/check")
+def cloud_key_check(request: CloudSettingsRequest) -> dict[str, Any]:
     try:
-        return cloud_manager.connect_google_drive()
+        return cloud_manager.check_cloud_key(request)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/cloud/google-drive/connect")
+def cloud_google_drive_connect(request: CloudDriveConnectRequest | None = None) -> dict[str, Any]:
+    try:
+        return cloud_manager.connect_google_drive(request)
     except RuntimeError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

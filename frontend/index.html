@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/assets/styles.css?v=0.4.21-cloud-storage.1" />
+    <link rel="stylesheet" href="/assets/styles.css?v=0.4.23-cloud-drive-auth.1" />
   </head>
   <body>
     <main class="app-shell">
@@ -829,42 +829,64 @@
 
             <div class="cloud-layout">
               <div class="cloud-settings-card">
-                <label class="checkbox cloud-toggle-row">
-                  <input id="cloudEnabled" type="checkbox" />
-                  <span><strong>Bật Cloud mode</strong><small>Dùng Google Drive làm nguồn dữ liệu chung.</small></span>
-                </label>
-                <div class="settings-grid two">
-                  <label class="field">
-                    <span class="label">Tên project</span>
-                    <input id="cloudProjectName" class="input" type="text" value="Default Project" placeholder="Ví dụ: Helmet Detection" />
-                  </label>
-                  <label class="checkbox cloud-toggle-row cloud-storage-toggle">
-                    <input id="cloudStorageEnabled" type="checkbox" />
-                    <span><strong>Bật Cloud Storage</strong><small>Tự lưu log, config, output, model và snapshot job theo project.</small></span>
+                <div class="cloud-step-card">
+                  <div class="cloud-step-head">
+                    <span>Bước 1</span>
+                    <strong>Kiểm tra Cloud key</strong>
+                  </div>
+                  <label class="checkbox cloud-toggle-row">
+                    <input id="cloudEnabled" type="checkbox" />
+                    <span><strong>Bật Cloud mode</strong><small>Cho phép GUI dùng workspace Cloud chung.</small></span>
                   </label>
                   <label class="field">
-                    <span class="label">Google API key</span>
-                    <input id="cloudGoogleApiKey" class="input" type="password" autocomplete="off" placeholder="Dán API key để kết nối Drive public/shared" />
+                    <span class="label">Cloud API key</span>
+                    <input id="cloudGoogleApiKey" class="input" type="password" autocomplete="off" placeholder="Dán Google Cloud API key để kiểm tra Drive API" />
                   </label>
-                  <label class="field">
-                    <span class="label">Google Drive folder ID hoặc link</span>
-                    <input id="cloudGoogleDriveFolder" class="input" type="text" placeholder="https://drive.google.com/drive/folders/..." />
-                  </label>
-                  <label class="field">
-                    <span class="label">Tên workspace chuẩn</span>
-                    <input id="cloudRootName" class="input" type="text" value="YOLO-GUI-Cloud" />
-                  </label>
-                  <div class="cloud-actions">
+                  <div class="cloud-actions cloud-key-actions">
                     <button id="saveCloudSettingsButton" class="button is-light" type="button"><span class="icon"><i data-lucide="save"></i></span><span>Lưu cài đặt Cloud</span></button>
-                    <button id="connectGoogleDriveButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="cloud"></i></span><span>Connect Google Drive</span></button>
+                    <button id="checkCloudKeyButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="shield-check"></i></span><span>Kiểm tra Cloud key</span></button>
+                  </div>
+                  <p class="form-note">Cloud API key chỉ lưu local trong `logs/cloud/` hoặc lấy từ env `YOLO_GUI_GOOGLE_API_KEY`; không được commit lên GitHub.</p>
+                </div>
+
+                <div id="cloudDriveAuthBlock" class="cloud-drive-auth-block is-hidden">
+                  <div class="cloud-step-head">
+                    <span>Bước 2</span>
+                    <strong>Google Drive Auth và tự tạo folder</strong>
+                  </div>
+                  <p class="form-note">Sau khi key hợp lệ, dán Google Drive OAuth access token. GUI sẽ tự tạo workspace và các folder chuẩn, không cần bạn tự tạo folder ID trước.</p>
+                  <div class="settings-grid two">
+                    <label class="field">
+                      <span class="label">Google Drive Auth</span>
+                      <input id="cloudGoogleDriveToken" class="input" type="password" autocomplete="off" placeholder="Dán OAuth access token có quyền Google Drive" />
+                    </label>
+                    <label class="field">
+                      <span class="label">Google Drive parent</span>
+                      <input id="cloudGoogleDriveParent" class="input" type="text" placeholder="Để trống để tạo trong My Drive" />
+                    </label>
+                    <label class="field">
+                      <span class="label">Tên workspace chuẩn</span>
+                      <input id="cloudRootName" class="input" type="text" value="YOLO-GUI-Cloud" />
+                    </label>
+                    <label class="field">
+                      <span class="label">Tên project</span>
+                      <input id="cloudProjectName" class="input" type="text" value="Default Project" placeholder="Ví dụ: Helmet Detection" />
+                    </label>
+                    <label class="checkbox cloud-toggle-row cloud-storage-toggle">
+                      <input id="cloudStorageEnabled" type="checkbox" />
+                      <span><strong>Bật Cloud Storage</strong><small>Tự lưu log, config, output, model và snapshot job theo project.</small></span>
+                    </label>
+                    <div class="cloud-actions">
+                      <button id="connectGoogleDriveButton" class="button is-primary" type="button"><span class="icon"><i data-lucide="cloud"></i></span><span>Connect Google Drive</span></button>
+                    </div>
                   </div>
                 </div>
-                <p class="form-note">API key chỉ lưu local trong `logs/cloud/` hoặc lấy từ env `YOLO_GUI_GOOGLE_API_KEY`; không được commit lên GitHub.</p>
               </div>
 
               <aside class="cloud-summary-card">
-                <div><span>Key</span><strong id="cloudKeyStatus">Chưa có</strong></div>
-                <div><span>Drive folder</span><strong id="cloudDriveFolderId">Chưa chọn</strong></div>
+                <div><span>Cloud key</span><strong id="cloudKeyStatus">Chưa có</strong></div>
+                <div><span>Drive Auth</span><strong id="cloudDriveAuthStatus">Chưa có</strong></div>
+                <div><span>Drive folder</span><strong id="cloudDriveFolderId">Tự tạo sau auth</strong></div>
                 <div><span>Project</span><strong id="cloudProjectStatus">Default Project</strong></div>
                 <div><span>Cloud Storage</span><strong id="cloudStorageStatus">Đang tắt</strong></div>
                 <div><span>Local mirror</span><strong id="cloudLocalRoot">-</strong></div>
@@ -1008,6 +1030,6 @@
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script src="/assets/app.js?v=0.4.21-cloud-storage.1"></script>
+    <script src="/assets/app.js?v=0.4.23-cloud-drive-auth.1"></script>
   </body>
 </html>

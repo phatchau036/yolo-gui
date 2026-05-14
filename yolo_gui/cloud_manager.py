@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import CLOUD_SETTINGS_PATH, DEFAULT_CLOUD_DIR, PROJECT_ROOT, ensure_runtime_dirs
-from .schemas import CloudProfileSaveRequest, CloudSettingsRequest
+from .schemas import CloudDriveConnectRequest, CloudProfileSaveRequest, CloudSettingsRequest
 
 
 GOOGLE_DRIVE_FOLDER_MIME = "application/vnd.google-apps.folder"
@@ -86,11 +86,13 @@ class CloudManager:
     def status(self) -> dict[str, Any]:
         settings = self._read_settings()
         api_key = self._api_key(settings)
+        drive_token = self._drive_access_token(settings)
         folder_id = extract_drive_folder_id(settings.get("google_drive_folder"))
         root_name = safe_folder_name(str(settings.get("root_name") or "YOLO-GUI-Cloud"))
         local_root = self._local_root(folder_id, root_name)
         project_name = safe_project_name(str(settings.get("project_name") or "Default Project"))
         project_root = self._project_root(local_root, project_name)
+        cloud_key_valid = bool(settings.get("cloud_key_valid"))
         return {
             "enabled": bool(settings.get("enabled")),
             "provider": settings.get("provider") or "google_drive",
@@ -98,6 +100,16 @@ class CloudManager:
             "has_api_key": bool(api_key),
             "api_key_masked": mask_secret(api_key),
             "api_key_source": "env" if os.environ.get("YOLO_GUI_GOOGLE_API_KEY") else ("local" if settings.get("google_api_key") else None),
+            "cloud_key_checked": bool(settings.get("cloud_key_checked")),
+            "cloud_key_valid": cloud_key_valid,
+            "cloud_key_checked_at": settings.get("cloud_key_checked_at"),
+            "cloud_key_message": settings.get("cloud_key_message"),
+            "has_drive_auth": bool(drive_token),
+            "drive_auth_masked": mask_secret(drive_token),
+            "drive_auth_source": "env" if os.environ.get("YOLO_GUI_DRIVE_ACCESS_TOKEN") else ("local" if settings.get("google_drive_access_token") else None),
+            "drive_auth_user": settings.get("drive_auth_user"),
+            "auth_mode": settings.get("auth_mode") or ("oauth" if settings.get("connected") else None),
+            "google_drive_parent": settings.get("google_drive_parent") or "",
             "google_drive_folder": settings.get("google_drive_folder") or "",
             "google_drive_folder_id": folder_id,
             "root_name": root_name,
@@ -163,13 +175,14 @@ class CloudManager:
         settings = self._read_settings()
         previous_folder_id = extract_drive_folder_id(settings.get("google_drive_folder"))
         previous_root_name = safe_folder_name(str(settings.get("root_name") or "YOLO-GUI-Cloud"))
-        next_folder_id = extract_drive_folder_id(request.google_drive_folder)
         next_root_name = safe_folder_name(request.root_name)
         next_project_name = safe_project_name(request.project_name)
+        if request.google_drive_folder is not None:
+            settings["google_drive_folder"] = request.google_drive_folder or ""
+        next_folder_id = extract_drive_folder_id(settings.get("google_drive_folder"))
         settings["enabled"] = request.enabled
         settings["provider"] = request.provider
         settings["storage_enabled"] = request.storage_enabled
-        settings["google_drive_folder"] = request.google_drive_folder or ""
         settings["root_name"] = next_root_name
         settings["project_name"] = next_project_name
         settings["last_error"] = None
@@ -181,13 +194,60 @@ class CloudManager:
             settings.pop("drive_children", None)
         if request.clear_api_key:
             settings.pop("google_api_key", None)
+            settings["cloud_key_checked"] = False
+            settings["cloud_key_valid"] = False
+            settings["cloud_key_message"] = None
         elif request.google_api_key and request.google_api_key.strip():
-            settings["google_api_key"] = request.google_api_key.strip()
+            new_key = request.google_api_key.strip()
+            if new_key != settings.get("google_api_key"):
+                settings["cloud_key_checked"] = False
+                settings["cloud_key_valid"] = False
+                settings["cloud_key_message"] = "Chưa kiểm tra key mới."
+            settings["google_api_key"] = new_key
         settings["updated_at"] = utc_now()
         settings.setdefault("connected", False)
         self._write_settings(settings)
         local_root = self._ensure_standard_dirs(next_folder_id, settings["root_name"])
         self._ensure_project_dirs(local_root, next_project_name)
+        return self.status()
+
+    def check_cloud_key(self, request: CloudSettingsRequest) -> dict[str, Any]:
+        self.configure(request)
+        settings = self._read_settings()
+        if not settings.get("enabled"):
+            settings["cloud_key_checked"] = False
+            settings["cloud_key_valid"] = False
+            settings["cloud_key_message"] = "Cloud mode chưa được bật."
+            settings["last_error"] = settings["cloud_key_message"]
+            self._write_settings(settings)
+            raise RuntimeError(settings["last_error"])
+        api_key = self._api_key(settings)
+        if not api_key:
+            settings["cloud_key_checked"] = False
+            settings["cloud_key_valid"] = False
+            settings["cloud_key_message"] = "Chưa có Cloud API key."
+            settings["last_error"] = "Hãy nhập Cloud API key rồi bấm kiểm tra."
+            self._write_settings(settings)
+            raise RuntimeError(settings["last_error"])
+
+        try:
+            probe = self._validate_cloud_api_key(api_key)
+        except RuntimeError as exc:
+            settings["cloud_key_checked"] = True
+            settings["cloud_key_valid"] = False
+            settings["cloud_key_checked_at"] = utc_now()
+            settings["cloud_key_message"] = str(exc)
+            settings["last_error"] = str(exc)
+            self._write_settings(settings)
+            raise
+
+        settings["cloud_key_checked"] = True
+        settings["cloud_key_valid"] = True
+        settings["cloud_key_checked_at"] = utc_now()
+        settings["cloud_key_message"] = "Cloud key hợp lệ. Có thể thêm Google Drive Auth."
+        settings["last_error"] = None
+        settings["cloud_key_probe"] = probe
+        self._write_settings(settings)
         return self.status()
 
     def capture_job(self, job: dict[str, Any]) -> dict[str, Any] | None:
@@ -252,58 +312,81 @@ class CloudManager:
         self._update_job_index(project_root, manifest)
         return {"snapshot_dir": str(snapshot_dir), "manifest_path": str(manifest_path), "copied": copied}
 
-    def connect_google_drive(self) -> dict[str, Any]:
+    def connect_google_drive(self, request: CloudDriveConnectRequest | None = None) -> dict[str, Any]:
         settings = self._read_settings()
         if not settings.get("enabled"):
             settings["last_error"] = "Cloud chưa được bật."
             self._write_settings(settings)
             raise RuntimeError(settings["last_error"])
-        api_key = self._api_key(settings)
-        if not api_key:
-            settings["last_error"] = "Chưa có Google API key. Nhập key trong GUI hoặc đặt YOLO_GUI_GOOGLE_API_KEY."
+        if not settings.get("cloud_key_valid"):
+            settings["last_error"] = "Cloud key chưa được kiểm tra hợp lệ. Hãy bấm Kiểm tra Cloud key trước."
             self._write_settings(settings)
             raise RuntimeError(settings["last_error"])
-        folder_id = extract_drive_folder_id(settings.get("google_drive_folder"))
-        if not folder_id:
-            settings["last_error"] = "Chưa có Google Drive folder ID hoặc link folder."
+
+        request = request or CloudDriveConnectRequest()
+        if request.google_drive_parent is not None:
+            settings["google_drive_parent"] = request.google_drive_parent.strip()
+        if request.google_drive_access_token and request.google_drive_access_token.strip():
+            settings["google_drive_access_token"] = request.google_drive_access_token.strip()
+        token = self._drive_access_token(settings)
+        if not token:
+            settings["last_error"] = "Đã kiểm tra Cloud key, nhưng chưa có Google Drive Auth. Hãy dán OAuth access token rồi bấm kết nối."
             self._write_settings(settings)
             raise RuntimeError(settings["last_error"])
 
         try:
-            root_meta = self._drive_get_file(api_key, folder_id)
-            if root_meta.get("mimeType") != GOOGLE_DRIVE_FOLDER_MIME:
-                raise RuntimeError("Google Drive ID này không phải thư mục.")
-            children = self._drive_list_children(api_key, folder_id)
+            about = self._drive_about(token)
+            root_name = safe_folder_name(str(settings.get("root_name") or "YOLO-GUI-Cloud"))
+            project_name = safe_project_name(str(settings.get("project_name") or "Default Project"))
+            parent_id = extract_drive_folder_id(settings.get("google_drive_parent")) or "root"
+            root_meta = self._ensure_drive_folder(token, root_name, parent_id)
+            children = self._ensure_drive_standard_folders(
+                token,
+                root_meta["id"],
+                project_name=project_name,
+                create_missing=request.create_standard_folders,
+            )
         except RuntimeError as exc:
             settings["connected"] = False
             settings["last_error"] = str(exc)
             self._write_settings(settings)
             raise
 
-        root_name = safe_folder_name(str(settings.get("root_name") or "YOLO-GUI-Cloud"))
+        folder_id = str(root_meta.get("id") or "")
         local_root = self._ensure_standard_dirs(folder_id, root_name)
+        project_root = self._ensure_project_dirs(local_root, project_name)
         manifest = {
             "connected_at": utc_now(),
             "provider": "google_drive",
+            "auth_mode": "oauth",
+            "drive_user": about.get("user"),
             "root_drive": root_meta,
             "children": children,
+            "project_name": project_name,
+            "project_root": str(project_root),
             "standard_folders": self._standard_folder_payload(local_root, children),
-            "note": "Manifest chỉ lưu metadata Drive. API key không được ghi vào manifest.",
+            "note": "Manifest chỉ lưu metadata Drive. Cloud API key và Google Drive token không được ghi vào manifest.",
         }
         manifest_path = self._manifest_path(folder_id, root_name)
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 
         settings["connected"] = True
+        settings["auth_mode"] = "oauth"
+        settings["google_drive_folder"] = folder_id
         settings["last_connected_at"] = manifest["connected_at"]
         settings["last_error"] = None
         settings["root_drive"] = root_meta
         settings["drive_children"] = children
+        settings["drive_auth_user"] = about.get("user")
         self._write_settings(settings)
         return self.status()
 
     def _api_key(self, settings: dict[str, Any]) -> str | None:
         return os.environ.get("YOLO_GUI_GOOGLE_API_KEY") or settings.get("google_api_key")
+
+    def _drive_access_token(self, settings: dict[str, Any]) -> str | None:
+        return os.environ.get("YOLO_GUI_DRIVE_ACCESS_TOKEN") or settings.get("google_drive_access_token")
 
     def _read_settings(self) -> dict[str, Any]:
         if not CLOUD_SETTINGS_PATH.exists():
@@ -473,11 +556,11 @@ class CloudManager:
             return None
 
     def _sanitize_profile_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
-        forbidden = {"google_api_key", "api_key", "secret", "token", "password"}
+        forbidden = ("google_api_key", "api_key", "secret", "token", "password")
 
         def clean(value: Any) -> Any:
             if isinstance(value, dict):
-                return {key: clean(item) for key, item in value.items() if key.lower() not in forbidden}
+                return {key: clean(item) for key, item in value.items() if not any(part in key.lower() for part in forbidden)}
             if isinstance(value, list):
                 return [clean(item) for item in value]
             return value
@@ -568,6 +651,136 @@ class CloudManager:
         index = [item for item in index if item.get("job", {}).get("id") != job_id]
         index.insert(0, manifest)
         index_path.write_text(json.dumps(index[:200], ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def _validate_cloud_api_key(self, api_key: str) -> dict[str, Any]:
+        params = urllib.parse.urlencode({"key": api_key})
+        url = f"https://www.googleapis.com/discovery/v1/apis/drive/v3/rest?{params}"
+        payload = self._google_api_key_request(url)
+        return {
+            "service": payload.get("id") or "drive:v3",
+            "title": payload.get("title") or "Google Drive API",
+            "checked_at": utc_now(),
+        }
+
+    def _google_api_key_request(self, url: str) -> dict[str, Any]:
+        request = urllib.request.Request(url, headers={"Accept": "application/json"})
+        try:
+            with urllib.request.urlopen(request, timeout=25) as response:  # noqa: S310 - fixed Google API endpoint.
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="replace")
+            message = self._drive_error_message(body) or body or exc.reason
+            raise RuntimeError(f"Cloud API key không hợp lệ hoặc Google API chưa bật: {message}") from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(f"Không kiểm tra được Cloud API key: {exc.reason}") from exc
+
+    def _drive_auth_headers(self, token: str) -> dict[str, str]:
+        return {
+            "Accept": "application/json",
+            "Authorization": f"Bearer {token}",
+        }
+
+    def _drive_auth_request(
+        self,
+        method: str,
+        url: str,
+        token: str,
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        body = None
+        headers = self._drive_auth_headers(token)
+        if payload is not None:
+            headers["Content-Type"] = "application/json"
+            body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        request = urllib.request.Request(url, data=body, headers=headers, method=method)
+        try:
+            with urllib.request.urlopen(request, timeout=25) as response:  # noqa: S310 - fixed Google API endpoint.
+                data = response.read().decode("utf-8")
+                return json.loads(data) if data else {}
+        except urllib.error.HTTPError as exc:
+            body_text = exc.read().decode("utf-8", errors="replace")
+            message = self._drive_error_message(body_text) or body_text or exc.reason
+            if exc.code in {401, 403}:
+                message = f"{message} Google Drive Auth cần access token còn hạn và có quyền Drive."
+            raise RuntimeError(f"Google Drive Auth lỗi {exc.code}: {message}") from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(f"Không kết nối được Google Drive API: {exc.reason}") from exc
+
+    def _drive_about(self, token: str) -> dict[str, Any]:
+        params = urllib.parse.urlencode({"fields": "user(displayName,emailAddress),storageQuota"})
+        return self._drive_auth_request("GET", f"{GOOGLE_DRIVE_API}/about?{params}", token)
+
+    def _drive_query_quote(self, value: str) -> str:
+        return value.replace("\\", "\\\\").replace("'", "\\'")
+
+    def _drive_list_children_auth(self, token: str, folder_id: str) -> list[dict[str, Any]]:
+        params = {
+            "q": f"'{folder_id}' in parents and trashed=false",
+            "fields": "nextPageToken,files(id,name,mimeType,size,modifiedTime,webViewLink)",
+            "pageSize": "200",
+            "orderBy": "folder,name",
+            "supportsAllDrives": "true",
+            "includeItemsFromAllDrives": "true",
+        }
+        children: list[dict[str, Any]] = []
+        page_token: str | None = None
+        while True:
+            query = dict(params)
+            if page_token:
+                query["pageToken"] = page_token
+            payload = self._drive_auth_request("GET", f"{GOOGLE_DRIVE_API}/files?{urllib.parse.urlencode(query)}", token)
+            children.extend(payload.get("files") or [])
+            page_token = payload.get("nextPageToken")
+            if not page_token:
+                return children
+
+    def _find_drive_folder(self, token: str, name: str, parent_id: str) -> dict[str, Any] | None:
+        folder_name = self._drive_query_quote(name)
+        parent = self._drive_query_quote(parent_id)
+        params = {
+            "q": (
+                f"mimeType='{GOOGLE_DRIVE_FOLDER_MIME}' and "
+                f"name='{folder_name}' and '{parent}' in parents and trashed=false"
+            ),
+            "fields": "files(id,name,mimeType,webViewLink,modifiedTime)",
+            "pageSize": "1",
+            "supportsAllDrives": "true",
+            "includeItemsFromAllDrives": "true",
+        }
+        payload = self._drive_auth_request("GET", f"{GOOGLE_DRIVE_API}/files?{urllib.parse.urlencode(params)}", token)
+        files = payload.get("files") or []
+        return files[0] if files else None
+
+    def _create_drive_folder(self, token: str, name: str, parent_id: str) -> dict[str, Any]:
+        params = urllib.parse.urlencode({"fields": "id,name,mimeType,webViewLink,modifiedTime", "supportsAllDrives": "true"})
+        payload = {
+            "name": name,
+            "mimeType": GOOGLE_DRIVE_FOLDER_MIME,
+            "parents": [parent_id],
+        }
+        return self._drive_auth_request("POST", f"{GOOGLE_DRIVE_API}/files?{params}", token, payload)
+
+    def _ensure_drive_folder(self, token: str, name: str, parent_id: str) -> dict[str, Any]:
+        existing = self._find_drive_folder(token, name, parent_id)
+        return existing or self._create_drive_folder(token, name, parent_id)
+
+    def _ensure_drive_standard_folders(
+        self,
+        token: str,
+        root_folder_id: str,
+        *,
+        project_name: str,
+        create_missing: bool,
+    ) -> list[dict[str, Any]]:
+        if create_missing:
+            children = [self._ensure_drive_folder(token, str(folder["key"]), root_folder_id) for folder in STANDARD_FOLDERS]
+            projects_folder = next((item for item in children if item.get("name") == "projects"), None)
+            if projects_folder:
+                project_folder = self._ensure_drive_folder(token, project_name, str(projects_folder["id"]))
+                for key in ("configs", "jobs", "logs", "runs", "models", "datasets", "annotations", "exports"):
+                    self._ensure_drive_folder(token, key, str(project_folder["id"]))
+            return self._drive_list_children_auth(token, root_folder_id)
+        return self._drive_list_children_auth(token, root_folder_id)
 
     def _drive_get_file(self, api_key: str, file_id: str) -> dict[str, Any]:
         params = urllib.parse.urlencode(

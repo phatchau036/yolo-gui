@@ -255,6 +255,12 @@ class CloudSettingsRequest(BaseModel):
     clear_api_key: bool = False
 
 
+class CloudDriveConnectRequest(BaseModel):
+    google_drive_access_token: str | None = None
+    google_drive_parent: str | None = None
+    create_standard_folders: bool = True
+
+
 class CloudProfileSaveRequest(BaseModel):
     name: str = Field(default="Cấu hình YOLO", min_length=1, max_length=80)
     notes: str | None = Field(default=None, max_length=500)

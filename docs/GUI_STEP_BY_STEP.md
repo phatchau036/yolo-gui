@@ -49,13 +49,15 @@ Nếu muốn Windows và Colab dùng cùng chuẩn dữ liệu:
 
 1. Vào tab `Cài đặt`.
 2. Bật `Cloud mode`.
-3. Nhập Google API key nếu dùng folder public/shared.
-4. Dán Google Drive folder ID hoặc link folder.
-5. Nhập `Tên workspace chuẩn`, ví dụ `YOLO-GUI-Cloud`.
-6. Nhập `Tên project`, ví dụ `Helmet Detection`.
-7. Bật `Cloud Storage` nếu muốn mỗi job tự lưu log, config và output.
-8. Bấm `Lưu cài đặt Cloud`.
-9. Bấm `Connect Google Drive` để kiểm tra folder và tạo mirror.
+3. Nhập `Cloud API key`.
+4. Bấm `Kiểm tra Cloud key`.
+5. Khi GUI báo key hợp lệ, phần `Google Drive Auth` sẽ hiện ra.
+6. Dán OAuth access token có quyền Google Drive vào ô `Google Drive Auth`.
+7. Nếu muốn workspace nằm trong một folder cha có sẵn, nhập `Google Drive parent`; nếu không, để trống để GUI tạo trong My Drive.
+8. Nhập `Tên workspace chuẩn`, ví dụ `YOLO-GUI-Cloud`.
+9. Nhập `Tên project`, ví dụ `Helmet Detection`.
+10. Bật `Cloud Storage` nếu muốn mỗi job tự lưu log, config và output.
+11. Bấm `Connect Google Drive` để GUI tự tạo workspace, folder chuẩn và mirror.
 
 Khi bật Cloud Storage, mỗi job xong sẽ có snapshot ở:
 
@@ -65,7 +67,7 @@ runs/cloud/google-drive/<folder-id>/<workspace>/projects/<tên project>/jobs/<wo
 
 Snapshot gồm config job, log đầy đủ, thư mục job, output YOLO và manifest. Trong `Cloud Manager`, mục `Job snapshots` cho biết job nào đã được lưu.
 
-Lưu ý: API key chỉ đọc được Google Drive folder public/shared. Folder private cần OAuth hoặc mount Drive ở phase sau.
+Lưu ý: Cloud API key chỉ kiểm tra Google Cloud/Drive API. Google Drive Auth mới là quyền tạo folder trong Drive. Key/token chỉ lưu local hoặc lấy từ env, không commit lên GitHub.
 
 ## 4. Chuẩn Bị Dataset Bằng GUI
 

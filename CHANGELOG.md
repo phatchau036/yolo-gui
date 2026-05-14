@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.23 - 2026-05-14
+
+- Đổi Cloud workspace thành luồng 2 bước: `Kiểm tra Cloud key` trước, sau đó mới hiện phần `Google Drive Auth`.
+- `Connect Google Drive` giờ dùng OAuth access token để tự tạo workspace `YOLO-GUI-Cloud`, các folder chuẩn và folder project trên Google Drive; người dùng không cần tự tạo/dán folder ID trước.
+- Thêm API `POST /api/cloud/key/check` và mở rộng `POST /api/cloud/google-drive/connect` để nhận Google Drive Auth token, parent folder tùy chọn và tự chuẩn hóa folder.
+- Frontend khóa bước Google Drive cho tới khi Cloud key hợp lệ, hiển thị trạng thái Auth riêng và không render raw key/token.
+- Cập nhật tài liệu Cloud để phân biệt Cloud API key với Google Drive Auth, đồng thời ghi rõ key/token chỉ lưu local/env và không commit lên GitHub.
+
 ## v0.4.22 - 2026-05-14
 
 - Sửa lỗi Google Colab mở Cloudflare Tunnel xong rồi cell tự dừng vì `start_colab.py` thiếu import `RESTART_REQUEST_PATH`.
