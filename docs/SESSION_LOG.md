@@ -1,5 +1,13 @@
 # Session Log
 
+## 2026-05-14 - v0.4.25 Popup setting nâng cao
+
+- Nhận feedback: web còn ít popup, nhiều chỗ setting có thể mở dạng popup để đỡ dài form.
+- Bump version lên `0.4.25`.
+- Các khối `Tùy chỉnh nâng cao` của Train/Đánh giá/Dự đoán/Đóng gói chuyển thành modal overlay bằng chính thẻ `details`, nên field vẫn nằm trong form và backend payload không đổi.
+- Thêm JS đóng popup bằng click backdrop hoặc phím `Esc`, đồng thời khóa scroll nền khi popup đang mở.
+- Cập nhật docs để ghi rõ pattern: setting cốt lõi để trên màn chính, setting ít dùng/nâng cao mở bằng popup.
+
 ## 2026-05-14 - v0.4.24 Cloud/Drive flow UI
 
 - Nhận feedback: phần connect Google Drive đang lộn xộn, cần bố cục có logic khoa học hơn.

@@ -10,7 +10,7 @@ Người dùng không phải nhớ lệnh CLI như `yolo train ...`, `yolo predi
 - Trường bắt buộc của người dùng là chọn thư mục/file, chọn loại bài toán, chọn preset, bấm chạy.
 - Tham số kỹ thuật vẫn được giữ trong schema/backend nhưng không được biến thành điều kiện bắt người dùng cuối phải biết.
 - Nếu cần thêm setting mới, ưu tiên thêm preset/card/toggle có tiếng Việt dễ hiểu rồi map sang field YOLO trong `frontend/app.js`.
-- Chỉ để thông số thô trong `details` nâng cao và phải bảo đảm workflow chạy được khi người dùng không mở phần đó.
+- Chỉ để thông số thô trong `details` nâng cao và phải bảo đảm workflow chạy được khi người dùng không mở phần đó. Các `details.advanced-block` được render như popup để giảm chiều dài form, nhưng field vẫn nằm trong form workflow để payload không đổi.
 - Mỗi nhãn, option card và checkbox quan trọng phải có giải thích nhanh. `frontend/app.js` dùng `helpCatalog` và `enhanceInlineHelp()` để gắn tooltip tự động, tránh phải viết lại markup lặp lại ở từng field.
 - Nội dung hướng dẫn dài nằm ở tab `Hướng dẫn` và `docs/USER_GUIDE.md`, không nhồi vào workflow chính.
 

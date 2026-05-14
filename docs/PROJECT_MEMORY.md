@@ -26,6 +26,7 @@
 - Nếu repo có file đã sửa khi cập nhật, GUI dùng nút `Sao lưu rồi cập nhật` để chạy Git stash trước rồi pull; không bắt người dùng tự mở CLI.
 - Tab `Dự đoán` phải giữ người dùng tại chỗ, có progress và preview ảnh/video output; log đầy đủ vẫn nằm ở tab `Tiến trình`.
 - Hướng giao diện hiện tại là `Pro AI Lab`: shell/sidebar/header tối, workspace sáng dễ thao tác, dùng `Be Vietnam Pro` và giữ cảm giác tool AI/GPU chuyên nghiệp thay vì dashboard mặc định.
+- Popup là pattern nên dùng cho setting ít dùng/nâng cao. Không dùng popup cho bước chính bắt buộc, vì người mới cần nhìn thấy luồng chính; nhưng các cụm `Tùy chỉnh nâng cao` nên mở dạng modal để màn chính không bị quá dài.
 - Bài học QA v0.4.18: đường dẫn dài trong annotator, dependency card nhiều nút và quick workflow nhiều card phải được thiết kế bằng grid/wrap/ellipsis ngay từ đầu; không dùng `overflow-wrap:anywhere` cho vùng chứa path quan trọng vì dễ bẻ chữ thành từng ký tự.
 - Dependency/status endpoint không được crash chỉ vì cache import của Python lỗi; mọi check môi trường phải trả trạng thái/log đọc được để console GUI luôn sạch.
 - Cloud workspace là cầu nối dữ liệu chung giữa Windows/local và Google Colab, nhưng không biến dự án thành SaaS. Giai đoạn hiện tại dùng Cloud API key để kiểm tra Google API và Google Drive Auth để tạo workspace/folder chuẩn.

@@ -7,6 +7,7 @@ Tài liệu này dành cho người dùng muốn train, kiểm tra, dự đoán 
 - Luôn thao tác trong trình duyệt, trừ bước mở app lần đầu trên Windows hoặc chạy cell Colab.
 - Nếu thấy dấu hỏi `?`, rê chuột vào đó để xem mục đó dùng làm gì.
 - Khi chưa chắc nên chọn gì, giữ preset mặc định của GUI.
+- Các mục `Tùy chỉnh nâng cao` mở bằng popup. Chỉ mở khi cần sửa setting sâu; bấm vùng nền, bấm lại tiêu đề hoặc nhấn `Esc` để đóng.
 - Khi có lỗi, đọc tab `Tiến trình` trước. Log trong GUI thường nói rõ lỗi nằm ở dataset, model, GPU, package hay đường dẫn.
 - Khi bật Cloud Storage, đặt `Tên project` rõ ràng để sau này mở lại đúng dữ liệu.
 

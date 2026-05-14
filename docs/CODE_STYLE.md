@@ -47,6 +47,10 @@
 - Với Cloud frontend, giữ state trong `state.cloud`, khóa input/button khi đang kiểm tra/lưu/kết nối, và render folder chuẩn từ payload backend thay vì hardcode trạng thái giả.
 - UI Cloud/Drive phải giữ mô hình staged flow: `enabled` -> `cloud_key_valid` -> `has_drive_auth` -> `connected`. Không gom Cloud key, Drive Auth, project và manager vào một form ngang khó hiểu.
 - Nếu người dùng nhập Cloud key mới trong ô key, frontend phải coi key đó là draft và khóa bước Drive cho tới khi endpoint kiểm tra key trả hợp lệ.
+- Với popup setting:
+  - Setting chính, người mới cần thấy ngay, phải nằm trực tiếp trên màn hình.
+  - Setting ít dùng hoặc nâng cao nên dùng modal/popup để giảm chiều dài form.
+  - Nếu field vẫn thuộc workflow form, giữ field trong cùng DOM form để `formDataFromForm()` không mất payload.
 - Với Cloud Manager:
   - Lưu profile bằng cả payload workflow đã normalize và payload UI thô để áp dụng lại đúng radio/checkbox/preset.
   - Nút `Áp dụng` chỉ điền form, không tự chạy job.

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.25 - 2026-05-14
+
+- Đổi các nhóm `Tùy chỉnh nâng cao` trong Train, Đánh giá, Dự đoán và Đóng gói sang popup modal thay vì trải dài trong form chính.
+- Popup nâng cao có backdrop, giữ nguyên field trong form để backend workflow không đổi, bấm nền hoặc phím `Esc` để đóng.
+- Màn chính gọn hơn cho người mới, nhưng người dùng vẫn mở đủ setting sâu khi cần tinh chỉnh YOLO.
+- Sửa cache-busting frontend để trình duyệt nạp CSS/JS mới sau update.
+
 ## v0.4.24 - 2026-05-14
 
 - Thiết kế lại phần Cloud/Google Drive trong tab `Cài đặt` thành flow 4 bước: bật Cloud, kiểm tra key, cấp Drive Auth và tạo workspace.

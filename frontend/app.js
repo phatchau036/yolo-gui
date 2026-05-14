@@ -3068,7 +3068,51 @@ async function createReport() {
   showToast("Đã tạo báo cáo máy");
 }
 
+function syncAdvancedModalState() {
+  const hasOpen = qsa(".advanced-block[open]").length > 0;
+  document.body.classList.toggle("has-modal-open", hasOpen);
+  qsa(".advanced-block").forEach((block) => {
+    if (block.open) {
+      block.setAttribute("role", "dialog");
+      block.setAttribute("aria-modal", "true");
+    } else {
+      block.removeAttribute("role");
+      block.removeAttribute("aria-modal");
+    }
+  });
+}
+
+function closeAdvancedModals() {
+  qsa(".advanced-block[open]").forEach((block) => {
+    block.open = false;
+  });
+  syncAdvancedModalState();
+}
+
+function bindAdvancedModals() {
+  qsa(".advanced-block").forEach((block) => {
+    block.addEventListener("toggle", () => {
+      if (block.open) {
+        qsa(".advanced-block[open]").forEach((other) => {
+          if (other !== block) other.open = false;
+        });
+      }
+      syncAdvancedModalState();
+    });
+    block.addEventListener("click", (event) => {
+      if (block.open && event.target === block) {
+        block.open = false;
+        syncAdvancedModalState();
+      }
+    });
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeAdvancedModals();
+  });
+}
+
 function bindEvents() {
+  bindAdvancedModals();
   qsa("button[data-section]").forEach((button) => {
     button.addEventListener("click", () => setActiveSection(button.dataset.section));
   });

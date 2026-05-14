@@ -47,6 +47,17 @@
 
 ## Đã verify trong phiên này
 
+- Verify v0.4.25 popup setting nâng cao:
+  - `python -m compileall -q .` pass.
+  - `node --check frontend/app.js` pass.
+  - `git diff --check` pass.
+  - Browser QA trên `127.0.0.1:8797` pass:
+    - Desktop `1366x768`: popup nâng cao của Train/Predict mở dạng modal, không horizontal overflow.
+    - Mobile `390x844`: popup rộng đúng viewport, cuộn nội dung trong modal, body/document không horizontal overflow.
+    - Field nâng cao vẫn thuộc đúng form (`trainForm`, `predictForm`) nên payload workflow không đổi.
+    - Bấm `Esc` và click backdrop đều đóng popup, body bỏ trạng thái khóa scroll.
+    - Console browser không có warning/error.
+
 - Verify v0.4.24 Cloud/Drive flow UI:
   - `python -m compileall -q .` pass.
   - `node --check frontend/app.js` pass.
